@@ -7,17 +7,20 @@ import java.awt.*;
 // move
 // remove?
 
+class Ship extends Actor {
+  static final Color COLOR = Color.GREEN;
+  static final int SIZE = 6;
+  static final int SPEED = 10;  // px/s
 
-class Ship {
-  static final Color color = Color.GREEN;
-  static final int size = 6;
-  static final int speed = 10;  // px/s
+  public Ship(Posn vel, Posn pos) {
+    super(vel, pos, this.SIZE, this.SPEED, this.COLOR);
+  }
 
-  Posn vel;
-  Posn position;
+  GameWorld move() {
+    return null;
+  }
 
-  Ship(Posn vel, Posn position) {
-    this.vel = vel;
-    this.position = position;
+  GameWorld spawn() {
+    return null;
   }
 }

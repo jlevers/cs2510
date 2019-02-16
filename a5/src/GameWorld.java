@@ -12,12 +12,11 @@ import javalib.funworld.*;
 
 
 
-
-
-
-
 // Represents an NBullets game
 class GameWorld extends World {
+
+  static final int WIDTH = 500;
+  static final int HEIGHT = 500;
 
   static int shipsDown = 0;
   int bulletsLeft;
@@ -28,6 +27,6 @@ class GameWorld extends World {
 
   // Draws the current state of the GameWorld
   public WorldScene makeScene() {
-    return new WorldScene(500, 500);
+    return new WorldScene(this.WIDTH, this.HEIGHT);
   }
 }

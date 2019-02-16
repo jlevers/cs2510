@@ -1,5 +1,3 @@
-// implement list functions (foldr, sort)
-// append
 import tester.*;
 
 // A generic list of T

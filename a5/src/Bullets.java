@@ -3,24 +3,15 @@ import tester.*;
 import javalib.funworld.*;
 import java.awt.*;
 
-// move
-// shoot
-// explode
+class Bullet extends Actor {
+  static final Color COLOR = Color.BLUE;
+  static final int SPEED = 20; // px/s
 
-class Bullet {
-  static final Color color = Color.BLUE;
-  static final int speed = 20; // px/s
-
-  Posn vel;
-  Posn posn;
   int explosionNum;
-  int size;
 
-  public Bullet(Posn vel, Posn posn, int explosionNum) {
-    this.vel = vel;
-    this.posn = posn;
+  public Bullet(Posn vel, Posn pos, int explosionNum) {
+    super(vel, pos, explosionNum * 20, this.COLOR);
     this.explosionNum = explosionNum;
-    this.size = explosionNum * 20;
   }
 
   /*
@@ -35,12 +26,22 @@ class Bullet {
    * this.explode() ... ILo<Bullet>
    */
 
+  @Override
+  GameWorld move() {
+    return null;
+  }
+
+  @Override
+  GameWorld spawn() {
+    return null;
+  }
+
   // Creates a list of Bullets created when this Bullet explodes
   ILo<Bullet> explode() {
     if (this.explosionNum > 0) {
-      Bullet temp = new Bullet(this.vel, this.posn, this.explosionNum - 1);
+      Bullet temp = new Bullet(this.vel, this.pos, this.explosionNum - 1);
 
-      return new ConsLo<Bullet>(new Bullet(this.vel, this.posn, this.explosionNum + 1),
+      return new ConsLo<Bullet>(new Bullet(this.vel, this.pos, this.explosionNum + 1),
               temp.explode());
     } else {
       return new MtLo<Bullet>();
