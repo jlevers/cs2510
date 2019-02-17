@@ -4,13 +4,15 @@ import javalib.funworld.*;
 import java.awt.*;
 
 class Bullet extends Actor {
-  static final Color COLOR = Color.BLUE;
-  static final int SPEED = 20; // px/s
+  static final Color COLOR = Color.PINK;
+  static final int SPEED = 8;  // px/tick
+  static final int INIT_BULLET_RAD = 2;  // pixels
+  static final int BULLET_RAD_INC = 2;  // pixels
 
   int explosionNum;
 
   public Bullet(Posn vel, Posn pos, int explosionNum) {
-    super(vel, pos, explosionNum * 20, this.COLOR);
+    super(vel, pos, Utils.calcRad(explosionNum), Bullet.SPEED, Bullet.COLOR);
     this.explosionNum = explosionNum;
   }
 
@@ -26,16 +28,6 @@ class Bullet extends Actor {
    * this.explode() ... ILo<Bullet>
    */
 
-  @Override
-  GameWorld move() {
-    return null;
-  }
-
-  @Override
-  GameWorld spawn() {
-    return null;
-  }
-
   // Creates a list of Bullets created when this Bullet explodes
   ILo<Bullet> explode() {
     if (this.explosionNum > 0) {
@@ -46,6 +38,11 @@ class Bullet extends Actor {
     } else {
       return new MtLo<Bullet>();
     }
-
   }
+}
+
+class ExamplesBullets {
+  Posn origin = new Posn(0, 0);
+  Posn vel = new Posn(2, 3);
+  Bullet bullet = new Bullet(this.vel, this.origin, 0);
 }
