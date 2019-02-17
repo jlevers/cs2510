@@ -38,7 +38,6 @@ class Actor {
   // Moves this Actor in the GameWorld
   Actor move() {
     Posn newPos = new Posn(this.pos.x + this.vel.x, this.pos.y + this.vel.y);
-
     return new Actor(this.vel, newPos, this.size, this.speed, this.color);
   }
 
@@ -48,7 +47,6 @@ class Actor {
     if (Utils.distance(this.pos, that.pos) <= totalRads) {
       return true;
     }
-
     return false;
   }
 }
