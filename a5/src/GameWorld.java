@@ -56,10 +56,11 @@ class GameWorld extends World {
   
   //Performs a set of actions at the given tick speed
   GameWorld onTick() {
-    return this.spawn()
-        .explodeBullets()
-        .destroyShips() //removes ships that were in contact with any Bullet
-        .removeOffscreen();
+    return this.moveActors
+      .spawn()
+      .explodeBullets()
+      .destroyShips() //removes ships that were in contact with any Bullet
+      .removeOffscreen();
   }
 
   // Spawns between Ship.SPAWN_MIN and Ship.SPAWN_MAX Ships
@@ -82,4 +83,12 @@ class GameWorld extends World {
     return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown, append.call(this.ships),
             this.bullets);
   }
+  
+  //Moves all of the Actors in this Gameworld
+  GameWorld moveActors() {
+    ILoDispF<Ship,ILo<Ship>> moveShips = new Map<>(new MoveActor());
+    ILoDispF<Bullet, ILo<Bullet>> moveBullets = new Map<>(new MoveActor());
+    
+    return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown, 
+                         this.ships.visit(moveShips), this.bullets.visit(moveBullets));
 }
