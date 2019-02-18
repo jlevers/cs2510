@@ -92,3 +92,14 @@ class GameWorld extends World {
     return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown, 
                          this.ships.visit(moveShips), this.bullets.visit(moveBullets));
 }
+    //Fires a bullet when the space key is pressed
+  GameWorld onKey(String key) {
+    if (key.equals(" ")) {
+      return new GameWorld(this.rand, (this.bulletsLeft - 1), this.shipsDown, this.ships,
+                           new ConLoBullet(new Bullet(), this.bullets));
+    }
+    return this;
+  }
+}
+
+      
