@@ -50,6 +50,21 @@ interface IFunc<X, Y> {
   Y call (X x);
 }
 
+class MoveShip implements IFunc<Ship, Ship> {
+  
+  //Moves the given ship by its velocity
+  Ship call() {
+    return this.move();
+  }
+}
+
+class MoveBullet implements IFunc<Bullet, Bullet> {
+  
+  //Moves the given bullet by its velocity
+  Bullet call() {
+    return this.move;
+  }
+}
 
 // Represents a reducer function (takes in some data to process, X, and returns a reduced version
 // of type Y
