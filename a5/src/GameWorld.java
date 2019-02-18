@@ -53,6 +53,14 @@ class GameWorld extends World {
   public WorldScene makeScene() {
     return new WorldScene(this.WIDTH, this.HEIGHT);
   }
+  
+  //Performs a set of actions at the given tick speed
+  GameWorld onTick() {
+    return this.spawn()
+        .explodeBullets()
+        .destroyShips() //removes ships that were in contact with any Bullet
+        .removeOffscreen();
+  }
 
   // Spawns between Ship.SPAWN_MIN and Ship.SPAWN_MAX Ships
   GameWorld spawn() {
