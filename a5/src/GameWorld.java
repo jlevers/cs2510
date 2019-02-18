@@ -86,8 +86,8 @@ class GameWorld extends World {
   
   //Moves all of the Actors in this Gameworld
   GameWorld moveActors() {
-    ILoDispF<Ship,ILo<Ship>> moveShips = new Map<>(new MoveActor());
-    ILoDispF<Bullet, ILo<Bullet>> moveBullets = new Map<>(new MoveActor());
+    ILoDispF<Ship,ILo<Ship>> moveShips = new Map<>(new MoveShip<Ship,Ship>());
+    ILoDispF<Bullet, ILo<Bullet>> moveBullets = new Map<>(new MoveBullet<Bullet, Bullet>());
     
     return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown, 
                          this.ships.visit(moveShips), this.bullets.visit(moveBullets));
