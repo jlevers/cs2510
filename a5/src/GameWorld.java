@@ -1,7 +1,6 @@
 import javalib.worldimages.Posn;
 import tester.*;
 import javalib.funworld.*;
-
 import java.util.Random;
 
 // keyhandler
@@ -11,7 +10,6 @@ import java.util.Random;
 //  - draw ships
 // ontick equivalent
 // worldend
-// check if things are touching
 
 
 
@@ -27,11 +25,11 @@ class GameWorld extends World {
   Random rand;
   int bulletsLeft;
   int shipsDown;
-  ILo<Ship> ships;
-  ILo<Bullet> bullets;
+  ILo<IActor> ships;
+  ILo<IActor> bullets;
 
   // The constructor that can set every field to a specific value
-  GameWorld(Random rand, int bulletsLeft, int shipsDown, ILo<Ship> ships, ILo<Bullet> bullets) {
+  GameWorld(Random rand, int bulletsLeft, int shipsDown, ILo<IActor> ships, ILo<IActor> bullets) {
     this.rand = rand;
     this.bulletsLeft = bulletsLeft;
     this.shipsDown = shipsDown;
@@ -55,8 +53,8 @@ class GameWorld extends World {
   }
   
   //Performs a set of actions at the given tick speed
-  GameWorld onTick() {
-    return this.moveActors
+  public GameWorld onTick() {
+    return this.moveActors()
       .spawn()
       .explodeBullets()
       .destroyShips() //removes ships that were in contact with any Bullet
@@ -65,10 +63,11 @@ class GameWorld extends World {
 
   // Spawns between Ship.SPAWN_MIN and Ship.SPAWN_MAX Ships
   GameWorld spawn() {
+    // TODO: only spawn on each second (not each tick)
     int toSpawn = this.rand.nextInt(Ship.SHIP_SPAWN_MIN) + Ship.SHIP_SPAWN_MAX;
-    ILo<Ship> newShips = new MtLo<>();
-    for (int i = 0; i < toSpawn; i++) {
+    ILo<IActor> newShips = new MtLo<>();
 
+    for (int i = 0; i < toSpawn; i++) {
       boolean chooseSide = rand.nextBoolean();
       int velX = chooseSide ? Ship.SPEED : -1 * Ship.SPEED;  // True = left, false = right
       int spawnHeight = rand.nextInt(Ship.SPAWN_TOP - Ship.SPAWN_BOTTOM) + Ship.SPAWN_BOTTOM;
@@ -78,28 +77,56 @@ class GameWorld extends World {
       newShips = new ConsLo<>(newShip, newShips);
     }
 
-    ILoDispF<Ship, ILo<Ship>> append = new Append<>(newShips);
+    ILoDispF<IActor, ILo<IActor>> append = new Append<>(newShips);
 
     return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown, append.call(this.ships),
             this.bullets);
   }
   
-  //Moves all of the Actors in this Gameworld
+  // Moves all of the Actors in this Gameworld
   GameWorld moveActors() {
-    ILoDispF<Ship,ILo<Ship>> moveShips = new Map<>(new MoveShip<Ship,Ship>());
-    ILoDispF<Bullet, ILo<Bullet>> moveBullets = new Map<>(new MoveBullet<Bullet, Bullet>());
-    
+    ILoDispF<IActor, ILo<IActor>> moveActors = new Map<>(new MoveIActor());
     return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown, 
-                         this.ships.visit(moveShips), this.bullets.visit(moveBullets));
-}
-    //Fires a bullet when the space key is pressed
+                         this.ships.visit(moveActors), this.bullets.visit(moveActors));
+  }
+
+  // Fires a bullet when the space key is pressed
   GameWorld onKey(String key) {
     if (key.equals(" ")) {
       return new GameWorld(this.rand, (this.bulletsLeft - 1), this.shipsDown, this.ships,
-                           new ConLoBullet(new Bullet(), this.bullets));
+                           new ConsLo<IActor>(new Bullet(), this.bullets));
     }
+    return this;
+  }
+
+  // Explodes the bullets into more Bullets if they hit a Ship
+  GameWorld explodeBullets() {
+    // TODO: FIX THIS
+    return this;
+  }
+
+  // Removes Ships that were hit by Bullets
+  GameWorld destroyShips() {
+    // TODO: ADD
+    return this;
+  }
+
+  // Removes offscreen IActors
+  GameWorld removeOffscreen() {
+    // TODO: ADD
     return this;
   }
 }
 
-      
+// Represents a function that moves a list of IActors
+class MoveIActor implements IFunc<IActor, IActor> {
+  // Moves the given IActor using its velocity
+  public IActor call(IActor toMove) {
+    return toMove.move();
+  }
+}
+
+
+class ExamplesGameWorld {
+  
+}
