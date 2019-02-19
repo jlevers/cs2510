@@ -100,6 +100,28 @@ class GameWorld extends World {
     }
     return this;
   }
+  //RemoveOffScreen
+  GameWorld removeOffScreen() {
+    ILoDispF<IActor,ILo<IActor>> filterOffScreen = new Filter<IActor>(new isOffscreen<IActor>(this.WIDTH, this.HEIGHT));
+    
+    return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown, this.ships.visit(filterOffScreen),
+                         this.bullets.visit(filterOffscreen));
+  }
+}
+
+class isOffscreen<IActor> implements IPred {
+  int width;
+  int height;
+  
+  isOffscreen(int width, int height) {
+    this.width = width;
+    this.height = height;
+  }
+  
+  public boolean apply(IActor actor) {
+    return actor.pos.x - actor.size > this.width || actor.pos.x + actor.size < 0
+      || actor.pos.y - actor.size > this.height || actor.pos.y + actor.size < 0;
+  }
 }
 
       
