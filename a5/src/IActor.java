@@ -15,6 +15,9 @@ interface IActor {
 
   // Checks if this is touching the given Bullet
   boolean isTouchingBullet(Bullet that);
+
+  // Checks if this IActor is offscreen
+  boolean offscreen();
 }
 
 // Represents something that exists in the GameWorld
@@ -47,6 +50,7 @@ abstract class AActor implements IActor {
    * this.isTouching(IActor) ... boolean
    * this.isTouchingShip(Ship) ... boolean
    * this.isTouchingBullet(Bullet) ... boolean
+   * this.offscreen() ... boolean
    */
 
   // Moves this Actor in the GameWorld
@@ -63,6 +67,12 @@ abstract class AActor implements IActor {
   // Checks if this AActor is touching the given Bullet
   public boolean isTouchingBullet(Bullet that) {
     return false;
+  }
+
+  // Checks if this AActor is offscreen
+  public boolean offscreen() {
+    return this.pos.x - this.size > GameWorld.WIDTH || this.pos.x + this.size < 0
+            || this.pos.y - this.size > GameWorld.HEIGHT || this.pos.y + this.size < 0;
   }
 }
 

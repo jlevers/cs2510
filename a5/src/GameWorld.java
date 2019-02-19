@@ -113,8 +113,26 @@ class GameWorld extends World {
 
   // Removes offscreen IActors
   GameWorld removeOffscreen() {
-    // TODO: ADD
-    return this;
+    ILoDispF<IActor,ILo<IActor>> filterOffscreen =
+            new Filter<IActor>(new IsOffscreen(this.WIDTH, this.HEIGHT));
+    
+    return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown,
+            this.ships.visit(filterOffscreen), this.bullets.visit(filterOffscreen));
+  }
+}
+
+class IsOffscreen implements IPred<IActor> {
+  int width;
+  int height;
+  
+  IsOffscreen(int width, int height) {
+    this.width = width;
+    this.height = height;
+  }
+
+  // Checks if the given IActor is offscreen
+  public boolean apply(IActor actor) {
+    return actor.offscreen();
   }
 }
 
