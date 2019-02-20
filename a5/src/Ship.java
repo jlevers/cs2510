@@ -2,6 +2,7 @@ import javalib.worldimages.Posn;
 import tester.*;
 import javalib.funworld.*;
 import java.awt.*;
+import java.util.Random;
 
 // Represents a Ship in the NBullets game
 class Ship extends AActor {
@@ -33,5 +34,32 @@ class Ship extends AActor {
   public boolean isTouchingBullet(Bullet that) {
     int totalRads = this.size + that.size;
     return Utils.distance(this.pos, that.pos) <= totalRads;
+  }
+}
+
+// Represents a function passed to BuildList to build a list of ships
+class BuildShip implements IFunc<Integer, IActor> {
+  Random rand;
+
+  BuildShip(Random rand) {
+    this.rand = rand;
+  }
+
+  // Builds a ship
+  public Ship call(Integer integer) {
+    boolean chooseSide = rand.nextBoolean();
+    int velX = chooseSide ? Ship.SPEED : -1 * Ship.SPEED;  // True = left, false = right
+    int spawnHeight = rand.nextInt(Ship.SPAWN_TOP - Ship.SPAWN_BOTTOM) + Ship.SPAWN_BOTTOM;
+    int spawnWidth = chooseSide ? -1 * Ship.SIZE : GameWorld.WIDTH + Ship.SIZE;
+    return new Ship(new Posn(velX, 0), new Posn(spawnWidth, spawnHeight));
+  }
+}
+
+// Tests Ship and BuildShip
+class ExamplesShips {
+  boolean testBuildShip(Tester t) {
+    Random rand = new Random(1);
+    BuildShip bs = new BuildShip(rand);
+    return t.checkExpect(bs.call(1), new Ship(new Posn(2, 0), new Posn(-6, 70)));
   }
 }

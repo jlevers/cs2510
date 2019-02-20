@@ -2,15 +2,12 @@ import javalib.worldimages.Posn;
 import tester.*;
 import javalib.funworld.*;
 import java.util.Random;
-
-// keyhandler
 // draw
 //  - draw score
 //  - draw bullets
 //  - draw ships
 // ontick equivalent
 // worldend
-
 
 
 // Represents an NBullets game
@@ -22,6 +19,7 @@ class GameWorld extends World {
   static final double TICK_RATE = 1.0 / 28.0;
   static final int SHIP_SPAWN_FREQ = 28;  // Ticks, not seconds
 
+  int ticks;
   Random rand;
   int bulletsLeft;
   int shipsDown;
@@ -29,7 +27,9 @@ class GameWorld extends World {
   ILo<IActor> bullets;
 
   // The constructor that can set every field to a specific value
-  GameWorld(Random rand, int bulletsLeft, int shipsDown, ILo<IActor> ships, ILo<IActor> bullets) {
+  GameWorld(int ticks, Random rand, int bulletsLeft, int shipsDown, ILo<IActor> ships,
+            ILo<IActor> bullets) {
+    this.ticks = ticks;
     this.rand = rand;
     this.bulletsLeft = bulletsLeft;
     this.shipsDown = shipsDown;
@@ -39,7 +39,7 @@ class GameWorld extends World {
 
   // Takes a specific Random object, so that a seed can be specified for testing
   GameWorld(int bulletsLeft, Random rand) {
-    this(rand, bulletsLeft, 0, new MtLo<>(), new MtLo<>());
+    this(0, rand, bulletsLeft, 0, new MtLo<>(), new MtLo<>());
   }
 
   // The main constructor for the game
@@ -55,54 +55,58 @@ class GameWorld extends World {
   //Performs a set of actions at the given tick speed
   public GameWorld onTick() {
     return this.spawn()
-      .moveActors()
-      .explodeBullets()
-      .destroyShips() //removes ships that were in contact with any Bullet
-      .removeOffscreen();
+            .moveActors()
+            .explodeBullets()
+            .destroyShips() //removes ships that were in contact with any Bullet
+            .removeOffscreen()
+            .incTick();
   }
 
   // Spawns between Ship.SPAWN_MIN and Ship.SPAWN_MAX Ships
   GameWorld spawn() {
-    // TODO: only spawn on each second (not each tick)
-    int toSpawn = this.rand.nextInt(Ship.SHIP_SPAWN_MAX - Ship.SHIP_SPAWN_MIN)
-        + Ship.SHIP_SPAWN_MIN;
-    ILo<IActor> newShips = new MtLo<>();
+    if (this.ticks % 28 == 0) {
+      int toSpawn = this.rand.nextInt(Ship.SHIP_SPAWN_MAX - Ship.SHIP_SPAWN_MIN)
+              + Ship.SHIP_SPAWN_MIN;
 
-    for (int i = 0; i < toSpawn; i++) {
-      boolean chooseSide = rand.nextBoolean();
-      int velX = chooseSide ? Ship.SPEED : -1 * Ship.SPEED;  // True = left, false = right
-      int spawnHeight = rand.nextInt(Ship.SPAWN_TOP - Ship.SPAWN_BOTTOM) + Ship.SPAWN_BOTTOM;
-      int spawnWidth = chooseSide ? -1 * Ship.SIZE : GameWorld.WIDTH + Ship.SIZE;
-      Ship newShip = new Ship(new Posn(velX, 0), new Posn(spawnWidth, spawnHeight));
+      IFunc<Integer, IActor> buildShip = new BuildShip(this.rand);
+      IFunc<Integer, ILo<IActor>> buildShips = new BuildList<>(buildShip);
+      ILo<IActor> newShips = buildShips.call(toSpawn);
+      ILoDispF<IActor, ILo<IActor>> append = new Append<>(newShips);
 
-      newShips = new ConsLo<>(newShip, newShips);
+      return new GameWorld(0, this.rand, this.bulletsLeft, this.shipsDown,
+              append.call(this.ships),
+              this.bullets);
     }
 
-    ILoDispF<IActor, ILo<IActor>> append = new Append<>(newShips);
-
-    return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown, append.call(this.ships),
-            this.bullets);
+    return this;
   }
   
   // Moves all of the Actors in this Gameworld
   GameWorld moveActors() {
     ILoDispF<IActor, ILo<IActor>> moveActors = new Map<>(new MoveIActor());
-    return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown, 
+    return new GameWorld(this.ticks, this.rand, this.bulletsLeft, this.shipsDown,
                          this.ships.visit(moveActors), this.bullets.visit(moveActors));
   }
 
   // Fires a bullet when the space key is pressed
   GameWorld onKey(String key) {
     if (key.equals(" ")) {
-      return new GameWorld(this.rand, (this.bulletsLeft - 1), this.shipsDown, this.ships,
-                           new ConsLo<IActor>(new Bullet(), this.bullets));
+      return new GameWorld(this.ticks, this.rand, (this.bulletsLeft - 1), this.shipsDown,
+              this.ships, new ConsLo<IActor>(new Bullet(), this.bullets));
     }
     return this;
   }
 
+  // Increments the tick count of the game
+  GameWorld incTick() {
+    return new GameWorld(this.ticks + 1, this.rand, this.bulletsLeft, this.shipsDown, this.ships,
+            this.bullets);
+  }
+
   // Explodes the bullets into more Bullets if they hit a Ship
   GameWorld explodeBullets() {
-    // TODO: FIX THIS
+    ILoDispF<IActor, ILo<IActor>> mapToList = new Map<>(new CondExplodeBullet(this.ships));
+    ILo<IActor> bulletLists = this.bullets.visit(mapToList);
     return this;
   }
 
@@ -117,11 +121,12 @@ class GameWorld extends World {
     ILoDispF<IActor,ILo<IActor>> filterOffscreen =
             new Filter<IActor>(new NotOffscreen());
     
-    return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown,
+    return new GameWorld(this.ticks, this.rand, this.bulletsLeft, this.shipsDown,
             this.ships.visit(filterOffscreen), this.bullets.visit(filterOffscreen));
   }
 }
 
+// Represents a function that checks if an IActor is still onscreen
 class NotOffscreen implements IPred<IActor> {
 
   // Checks if the given IActor is on screen
@@ -135,6 +140,39 @@ class MoveIActor implements IFunc<IActor, IActor> {
   // Moves the given IActor using its velocity
   public IActor call(IActor toMove) {
     return toMove.move();
+  }
+}
+
+// Represents a function that checks if a Bullet is touching a Ship
+class BulletHitShips implements IRed<IActor, Boolean> {
+  IActor bullet;
+
+  BulletHitShips(IActor bullet) {
+    this.bullet = bullet;
+  }
+
+  // Checks if the ship is touching this bullet, or if any other ship was touching this bullet
+  public Boolean red(IActor ship, Boolean aBoolean) {
+    return ship.isTouching(this.bullet) || aBoolean;
+  }
+}
+
+// Represents a function to map a Bullet to an ILo<Bullet>
+class CondExplodeBullet implements IFunc<IActor, ILo<IActor>> {
+  ILo<IActor> ships;
+
+  CondExplodeBullet(ILo<IActor> ships) {
+    this.ships = ships;
+  }
+
+  // FUUUUUUCK
+  // Maps a bullet to a list of bullets, depending on whether or not it was touching 1+ ships
+  public ILo<IActor> call(IActor bullet) {
+    if (this.ships.visit(new FoldR<>(new BulletHitShips(bullet), false))) {
+      return bullet.explode();
+    } else {
+      return new ConsLo<>(bullet, new MtLo<>());
+    }
   }
 }
 
@@ -171,9 +209,9 @@ class ExamplesGameWorld {
   
   Random random1 = new Random(1);
   
-  GameWorld game1 = new GameWorld(this.random1, 10, 0, this.listShips, this.listBullets);
-  Ship newShip1 = new Ship(new Posn(-2, 0), new Posn (506, 104));
-  Ship newShip2 = new Ship(new Posn(-2, 0), new Posn(506, 169));
+  GameWorld game1 = new GameWorld(0, this.random1, 10, 0, this.listShips, this.listBullets);
+  Ship newShip1 = new Ship(new Posn(-2, 0), new Posn (506, 169));
+  Ship newShip2 = new Ship(new Posn(-2, 0), new Posn(506, 104));
   ILo<IActor> appendedShips = new ConsLo<>(this.s1, new ConsLo<>(this.s1Moved,
       new ConsLo<>(this.leftoffs, new ConsLo<>(this.newShip1,
           new ConsLo<>(this.newShip2,this.mtShips)))));
@@ -191,29 +229,34 @@ class ExamplesGameWorld {
   ILo<IActor> movedBullets = new ConsLo<>(this.b1Moved, new ConsLo<>(this.rightOffMoved,
       new ConsLo<>(this.b1MovedAgain, this.mtBullets)));
   
-  GameWorld gameSpawn = new GameWorld(this.random1, 10, 0,
+  GameWorld gameSpawn = new GameWorld(0, this.random1, 10, 0,
       this.appendedShips, this.listBullets);
   
   //Tests spawn method on given GameWorld
   public boolean testSpawn(Tester t) {
-    return t.checkExpect(this.game1.spawn(), this.gameSpawn );
+    return t.checkExpect(this.game1.spawn(), this.gameSpawn);
   }
   
   public boolean testRemoveOffscreen(Tester t) {
     return t.checkExpect(this.game1.removeOffscreen(), 
-        new GameWorld(this.random1, 10, 0, this.filteredShips, this.filteredBullets));
+        new GameWorld(0, this.random1, 10, 0, this.filteredShips, this.filteredBullets));
   }
   
   public boolean testMoveActors(Tester t) {
     return t.checkExpect(this.game1.moveActors(), 
-        new GameWorld(this.random1, 10, 0, this.movedShips, this.movedBullets));
+        new GameWorld(0, this.random1, 10, 0, this.movedShips, this.movedBullets));
   }
   
   public boolean testOnKey(Tester t) {
     return t.checkExpect(this.game1.onKey(" "), 
-        new GameWorld(this.random1, 9, 0, this.listShips,
-            new ConsLo<IActor>(new Bullet(), this.listBullets)))
+        new GameWorld(0, this.random1, 9, 0, this.listShips,
+                new ConsLo<IActor>(new Bullet(), this.listBullets)))
         && t.checkExpect(this.game1.onKey("A"), this.game1);
+  }
+
+  boolean testIncTick(Tester t) {
+    return t.checkExpect(this.game1.incTick(),
+            new GameWorld(1, this.random1, 10, 0, this.listShips, this.listBullets));
   }
   
   public boolean testNotOffscreen(Tester t) {

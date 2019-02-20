@@ -85,7 +85,6 @@ class BuildList<R> implements IFunc<Integer, ILo<R>> {
   }
 }
 
-
 // Interface for dispatching over lists of type T
 interface ILoDispF<T, R> extends IFunc<ILo<T>, R> {
   // Dispatches this function in the case of a non-empty list
@@ -182,6 +181,27 @@ class Map<T, R> extends ALoDispF<T, ILo<R>> {
   }
 }
 
+// Represents a foldr
+class FoldR<T, R> extends ALoDispF<T, R> {
+  IRed<T, R> fn;
+  R base;
+
+  FoldR(IRed<T, R> fn, R base) {
+    this.fn = fn;
+    this.base = base;
+  }
+
+  // Folds down a non-empty list
+  public R forCons(ConsLo<T> ne) {
+    return new FoldR<>(this.fn, fn.red(ne.first, this.base)).call(ne.rest);
+  }
+
+  // Returns the folded value
+  public R forMt(MtLo<T> mt) {
+    return base;
+  }
+}
+
 
 // Filters over a list of T
 class Filter<T> extends ALoDispF<T, ILo<T>> {
@@ -236,6 +256,12 @@ class ExamplesLists {
   ILoDispF<String, ILo<Integer>> df = new Map<>(this.f);
   ILo<Integer> afterMap = new ConsLo<>(5, new ConsLo<>(3, new MtLo<>()));
 
+  ILo<Integer> results = new ConsLo<Integer>(4,
+          new ConsLo<Integer>(3,
+                  new ConsLo<Integer>(2,
+                          new ConsLo<Integer>(1,
+                                  new ConsLo<Integer>(0, new MtLo<Integer>())))));
+
   boolean testVisit(Tester t) {
     return t.checkExpect(this.s1.visit(this.df), this.afterMap);
   }
@@ -259,13 +285,20 @@ class ExamplesLists {
       }
     }
     IFunc<Integer, ILo<Integer>> simple = new BuildList<Integer>(new Identity());
-    ILo<Integer> results = new ConsLo<Integer>(4,
-                    new ConsLo<Integer>(3,
-                            new ConsLo<Integer>(2,
-                                    new ConsLo<Integer>(1,
-                                            new ConsLo<Integer>(0, new MtLo<Integer>())))));
 
-    return t.checkExpect(simple.call(5), results);
+    return t.checkExpect(simple.call(5), this.results);
+  }
+
+  boolean testFoldR(Tester t) {
+    // Just for testing
+    class Sum implements IRed<Integer, Integer> {
+      public Integer red(Integer integer, Integer integer2) {
+        return integer + integer2;
+      }
+    }
+
+    ILoDispF<Integer, Integer> fold = new FoldR<>(new Sum(), 0);
+    return t.checkExpect(this.results.visit(fold), 10);
   }
 
   boolean testFilter(Tester t) {
