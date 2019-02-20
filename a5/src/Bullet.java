@@ -36,9 +36,9 @@ class Bullet extends AActor {
 
   // Creates a list of Bullets resulting from the explosion of this Bullet
   
-  public ILo<IActor> explode() {
+  public ILo<Bullet> explode() {
     IFunc<Integer, ILo<Posn>> buildVelList = new BuildList<>(new BulletDir(this.explosionNum));
-    ILoDispF<ILo<Posn>>, IActor> bulletMap = new Map<Posn, IActor>(new BulletGen(this));
+    ILoDispF<Posn, Bullet> bulletMap = new Map<Posn, Bullet>(new BulletGen(this));
 
     // this.explosionNum + 1 so that the BuildList makes a list of the correct length
     ILo<Posn> bulletVels = buildVelList.call(this.explosionNum + 1);
@@ -66,6 +66,11 @@ class Bullet extends AActor {
   public boolean isTouchingShip(Ship that) {
     int totalRads = this.size + that.size;
     return Utils.distance(this.pos, that.pos) <= totalRads;
+  }
+
+  // Accepts a dispatch for this Bullet
+  public <R> R accept(IActorDispF<R> disp) {
+    return disp.forBullet(this);
   }
 }
 
@@ -109,10 +114,10 @@ class BulletGen implements IFunc<Posn, Bullet> {
   /*
    * Template:
    * Fields:
-   * this.bullet ... Bullet
+   * this.bullet ... IActor
    *
    * Methods:
-   * this.call(Posn) ... Bullet
+   * this.call(Posn) ... IActor
    *
    * Methods of Fields:
    * this.bullet.explode() ... ILo<Bullet>

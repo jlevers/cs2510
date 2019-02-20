@@ -35,10 +35,15 @@ class Ship extends AActor {
     int totalRads = this.size + that.size;
     return Utils.distance(this.pos, that.pos) <= totalRads;
   }
+
+  // Dispatches a function for this Ship
+  public <R> R accept(IActorDispF<R> disp) {
+    return disp.forShip(this);
+  }
 }
 
 // Represents a function passed to BuildList to build a list of ships
-class BuildShip implements IFunc<Integer, IActor> {
+class BuildShip implements IFunc<Integer, Ship> {
   Random rand;
 
   BuildShip(Random rand) {

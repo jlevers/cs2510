@@ -59,9 +59,9 @@ interface IRed<X, Y> {
 
 
 // Represents a predicate for comparing two things of type T
-interface IPred<T> {
+interface IPred<T> extends IFunc<T, Boolean> {
   // Applies this predicate to the given input T
-  boolean apply(T t);
+  public Boolean call(T t);
 }
 
 
@@ -91,6 +91,14 @@ interface ILoDispF<T, R> extends IFunc<ILo<T>, R> {
   R forCons(ConsLo<T> ne);
   // Dispatches this function in the case of an empty list
   R forMt(MtLo<T> mt);
+}
+
+// Interface for dispatching over IActors
+interface IActorDispF<R> extends IFunc<IActor, R> {
+  // Dispatches this function in the case of a Ship
+  R forShip(Ship ship);
+  // Dispatches this function in the case of a Bullet
+  R forBullet(Bullet bullet);
 }
 
 
@@ -219,12 +227,12 @@ class Filter<T> extends ALoDispF<T, ILo<T>> {
    * Methods:
    *
    * Methods of Fields:
-   * this.pred.apply(T) ... boolean
+   * this.pred.call(T) ... boolean
    */
 
   // Filters through a non-empty list
   public ILo<T> forCons(ConsLo<T> ne) {
-    if (this.pred.apply(ne.first)) {
+    if (this.pred.call(ne.first)) {
       return new ConsLo<T>(ne.first, ne.rest.visit(this));
     }
 
@@ -237,6 +245,14 @@ class Filter<T> extends ALoDispF<T, ILo<T>> {
   }
 }
 
+
+// Reduces a list to its length
+class LengthRed<T> implements IRed<T, Integer> {
+  // Increments for each item in the list
+  public Integer red(T t, Integer integer) {
+    return integer++;
+  }
+}
 
 
 class ExamplesLists {
@@ -304,7 +320,7 @@ class ExamplesLists {
   boolean testFilter(Tester t) {
     // Just for testing!
     class NotDog implements IPred<String> {
-      public boolean apply(String s) {
+      public Boolean call(String s) {
         return !s.equals("dog");
       }
     }

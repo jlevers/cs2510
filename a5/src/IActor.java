@@ -17,7 +17,10 @@ interface IActor {
   boolean isTouchingBullet(Bullet that);
 
   // Checks if this IActor is offscreen
-  boolean offscreen(); 
+  boolean offscreen();
+
+  // Allows a dispatched function to be processed on this IActor
+  <R> R accept(IActorDispF<R> disp);
 }
 
 // Represents something that exists in the GameWorld
@@ -74,6 +77,9 @@ abstract class AActor implements IActor {
     return this.pos.x - this.size > GameWorld.WIDTH || this.pos.x + this.size < 0
             || this.pos.y - this.size > GameWorld.HEIGHT || this.pos.y + this.size < 0;
   }
+
+  // Accepts a dispatch
+  public abstract <R> R accept(IActorDispF<R> disp);
 }
 
 class ExamplesIActors {
