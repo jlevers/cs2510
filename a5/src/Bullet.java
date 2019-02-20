@@ -35,9 +35,10 @@ class Bullet extends AActor {
    */
 
   // Creates a list of Bullets resulting from the explosion of this Bullet
-  ILo<Bullet> explode() {
+  
+  public ILo<IActor> explode() {
     IFunc<Integer, ILo<Posn>> buildVelList = new BuildList<>(new BulletDir(this.explosionNum));
-    ILoDispF<Posn, ILo<Bullet>> bulletMap = new Map<>(new BulletGen(this));
+    ILoDispF<ILo<Posn>>, IActor> bulletMap = new Map<Posn, IActor>(new BulletGen(this));
 
     // this.explosionNum + 1 so that the BuildList makes a list of the correct length
     ILo<Posn> bulletVels = buildVelList.call(this.explosionNum + 1);

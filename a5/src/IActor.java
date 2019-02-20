@@ -17,7 +17,7 @@ interface IActor {
   boolean isTouchingBullet(Bullet that);
 
   // Checks if this IActor is offscreen
-  boolean offscreen();
+  boolean offscreen(); 
 }
 
 // Represents something that exists in the GameWorld

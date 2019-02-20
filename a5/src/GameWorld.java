@@ -105,15 +105,22 @@ class GameWorld extends World {
 
   // Explodes the bullets into more Bullets if they hit a Ship
   GameWorld explodeBullets() {
-    ILoDispF<IActor, ILo<IActor>> mapToList = new Map<>(new CondExplodeBullet(this.ships));
-    ILo<IActor> bulletLists = this.bullets.visit(mapToList);
-    return this;
+    ILoDispF<IActor, ILo<IActor>> foldToList = 
+        new FoldR<IActor, ILo<IActor>>(new CondExplodeBullet<>(this.ships), new MtLo<IActor>());
+    ILo<IActor> bulletLists = this.bullets.visit(foldToList);
+    return new GameWorld(this.ticks, this.rand, this.bulletsLeft, this.shipsDown,
+        this.ships, bulletLists);
   }
 
   // Removes Ships that were hit by Bullets
   GameWorld destroyShips() {
-    // TODO: ADD
-    return this;
+    ILoDispF<IActor, ILo<IActor>> filterTouching = 
+        new Filter<IActor>(new ShipTouchingBullet(this.bullets));
+    
+    ILo<IActor> remainingShips = this.ships.visit(filterTouching);
+    
+    //Need to create a method that adds to Ships Destroyed
+    return new GameWorld(this.ticks, this.rand, );
   }
 
   // Removes offscreen IActors
@@ -158,21 +165,55 @@ class BulletHitShips implements IRed<IActor, Boolean> {
 }
 
 // Represents a function to map a Bullet to an ILo<Bullet>
-class CondExplodeBullet implements IFunc<IActor, ILo<IActor>> {
+class CondExplodeBullet<T,R> implements IRed<IActor, ILo<IActor>> {
   ILo<IActor> ships;
 
   CondExplodeBullet(ILo<IActor> ships) {
     this.ships = ships;
   }
 
-  // FUUUUUUCK
-  // Maps a bullet to a list of bullets, depending on whether or not it was touching 1+ ships
-  public ILo<IActor> call(IActor bullet) {
-    if (this.ships.visit(new FoldR<>(new BulletHitShips(bullet), false))) {
-      return bullet.explode();
+  // Folds a bullet to the current list of bullets, depending on whether or not it 
+  // was touching 1+ ships
+  public ILo<IActor> red(IActor bullet, ILo<IActor> bulletlistbase) {
+    ILoDispF<IActor, Boolean> isHitBullet = 
+        new FoldR<>(new BulletHitShips(bullet), false);
+    
+    ILo<IActor> explodedBullet= bullet.explode();
+    ILoDispF<IActor, ILo<IActor>> append = new Append<>(explodedBullet);
+     
+    if (this.ships.visit(isHitBullet)) {
+      return append.call(bulletlistbase);
     } else {
-      return new ConsLo<>(bullet, new MtLo<>());
+      return new ConsLo<>(bullet, bulletlistbase);
     }
+  }
+}
+
+class ShipHitBullet implements IRed<IActor, Boolean> {
+  IActor ship;
+
+  ShipHitBullet(IActor ship) {
+    this.ship = ship;
+  }
+
+  public Boolean red(IActor bullet, Boolean base) {
+    return bullet.isTouching(ship) || base;
+  }
+  
+}
+
+class ShipTouchingBullet implements IPred<IActor> {
+  ILo<IActor> bullets;
+  
+  ShipTouchingBullet(ILo<IActor> bullets) {
+    this.bullets = bullets;
+  }
+
+  public boolean apply(IActor ship) {
+    ILoDispF<IActor, Boolean> isHitBullet = 
+        new FoldR<IActor, Boolean>(new ShipHitBullet(ship), false);
+    Boolean isHit = bullets.visit(isHitBullet);
+        return isHit;
   }
 }
 
