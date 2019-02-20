@@ -82,6 +82,10 @@ class ExamplesIActors {
 
   Bullet b1 = new Bullet(this.b1Vel, this.b1Loc, 0);
   Bullet b1Moved = new Bullet(this.b1Vel, this.b1Vel, 0);
+  Bullet rightoff = new Bullet(this.b1Vel, new Posn(503, 100), 0);
+  Bullet leftoff = new Bullet(this.b1Vel, new Posn(-3, 100), 0);
+  Bullet topoff = new Bullet(this.b1Vel, new Posn (100, 303), 0);
+  Bullet bottomoff = new Bullet(this.b1Vel, new Posn(100, -3), 0);
 
   Posn s1Loc = new Posn(4, 6);
   Posn s1Vel = new Posn(10, 0);
@@ -89,6 +93,10 @@ class ExamplesIActors {
 
   Ship s1 = new Ship(this.s1Vel, this.s1Loc);
   Ship s1Moved = new Ship(this.s1Vel, this.s1MovedLoc);
+  Ship rightoffs = new Ship(this.b1Vel, new Posn(509, 100));
+  Ship leftoffs = new Ship(this.b1Vel, new Posn(-9, 100));
+  Ship topoffs = new Ship(this.b1Vel, new Posn (100, 309));
+  Ship bottomoffs = new Ship(this.b1Vel, new Posn(100, -9));
 
   // Tests IActor.move()
   boolean testMove(Tester t) {
@@ -118,5 +126,19 @@ class ExamplesIActors {
     return t.checkExpect(this.b1.isTouchingShip(this.s1), true)
             && t.checkExpect(this.b1.isTouchingShip(this.s1Moved), false)
             && t.checkExpect(this.s1.isTouchingShip(this.s1), false);
+  }
+  
+  //Tests whether the given Actor is offscreen
+  boolean  testIsOffscreen(Tester t) {
+    return t.checkExpect(this.rightoff.offscreen(), true)
+        && t.checkExpect(this.leftoff.offscreen(), true)
+        && t.checkExpect(this.topoff.offscreen(), true)
+        && t.checkExpect(this.bottomoff.offscreen(), true)
+        && t.checkExpect(this.rightoffs.offscreen(), true)
+        && t.checkExpect(this.leftoffs.offscreen(), true)
+        && t.checkExpect(this.topoffs.offscreen(), true)
+        && t.checkExpect(this.bottomoffs.offscreen(), true)
+        && t.checkExpect(this.b1.offscreen(), false)
+        && t.checkExpect(this.s1.offscreen(), false);
   }
 }

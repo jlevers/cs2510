@@ -54,8 +54,8 @@ class GameWorld extends World {
   
   //Performs a set of actions at the given tick speed
   public GameWorld onTick() {
-    return this.moveActors()
-      .spawn()
+    return this.spawn()
+      .moveActors()
       .explodeBullets()
       .destroyShips() //removes ships that were in contact with any Bullet
       .removeOffscreen();
@@ -64,7 +64,8 @@ class GameWorld extends World {
   // Spawns between Ship.SPAWN_MIN and Ship.SPAWN_MAX Ships
   GameWorld spawn() {
     // TODO: only spawn on each second (not each tick)
-    int toSpawn = this.rand.nextInt(Ship.SHIP_SPAWN_MIN) + Ship.SHIP_SPAWN_MAX;
+    int toSpawn = this.rand.nextInt(Ship.SHIP_SPAWN_MAX - Ship.SHIP_SPAWN_MIN)
+        + Ship.SHIP_SPAWN_MIN;
     ILo<IActor> newShips = new MtLo<>();
 
     for (int i = 0; i < toSpawn; i++) {
@@ -114,25 +115,18 @@ class GameWorld extends World {
   // Removes offscreen IActors
   GameWorld removeOffscreen() {
     ILoDispF<IActor,ILo<IActor>> filterOffscreen =
-            new Filter<IActor>(new IsOffscreen(this.WIDTH, this.HEIGHT));
+            new Filter<IActor>(new NotOffscreen());
     
     return new GameWorld(this.rand, this.bulletsLeft, this.shipsDown,
             this.ships.visit(filterOffscreen), this.bullets.visit(filterOffscreen));
   }
 }
 
-class IsOffscreen implements IPred<IActor> {
-  int width;
-  int height;
-  
-  IsOffscreen(int width, int height) {
-    this.width = width;
-    this.height = height;
-  }
+class NotOffscreen implements IPred<IActor> {
 
-  // Checks if the given IActor is offscreen
+  // Checks if the given IActor is on screen
   public boolean apply(IActor actor) {
-    return actor.offscreen();
+    return !actor.offscreen();
   }
 }
 
@@ -146,5 +140,101 @@ class MoveIActor implements IFunc<IActor, IActor> {
 
 
 class ExamplesGameWorld {
+  Posn b1Loc = new Posn(0, 0);
+  Posn b1Vel = new Posn(3, 4);
+
+  Bullet b1 = new Bullet(this.b1Vel, this.b1Loc, 0);
+  Bullet b1Moved = new Bullet(this.b1Vel, this.b1Vel, 0);
+  Bullet rightoff = new Bullet(this.b1Vel, new Posn(503, 100), 0);
+  Bullet leftoff = new Bullet(this.b1Vel, new Posn(-3, 100), 0);
+  Bullet topoff = new Bullet(this.b1Vel, new Posn (100, 303), 0);
+  Bullet bottomoff = new Bullet(this.b1Vel, new Posn(100, -3), 0);
+
+  Posn s1Loc = new Posn(4, 6);
+  Posn s1Vel = new Posn(10, 0);
+  Posn s1VelLeft = new Posn(-10, 0);
+  Posn s1MovedLoc = new Posn(14, 6);
+
+  Ship s1 = new Ship(this.s1Vel, this.s1Loc);
+  Ship s1Moved = new Ship(this.s1Vel, this.s1MovedLoc);
+  Ship rightoffs = new Ship(this.s1Vel, new Posn(507, 100));
+  Ship leftoffs = new Ship(this.s1VelLeft, new Posn(-7, 100));
+  Ship topoffs = new Ship(this.s1Vel, new Posn (100, 307));
+  Ship bottomoffs = new Ship(this.s1Vel, new Posn(100, -7));
   
+  ILo<IActor> mtBullets = new MtLo<>();
+  ILo<IActor> mtShips = new MtLo<>();
+  ILo<IActor> listBullets = new ConsLo<>(this.b1, new ConsLo<>(this.rightoff, 
+      new ConsLo<>(this.b1Moved, this.mtBullets)));
+  ILo<IActor> listShips = new ConsLo<>(this.s1, new ConsLo<>(this.s1Moved,
+      new ConsLo<>(this.leftoffs, this.mtShips)));
+  
+  Random random1 = new Random(1);
+  
+  GameWorld game1 = new GameWorld(this.random1, 10, 0, this.listShips, this.listBullets);
+  Ship newShip1 = new Ship(new Posn(-2, 0), new Posn (506, 104));
+  Ship newShip2 = new Ship(new Posn(-2, 0), new Posn(506, 169));
+  ILo<IActor> appendedShips = new ConsLo<>(this.s1, new ConsLo<>(this.s1Moved,
+      new ConsLo<>(this.leftoffs, new ConsLo<>(this.newShip1,
+          new ConsLo<>(this.newShip2,this.mtShips)))));
+  
+  ILo<IActor> filteredShips = new ConsLo<>(this.s1, new ConsLo<>(this.s1Moved,this.mtShips));
+  ILo<IActor> filteredBullets = new ConsLo<>(this.b1, new ConsLo<>(this.b1Moved, this.mtBullets));
+  
+  IActor s1MovedAgain = new Ship(this.s1Vel, new Posn(24,6)); 
+  IActor leftOffsMoved = new Ship(this.s1VelLeft, new Posn(-17,100));
+  ILo<IActor> movedShips = new ConsLo<>(this.s1Moved, new ConsLo<>(this.s1MovedAgain,
+      new ConsLo<>(this.leftOffsMoved,this.mtShips)));
+  
+  IActor b1MovedAgain = new Bullet(this.b1Vel, new Posn(6, 8), 0);
+  IActor rightOffMoved = new Bullet(this.b1Vel, new Posn(506, 104), 0);
+  ILo<IActor> movedBullets = new ConsLo<>(this.b1Moved, new ConsLo<>(this.rightOffMoved,
+      new ConsLo<>(this.b1MovedAgain, this.mtBullets)));
+  
+  GameWorld gameSpawn = new GameWorld(this.random1, 10, 0,
+      this.appendedShips, this.listBullets);
+  
+  //Tests spawn method on given GameWorld
+  public boolean testSpawn(Tester t) {
+    return t.checkExpect(this.game1.spawn(), this.gameSpawn );
+  }
+  
+  public boolean testRemoveOffscreen(Tester t) {
+    return t.checkExpect(this.game1.removeOffscreen(), 
+        new GameWorld(this.random1, 10, 0, this.filteredShips, this.filteredBullets));
+  }
+  
+  public boolean testMoveActors(Tester t) {
+    return t.checkExpect(this.game1.moveActors(), 
+        new GameWorld(this.random1, 10, 0, this.movedShips, this.movedBullets));
+  }
+  
+  public boolean testOnKey(Tester t) {
+    return t.checkExpect(this.game1.onKey(" "), 
+        new GameWorld(this.random1, 9, 0, this.listShips,
+            new ConsLo<IActor>(new Bullet(), this.listBullets)))
+        && t.checkExpect(this.game1.onKey("A"), this.game1);
+  }
+  
+  public boolean testNotOffscreen(Tester t) {
+    IPred<IActor> os = new NotOffscreen();
+    
+    return t.checkExpect(os.apply(this.rightoff), false)
+        && t.checkExpect(os.apply(this.leftoff), false)
+        && t.checkExpect(os.apply(this.topoff), false)
+        && t.checkExpect(os.apply(this.bottomoff), false)
+        && t.checkExpect(os.apply(this.rightoffs), false)
+        && t.checkExpect(os.apply(this.leftoffs), false)
+        && t.checkExpect(os.apply(this.topoffs), false)
+        && t.checkExpect(os.apply(this.bottomoffs), false)
+        && t.checkExpect(os.apply(this.b1), true)
+        && t.checkExpect(os.apply(this.s1), true);
+  }
+  
+  public boolean testMoveIActor(Tester t) {
+    IFunc<IActor, IActor> ma = new MoveIActor();
+    
+    return t.checkExpect(ma.call(this.b1), this.b1Moved)
+        && t.checkExpect(ma.call(this.s1), this.s1Moved);
+  }
 }
