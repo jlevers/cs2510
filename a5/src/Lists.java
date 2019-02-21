@@ -278,6 +278,7 @@ class ExamplesLists {
         return integer;
       }
     }
+    
     IFunc<Integer, ILo<Integer>> simple = new BuildList<Integer>(new Identity());
 
     return t.checkExpect(simple.call(5), this.results);
