@@ -120,6 +120,17 @@ class ExamplesIActors {
   Ship topoffs = new Ship(this.b1Vel, new Posn (100, 309));
   Ship bottomoffs = new Ship(this.b1Vel, new Posn(100, -9));
 
+  Posn origin = new Posn(0, 0);
+  Posn vel = new Posn(2, 3);
+  Bullet bullet = new Bullet(this.vel, this.origin, 1);
+  Bullet otherPosBullet = new Bullet(new Posn(2, 2), this.origin, 2);
+
+  Posn p1 = new Posn(5, 0);
+  Posn p2 = new Posn(-5, 0);
+  Bullet explode1 = new Bullet(this.p2, this.origin, 2);
+  Bullet explode2 = new Bullet(this.p1, this.origin, 2);
+  ILo<Bullet> exploded = new ConsLo<>(this.explode1, new ConsLo<>(this.explode2, new MtLo<>()));
+
   // Tests IActor.move()
   boolean testMove(Tester t) {
     return t.checkExpect(this.b1.move(), this.b1Moved)
@@ -162,5 +173,17 @@ class ExamplesIActors {
         && t.checkExpect(this.bottomoffs.offscreen(), true)
         && t.checkExpect(this.b1.offscreen(), false)
         && t.checkExpect(this.s1.offscreen(), false);
+  }
+
+  // Tests Bullet.genSubBullet()
+  boolean testGenSubBullet(Tester t) {
+    return t.checkExpect(this.bullet.genSubBullet(new Posn(2, 2)), this.otherPosBullet)
+            && t.checkExpect(this.s1.genSubBullet(new Posn(2, 2)), new Bullet());
+  }
+
+  // Tests Bullet.explode()
+  boolean testExplode(Tester t) {
+    return t.checkExpect(this.bullet.explode(), this.exploded)
+            && t.checkExpect(this.s1.explode(), new ConsLo<>(this.s1, new MtLo<>()));
   }
 }

@@ -85,13 +85,6 @@ class BuildList<R> implements IFunc<Integer, ILo<R>> {
   }
 }
 
-// Interface for dispatching over lists of type T
-interface ILoDispF<T, R> extends IFunc<ILo<T>, R> {
-  // Dispatches this function in the case of a non-empty list
-  R forCons(ConsLo<T> ne);
-  // Dispatches this function in the case of an empty list
-  R forMt(MtLo<T> mt);
-}
 
 // Interface for dispatching over IActors
 interface IActorDispF<R> extends IFunc<IActor, R> {
@@ -99,6 +92,15 @@ interface IActorDispF<R> extends IFunc<IActor, R> {
   R forShip(Ship ship);
   // Dispatches this function in the case of a Bullet
   R forBullet(Bullet bullet);
+}
+
+
+// Interface for dispatching over lists of type T
+interface ILoDispF<T, R> extends IFunc<ILo<T>, R> {
+  // Dispatches this function in the case of a non-empty list
+  R forCons(ConsLo<T> ne);
+  // Dispatches this function in the case of an empty list
+  R forMt(MtLo<T> mt);
 }
 
 
@@ -249,8 +251,8 @@ class Filter<T> extends ALoDispF<T, ILo<T>> {
 // Reduces a list to its length
 class LengthRed<T> implements IRed<T, Integer> {
   // Increments for each item in the list
-  public Integer red(T t, Integer integer) {
-    return integer++;
+  public Integer red(T t, Integer i) {
+    return ++i;
   }
 }
 
@@ -344,5 +346,11 @@ class ExamplesLists {
 
     return t.checkExpect(append.call(this.s1), postAppend)
             && t.checkExpect(append.call(new MtLo<>()), toAppend);
+  }
+
+  boolean testLengthRed(Tester t) {
+    ILoDispF<Integer, Integer> foldLen = new FoldR<>(new LengthRed<>(), 0);
+    return t.checkExpect(this.results.visit(foldLen), 5)
+            && t.checkExpect(new MtLo<Integer>().visit(foldLen), 0);
   }
 }

@@ -133,13 +133,10 @@ class ExamplesBullets {
   Posn origin = new Posn(0, 0);
   Posn vel = new Posn(2, 3);
   Bullet bullet = new Bullet(this.vel, this.origin, 1);
-  Bullet otherPosBullet = new Bullet(new Posn(2, 2), this.origin, 2);
-
   Posn p1 = new Posn(5, 0);
   Posn p2 = new Posn(-5, 0);
   Bullet explode1 = new Bullet(this.p2, this.origin, 2);
   Bullet explode2 = new Bullet(this.p1, this.origin, 2);
-  ILo<Bullet> exploded = new ConsLo<>(this.explode1, new ConsLo<>(this.explode2, new MtLo<>()));
 
   boolean testBulletDir(Tester t) {
     IFunc<Integer, Posn> bulletDir = new BulletDir(1);
@@ -153,15 +150,5 @@ class ExamplesBullets {
 
     return t.checkExpect(bulletGen.call(this.p2), this.explode1)
             && t.checkExpect(bulletGen.call(this.p1), this.explode2);
-  }
-
-  // Tests Bullet.genSubBullet()
-  boolean testGenSubBullet(Tester t) {
-    return t.checkExpect(this.bullet.genSubBullet(new Posn(2, 2)), this.otherPosBullet);
-  }
-
-  // Tests Bullet.explode()
-  boolean testExplode(Tester t) {
-    return t.checkExpect(this.bullet.explode(), this.exploded);
   }
 }
