@@ -8,13 +8,6 @@ import java.awt.Color;
 import java.util.Random;
 import javalib.worldimages.*;
 
-// draw
-//  - draw score
-//  - draw bullets
-//  - draw ships
-// ontick equivalent
-// worldend
-
 
 // Represents an NBullets game
 class GameWorld extends World {
@@ -86,6 +79,23 @@ class GameWorld extends World {
             .destroyShips() //removes ships that were in contact with any Bullet
             .removeOffscreen()
             .incTick();
+  }
+
+  // Checks if the world should end, and if it should, shows a final scene
+  public WorldEnd worldEnds() {
+    FoldR<IActor, Integer> bulletLen = new FoldR<>(new LengthRed<>(), 0);
+    if (this.bullets.visit(bulletLen) == 0) {
+      return new WorldEnd(true, this.makeAFinalScene());
+    } else {
+      return new WorldEnd(false, this.makeScene());
+    }
+  }
+
+  // Draws the final scene
+  WorldScene makeAFinalScene() {
+    WorldImage endImg = new TextImage("You're out of bullets!", 24, Color.RED);
+    return new WorldScene(GameWorld.WIDTH, GameWorld.HEIGHT).placeImageXY(endImg,
+            GameWorld.WIDTH / 2, GameWorld.HEIGHT / 2);
   }
 
   // Spawns between Ship.SPAWN_MIN and Ship.SPAWN_MAX Ships
