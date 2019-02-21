@@ -141,7 +141,8 @@ class GameWorld extends World {
 
   // Removes Ships that were hit by Bullets
   GameWorld destroyShips() {
-    ILoDispF<IActor, ILo<IActor>> filterTouching = new Filter<>(new ShipTouchingBullet(this.bullets));
+    ILoDispF<IActor, ILo<IActor>> filterTouching =
+            new Filter<>(new ShipTouchingBullet(this.bullets));
     
     ILo<IActor> remainingShips = this.ships.visit(filterTouching);
     FoldR<IActor, Integer> shipLenFoldr = new FoldR<>(new LengthRed<>(), 0);
@@ -188,16 +189,16 @@ class CondExplodeBullet implements IRed<IActor, ILo<IActor>> {
 
   // Folds a bullet to the current list of bullets, depending on whether or not it 
   // was touching 1+ ships
-  public ILo<IActor> red(IActor bullet, ILo<IActor> bulletlistbase) {
+  public ILo<IActor> red(IActor bullet, ILo<IActor> bulletListBase) {
     ILoDispF<IActor, Boolean> isHitBullet = new FoldR<>(new IActorHitIActor(bullet), false);
     
     ILo<IActor> explodedBullet = bullet.explode();
     Append<IActor> append = new Append<>(explodedBullet);
      
     if (this.ships.visit(isHitBullet)) {
-      return append.call(bulletlistbase);
+      return append.call(bulletListBase);
     } else {
-      return new ConsLo<>(bullet, bulletlistbase);
+      return new ConsLo<>(bullet, bulletListBase);
     }
   }
 }
@@ -230,7 +231,7 @@ class ShipTouchingBullet implements IPred<IActor> {
   // Checks if the passed ship is touching any of the bullets in this.bullets
   public Boolean call(IActor ship) {
     ILoDispF<IActor, Boolean> isHitBullet = new FoldR<>(new IActorHitIActor(ship), false);
-    return bullets.visit(isHitBullet);
+    return !bullets.visit(isHitBullet);
   }
 }
 
@@ -338,6 +339,16 @@ class ExamplesGameWorld {
   
   GameWorld gameSpawn = new GameWorld(0, this.random1, 10, 0,
       this.appendedShips, this.listBullets);
+  GameWorld mtGW = new GameWorld(0, this.random1, 10, 0, new MtLo<>(), new MtLo<>());
+
+  IActor preExpShip = new Ship(new Posn(5, 0), new Posn(30, 40));
+  IActor preExpBullet = new Bullet(new Posn(2, 4), new Posn(32, 44), 1);
+  IActor exploded1 = new Bullet(new Posn(-1 * Bullet.SPEED, 0), new Posn(32, 44), 2);
+  IActor exploded2 = new Bullet(new Posn(Bullet.SPEED, 0), new Posn(32, 44), 2);
+  ILo<IActor> explodedList = new ConsLo<>(this.exploded1, new ConsLo<>(this.exploded2,
+          new MtLo<>()));
+  GameWorld gToExplode = new GameWorld(0, this.random1, 10, 0, new ConsLo<>(this.preExpShip,
+          new MtLo<>()), new ConsLo<>(this.preExpBullet, new MtLo<>()));
   
   //Tests spawn method on given GameWorld
   public boolean testSpawn(Tester t) {
@@ -367,16 +378,17 @@ class ExamplesGameWorld {
   }
 
   boolean testExplodeBullets(Tester t) {
-    IActor ship1 = new Ship(new Posn(5, 0), new Posn(30, 40));
-    IActor bullet1 = new Bullet(new Posn(2, 4), new Posn(32, 44), 1);
-    IActor exploded1 = new Bullet(new Posn(-1 * Bullet.SPEED, 0), new Posn(32, 44), 2);
-    IActor exploded2 = new Bullet(new Posn(Bullet.SPEED, 0), new Posn(32, 44), 2);
-    GameWorld gToExplode = new GameWorld(0, this.random1, 10, 0, new ConsLo<>(ship1, new MtLo<>()),
-            new ConsLo<>(bullet1, new MtLo<>()));
+    return t.checkExpect(this.gToExplode.explodeBullets(),
+            new GameWorld(0, this.random1, 10, 0, new ConsLo<>(this.preExpShip, new MtLo<>()),
+                    this.explodedList))
+            && t.checkExpect(this.mtGW.explodeBullets(), this.mtGW);
+  }
 
-    return t.checkExpect(gToExplode.explodeBullets(),
-            new GameWorld(0, this.random1, 10, 0, new ConsLo<>(ship1, new MtLo<>()),
-                    new ConsLo<>(exploded1, new ConsLo<>(exploded2, new MtLo<>()))));
+  boolean testDestroyShips(Tester t) {
+    return t.checkExpect(this.gToExplode.destroyShips(),
+            new GameWorld(0, this.random1, 10, 1, new MtLo<>(),
+                    new ConsLo<>(this.preExpBullet, new MtLo<>())))
+            && t.checkExpect(this.mtGW.destroyShips(), this.mtGW);
   }
   
   public boolean testNotOffscreen(Tester t) {
@@ -435,5 +447,24 @@ class ExamplesGameWorld {
     GameWorld gw = new GameWorld(10);
     
     return gw.bigBang(GameWorld.WIDTH, GameWorld.HEIGHT, 0);
+  }
+  
+  public boolean testCondExplodeBullet(Tester t) {
+    CondExplodeBullet ceb = new CondExplodeBullet(new ConsLo<>(this.preExpShip, new MtLo<>()));
+    return t.checkExpect(ceb.red(this.preExpBullet, new MtLo<>()), this.explodedList)
+            && t.checkExpect(ceb.red(this.b1, new MtLo<>()), new ConsLo<>(this.b1, new MtLo<>()));
+  }
+
+  public boolean testIActorHitIActor(Tester t) {
+    IActorHitIActor iahia = new IActorHitIActor(this.b1);
+    return t.checkExpect(iahia.red(this.s1, false), true)
+            && t.checkExpect(iahia.red(this.exploded1, false), false)
+            && t.checkExpect(iahia.red(this.exploded1, true), true);
+  }
+
+  public boolean testShipTouchingBullet(Tester t) {
+    ShipTouchingBullet stb = new ShipTouchingBullet(this.listBullets);
+    return t.checkExpect(stb.call(this.s1), false)
+            && t.checkExpect(stb.call(this.preExpShip), true);
   }
 }
