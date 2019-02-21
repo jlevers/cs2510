@@ -1,6 +1,7 @@
+import javalib.worldimages.CircleImage;
+import javalib.worldimages.OutlineMode;
 import javalib.worldimages.Posn;
 import tester.*;
-import javalib.funworld.*;
 import java.awt.*;
 
 // Represents a Bullet in the NBullets game
@@ -136,7 +137,10 @@ class ExamplesBullets {
   Posn p2 = new Posn(-5, 0);
   Bullet explode1 = new Bullet(this.p2, this.origin, 2);
   Bullet explode2 = new Bullet(this.p1, this.origin, 2);
-
+  ILo<IActor> explodedList = new ConsLo<>(new Bullet(this.p2, this.origin, 2),
+      new ConsLo<>(new Bullet(this.p1, this.origin, 2), new MtLo<>()));
+  
+  //Tests if BulletDir returns the appropriate Posn representing an exploded velocity
   boolean testBulletDir(Tester t) {
     IFunc<Integer, Posn> bulletDir = new BulletDir(1);
 
@@ -144,10 +148,52 @@ class ExamplesBullets {
             && t.checkExpect(bulletDir.call(1), this.p2);
   }
 
+  //Tests if BulletGen creates appropriate bullet given a velocity Posn
   boolean testBulletGen(Tester t) {
     IFunc<Posn, IActor> bulletGen = new BulletGen(this.bullet);
 
     return t.checkExpect(bulletGen.call(this.p2), this.explode1)
             && t.checkExpect(bulletGen.call(this.p1), this.explode2);
+  }
+  
+  //Tests the accept
+  boolean testAccept(Tester t) {
+    return (t.checkExpect(this.bullet.accept(new DrawThat()), 
+        new CircleImage(this.bullet.size, OutlineMode.SOLID, Bullet.COLOR)));
+  }
+  
+  IActor ship1 = new Ship(new Posn(0,1), new Posn(0,6));
+  IActor ship2 = new Ship(new Posn(0,1), new Posn(10, 10));
+  Ship ship3 = new Ship(new Posn(0,1), new Posn(0,6));
+  Ship ship4 = new Ship(new Posn(0,1), new Posn(10, 10));
+  
+  //Tests if the Bullet is touching the given IActor
+  boolean testIsTouching(Tester t) {
+    return t.checkExpect(this.bullet.isTouching(this.bullet), false)
+        && t.checkExpect(this.bullet.isTouching(this.ship1), true)
+        && t.checkExpect(this.bullet.isTouching(this.ship2), false);
+        
+  }
+  
+  //Tests if the Bullet is touching the given Ship
+  boolean testIsTouchingShip(Tester t) {
+    return t.checkExpect(this.bullet.isTouchingShip(this.ship3), true)
+        && t.checkExpect(this.bullet.isTouchingShip(this.ship4), false); 
+  }
+  
+  //Tests if the Bullet moves to the appropriate location
+  boolean testMove(Tester t) {
+    return t.checkExpect(this.bullet.move(), new Bullet(this.vel, this.vel, 1));
+  }
+  
+  //Tests if the correct bullet is generated
+  boolean testGenSubBullet(Tester t) {
+    return t.checkExpect(this.bullet.genSubBullet(this.p1),
+        new Bullet(this.p1, this.bullet.pos, 2));
+  }
+  
+  //Tests if the bullet explodes into an appropriate list
+  boolean testExplode(Tester t) {
+    return t.checkExpect(this.bullet.explode(), this.explodedList);
   }
 }
