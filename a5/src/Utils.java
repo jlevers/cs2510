@@ -24,6 +24,12 @@ class Utils {
   static double distance(Posn a, Posn b) {
     return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
   }
+ 
+  //Creates a string displaying the bullets left and ships down
+  static String counterText(int bulletsLeft, int shipsDown) {
+    return "Bullets Left: " + bulletsLeft  + "; Ships Down: " + shipsDown;
+  }
+  
 }
 
 class ExamplesUtils {
@@ -39,5 +45,10 @@ class ExamplesUtils {
 
     return t.checkExpect(Utils.distance(a, b), 5.0)
             && t.checkInexact(Utils.distance(b, c), Math.sqrt(8), 0.001);
+  }
+  
+  boolean testCounterTest(Tester t) {
+    return t.checkExpect(Utils.counterText(4,5), 
+        "Bullets Left: 4; Ships Down: 5");
   }
 }

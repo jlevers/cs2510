@@ -1,7 +1,13 @@
+import javalib.worldimages.OverlayImage;
 import javalib.worldimages.Posn;
+import javalib.worldimages.WorldImage;
 import tester.*;
 import javalib.funworld.*;
+
+import java.awt.Color;
 import java.util.Random;
+import javalib.worldimages.*;
+
 // draw
 //  - draw score
 //  - draw bullets
@@ -47,10 +53,30 @@ class GameWorld extends World {
     this(bulletsLeft, new Random());
   }
 
-  // Draws the current state of the GameWorld
-  public WorldScene makeScene() {
-    return new WorldScene(this.WIDTH, this.HEIGHT);
+
+ // Draws the current state of the GameWorld
+    public WorldScene makeScene() {
+      WorldImage blank = 
+          new RectangleImage(this.WIDTH, this.HEIGHT, OutlineMode.SOLID, Color.WHITE);
+      
+      //Remember to movePinholeTo in DrawShip
+      ILoDispF<IActor,WorldImage> drawShips= new FoldR<>(new DrawIActor(), blank);
+      WorldImage ships = this.ships.visit(drawShips);
+      
+      ILoDispF<IActor,WorldImage> drawBullets = new FoldR<>(new DrawIActor(), ships);
+      WorldImage bullets = this.bullets.visit(drawBullets);
+      
+      //Adjust position here if needed
+      Posn counterPinhole = new Posn(this.WIDTH/4,this.HEIGHT * (7/16));
+      WorldImage text = 
+          new TextImage(Utils.counterText(this.bulletsLeft, this.shipsDown), Color.BLACK);
+      
+      WorldImage counters = new OverlayImage(text, bullets.movePinholeTo(counterPinhole));
+      WorldImage recenterPinhole = counters.movePinholeTo(new Posn(0, 0));
+      
+      return getEmptyScene().placeImageXY(recenterPinhole, 0, 0);
   }
+
   
   //Performs a set of actions at the given tick speed
   public GameWorld onTick() {
@@ -207,6 +233,55 @@ class ShipTouchingBullet implements IPred<IActor> {
   }
 }
 
+class DrawIActor implements IRed<IActor, WorldImage> {
+
+  //Creates a WorldImage with the given IActor overlaid on the base
+  public WorldImage red(IActor that, WorldImage base) {
+    IActorDispF<Posn> determinePosn = new DeterminePosn();
+    
+    IActorDispF<WorldImage> drawThat = new DrawThat();
+    WorldImage movedPinhole = base.movePinholeTo(that.accept(determinePosn));
+    
+    return new OverlayImage(that.accept(drawThat), movedPinhole);
+  } 
+}
+
+class DeterminePosn implements IActorDispF<Posn> {
+
+  //Allows the given IActor to accept this function
+  public Posn call(IActor x) {
+    return x.accept(this);
+  }
+  
+  //Determines the position of this ship
+  public Posn forShip(Ship ship) {
+    return ship.pos;
+  }
+
+  //Determines the position of this bullet
+  public Posn forBullet(Bullet bullet) {
+    return bullet.pos;
+  }  
+}
+
+class DrawThat implements IActorDispF<WorldImage> {
+
+  //Allows the given IActor to call this function
+  public WorldImage call(IActor x) {
+    return x.accept(this);
+  }
+
+  //Draws the given Ship
+  public WorldImage forShip(Ship ship) {
+    return new CircleImage(ship.size, OutlineMode.SOLID, ship.COLOR);
+  }
+
+  //Draws the given Bullet
+  public WorldImage forBullet(Bullet bullet) {
+    return new CircleImage(bullet.size, OutlineMode.SOLID, bullet.COLOR);
+  }
+}
+
 
 class ExamplesGameWorld {
   Posn b1Loc = new Posn(0, 0);
@@ -324,4 +399,8 @@ class ExamplesGameWorld {
     return t.checkExpect(ma.call(this.b1), this.b1Moved)
         && t.checkExpect(ma.call(this.s1), this.s1Moved);
   }
+  
+ // public boolean testMakeScene(Tester t) {
+  //  GameWorld drawg = 
+ // }
 }
