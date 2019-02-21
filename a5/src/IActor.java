@@ -21,6 +21,13 @@ interface IActor {
 
   // Allows a dispatched function to be processed on this IActor
   <R> R accept(IActorDispF<R> disp);
+
+  // Explodes this IActor, if possible
+  ILo<IActor> explode();
+
+  // Generates a sub-bullet from this IActor (only applicable in the case of Bullet, but needs to be
+  // implemented in all IActors for dispatch reasons
+  IActor genSubBullet(Posn p);
 }
 
 // Represents something that exists in the GameWorld
@@ -80,6 +87,15 @@ abstract class AActor implements IActor {
 
   // Accepts a dispatch
   public abstract <R> R accept(IActorDispF<R> disp);
+
+  // Default explode method -- just returns a list of this
+  public ILo<IActor> explode() {
+    return new ConsLo<>(this, new MtLo<>());
+  }
+
+  public IActor genSubBullet(Posn p) {
+    return new Bullet();
+  }
 }
 
 class ExamplesIActors {

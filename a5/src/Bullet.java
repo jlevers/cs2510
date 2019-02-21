@@ -35,10 +35,9 @@ class Bullet extends AActor {
    */
 
   // Creates a list of Bullets resulting from the explosion of this Bullet
-  
-  public ILo<Bullet> explode() {
+  public ILo<IActor> explode() {
     IFunc<Integer, ILo<Posn>> buildVelList = new BuildList<>(new BulletDir(this.explosionNum));
-    ILoDispF<Posn, Bullet> bulletMap = new Map<Posn, Bullet>(new BulletGen(this));
+    Map<Posn, IActor> bulletMap = new Map<>(new BulletGen(this));
 
     // this.explosionNum + 1 so that the BuildList makes a list of the correct length
     ILo<Posn> bulletVels = buildVelList.call(this.explosionNum + 1);
@@ -47,7 +46,7 @@ class Bullet extends AActor {
   }
 
   // Makes a sub-Bullet of this Bullet (for use in a Map)
-  Bullet genSubBullet(Posn newVel) {
+  public IActor genSubBullet(Posn newVel) {
     return new Bullet(newVel, this.pos, this.explosionNum + 1);
   }
 
@@ -104,10 +103,10 @@ class BulletDir implements IFunc<Integer, Posn> {
 }
 
 // Represents a function that creates a Bullet given a velocity Posn
-class BulletGen implements IFunc<Posn, Bullet> {
-  Bullet bullet;
+class BulletGen implements IFunc<Posn, IActor> {
+  IActor bullet;
 
-  BulletGen(Bullet bullet) {
+  BulletGen(IActor bullet) {
     this.bullet = bullet;
   }
 
@@ -120,12 +119,12 @@ class BulletGen implements IFunc<Posn, Bullet> {
    * this.call(Posn) ... IActor
    *
    * Methods of Fields:
-   * this.bullet.explode() ... ILo<Bullet>
-   * this.bullet.genSubBullet(Posn) ... Bullet
+   * this.bullet.explode() ... ILo<IActor>
+   * this.bullet.genSubBullet(Posn) ... IActor
    */
 
   // Gets the new Bullet using the Bullet.genSubBullet method
-  public Bullet call(Posn posn) {
+  public IActor call(Posn posn) {
     return this.bullet.genSubBullet(posn);
   }
 }
@@ -150,7 +149,7 @@ class ExamplesBullets {
   }
 
   boolean testBulletGen(Tester t) {
-    IFunc<Posn, Bullet> bulletGen = new BulletGen(this.bullet);
+    IFunc<Posn, IActor> bulletGen = new BulletGen(this.bullet);
 
     return t.checkExpect(bulletGen.call(this.p2), this.explode1)
             && t.checkExpect(bulletGen.call(this.p1), this.explode2);

@@ -43,7 +43,7 @@ class Ship extends AActor {
 }
 
 // Represents a function passed to BuildList to build a list of ships
-class BuildShip implements IFunc<Integer, Ship> {
+class BuildShip implements IFunc<Integer, IActor> {
   Random rand;
 
   BuildShip(Random rand) {
@@ -51,7 +51,7 @@ class BuildShip implements IFunc<Integer, Ship> {
   }
 
   // Builds a ship
-  public Ship call(Integer integer) {
+  public IActor call(Integer integer) {
     boolean chooseSide = rand.nextBoolean();
     int velX = chooseSide ? Ship.SPEED : -1 * Ship.SPEED;  // True = left, false = right
     int spawnHeight = rand.nextInt(Ship.SPAWN_TOP - Ship.SPAWN_BOTTOM) + Ship.SPAWN_BOTTOM;

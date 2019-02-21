@@ -23,12 +23,12 @@ class GameWorld extends World {
   Random rand;
   int bulletsLeft;
   int shipsDown;
-  ILo<Ship> ships;
-  ILo<Bullet> bullets;
+  ILo<IActor> ships;
+  ILo<IActor> bullets;
 
   // The constructor that can set every field to a specific value
-  GameWorld(int ticks, Random rand, int bulletsLeft, int shipsDown, ILo<Ship> ships,
-            ILo<Bullet> bullets) {
+  GameWorld(int ticks, Random rand, int bulletsLeft, int shipsDown, ILo<IActor> ships,
+            ILo<IActor> bullets) {
     this.ticks = ticks;
     this.rand = rand;
     this.bulletsLeft = bulletsLeft;
@@ -68,10 +68,10 @@ class GameWorld extends World {
       int toSpawn = this.rand.nextInt(Ship.SHIP_SPAWN_MAX - Ship.SHIP_SPAWN_MIN)
               + Ship.SHIP_SPAWN_MIN;
 
-      IFunc<Integer, Ship> buildShip = new BuildShip(this.rand);
-      IFunc<Integer, ILo<Ship>> buildShips = new BuildList<>(buildShip);
-      ILo<Ship> newShips = buildShips.call(toSpawn);
-      ILoDispF<Ship, ILo<Ship>> append = new Append<>(newShips);
+      IFunc<Integer, IActor> buildShip = new BuildShip(this.rand);
+      IFunc<Integer, ILo<IActor>> buildShips = new BuildList<>(buildShip);
+      ILo<IActor> newShips = buildShips.call(toSpawn);
+      ILoDispF<IActor, ILo<IActor>> append = new Append<>(newShips);
 
       return new GameWorld(0, this.rand, this.bulletsLeft, this.shipsDown,
               append.call(this.ships),
@@ -105,19 +105,19 @@ class GameWorld extends World {
 
   // Explodes the bullets into more Bullets if they hit a Ship
   GameWorld explodeBullets() {
-    ILoDispF<Bullet, ILo<Bullet>> foldToList =
+    ILoDispF<IActor, ILo<IActor>> foldToList =
         new FoldR<>(new CondExplodeBullet(this.ships), new MtLo<>());
-    ILo<Bullet> bulletLists = this.bullets.visit(foldToList);
+    ILo<IActor> bulletLists = this.bullets.visit(foldToList);
     return new GameWorld(this.ticks, this.rand, this.bulletsLeft, this.shipsDown, this.ships,
             bulletLists);
   }
 
   // Removes Ships that were hit by Bullets
   GameWorld destroyShips() {
-    ILoDispF<Ship, ILo<Ship>> filterTouching = new Filter<>(new ShipTouchingBullet(this.bullets));
+    ILoDispF<IActor, ILo<IActor>> filterTouching = new Filter<>(new ShipTouchingBullet(this.bullets));
     
-    ILo<Ship> remainingShips = this.ships.visit(filterTouching);
-    FoldR<Ship, Integer> shipLenFoldr = new FoldR<>(new LengthRed<>(), 0);
+    ILo<IActor> remainingShips = this.ships.visit(filterTouching);
+    FoldR<IActor, Integer> shipLenFoldr = new FoldR<>(new LengthRed<>(), 0);
     int origLen = this.ships.visit(shipLenFoldr);
     int newLen = remainingShips.visit(shipLenFoldr);
 
@@ -128,30 +128,18 @@ class GameWorld extends World {
 
   // Removes offscreen IActors
   GameWorld removeOffscreen() {
-    ILoDispF<Ship, ILo<Ship>> filterOffscreenShips = new Filter<>(new NotOffscreen());
-    ILoDispF<Bullet, ILo<Bullet>> filterOffscreenBullets = new Filter<>(new NotOffscreen());
+    Filter<IActor> filterOffscreen = new Filter<>(new NotOffscreen());
 
     return new GameWorld(this.ticks, this.rand, this.bulletsLeft, this.shipsDown,
-            this.ships.visit(filterOffscreenShips), this.bullets.visit(filterOffscreenBullets));
+            this.ships.visit(filterOffscreen), this.bullets.visit(filterOffscreen));
   }
 }
 
 // Represents a function that checks if an IActor is still onscreen
-class NotOffscreen implements IActorDispF<Boolean> {
-
+class NotOffscreen implements IPred<IActor> {
   // Checks if the given IActor is on screen
   public Boolean call(IActor actor) {
-    return actor.accept(this);
-  }
-
-  // Checks if the given Ship is offscreen
-  public Boolean forShip(Ship ship) {
-    return !ship.offscreen();
-  }
-
-  // Checks if the given Bullet is offscreen
-  public Boolean forBullet(Bullet bullet) {
-    return !bullet.offscreen();
+    return !actor.offscreen();
   }
 }
 
@@ -163,36 +151,21 @@ class MoveIActor implements IFunc<IActor, IActor> {
   }
 }
 
-// Represents a function that checks if a Bullet is touching a Ship
-class BulletHitShips implements IRed<Ship, Boolean> {
-  Bullet bullet;
-
-  BulletHitShips(Bullet bullet) {
-    this.bullet = bullet;
-  }
-
-  // Checks if the ship is touching this bullet, or if any other ship was touching this bullet
-  public Boolean red(Ship ship, Boolean aBoolean) {
-    return ship.isTouching(this.bullet) || aBoolean;
-  }
-}
-
 // Represents a function to map a Bullet to an ILo<Bullet>
-class CondExplodeBullet implements IRed<Bullet, ILo<Bullet>> {
-  ILo<Ship> ships;
+class CondExplodeBullet implements IRed<IActor, ILo<IActor>> {
+  ILo<IActor> ships;
 
-  CondExplodeBullet(ILo<Ship> ships) {
+  CondExplodeBullet(ILo<IActor> ships) {
     this.ships = ships;
   }
 
   // Folds a bullet to the current list of bullets, depending on whether or not it 
   // was touching 1+ ships
-  public ILo<Bullet> red(Bullet bullet, ILo<Bullet> bulletlistbase) {
-    ILoDispF<Ship, Boolean> isHitBullet =
-        new FoldR<>(new BulletHitShips(bullet), false);
+  public ILo<IActor> red(IActor bullet, ILo<IActor> bulletlistbase) {
+    ILoDispF<IActor, Boolean> isHitBullet = new FoldR<>(new IActorHitIActor(bullet), false);
     
-    ILo<Bullet> explodedBullet = bullet.explode();
-    ILoDispF<Bullet, ILo<Bullet>> append = new Append<>(explodedBullet);
+    ILo<IActor> explodedBullet = bullet.explode();
+    Append<IActor> append = new Append<>(explodedBullet);
      
     if (this.ships.visit(isHitBullet)) {
       return append.call(bulletlistbase);
@@ -202,31 +175,35 @@ class CondExplodeBullet implements IRed<Bullet, ILo<Bullet>> {
   }
 }
 
-class ShipHitBullet implements IRed<Bullet, Boolean> {
-  IActor ship;
 
-  ShipHitBullet(Ship ship) {
-    this.ship = ship;
+// Represents a function that checks if a Bullet is touching a Ship
+class IActorHitIActor implements IRed<IActor, Boolean> {
+  IActor isTouchingThis;
+
+  IActorHitIActor(IActor isTouchingThis) {
+    this.isTouchingThis = isTouchingThis;
   }
 
-  public Boolean red(Bullet bullet, Boolean base) {
-    return bullet.isTouching(ship) || base;
+  // Checks if this.isTouchingThis is touching this bullet, or if any IActor was touching this
+  // .isTouchingThis
+  public Boolean red(IActor checkIfTouching, Boolean aBoolean) {
+    return checkIfTouching.isTouching(this.isTouchingThis) || aBoolean;
   }
-  
 }
 
-class ShipTouchingBullet implements IPred<Ship> {
-  ILo<Bullet> bullets;
+
+// Represents a predicate that checks if a Ship is touching any of a list of Bullets
+class ShipTouchingBullet implements IPred<IActor> {
+  ILo<IActor> bullets;
   
-  ShipTouchingBullet(ILo<Bullet> bullets) {
+  ShipTouchingBullet(ILo<IActor> bullets) {
     this.bullets = bullets;
   }
 
-  public Boolean call(Ship ship) {
-    ILoDispF<Bullet, Boolean> isHitBullet =
-        new FoldR<>(new ShipHitBullet(ship), false);
-    Boolean isHit = bullets.visit(isHitBullet);
-        return isHit;
+  // Checks if the passed ship is touching any of the bullets in this.bullets
+  public Boolean call(IActor ship) {
+    ILoDispF<IActor, Boolean> isHitBullet = new FoldR<>(new IActorHitIActor(ship), false);
+    return bullets.visit(isHitBullet);
   }
 }
 
@@ -254,11 +231,11 @@ class ExamplesGameWorld {
   Ship topoffs = new Ship(this.s1Vel, new Posn (100, 307));
   Ship bottomoffs = new Ship(this.s1Vel, new Posn(100, -7));
   
-  ILo<Bullet> mtBullets = new MtLo<>();
-  ILo<Ship> mtShips = new MtLo<>();
-  ILo<Bullet> listBullets = new ConsLo<>(this.b1, new ConsLo<>(this.rightoff,
+  ILo<IActor> mtBullets = new MtLo<>();
+  ILo<IActor> mtShips = new MtLo<>();
+  ILo<IActor> listBullets = new ConsLo<>(this.b1, new ConsLo<>(this.rightoff,
       new ConsLo<>(this.b1Moved, this.mtBullets)));
-  ILo<Ship> listShips = new ConsLo<>(this.s1, new ConsLo<>(this.s1Moved,
+  ILo<IActor> listShips = new ConsLo<>(this.s1, new ConsLo<>(this.s1Moved,
       new ConsLo<>(this.leftoffs, this.mtShips)));
   
   Random random1 = new Random(1);
@@ -266,21 +243,21 @@ class ExamplesGameWorld {
   GameWorld game1 = new GameWorld(0, this.random1, 10, 0, this.listShips, this.listBullets);
   Ship newShip1 = new Ship(new Posn(-2, 0), new Posn (506, 169));
   Ship newShip2 = new Ship(new Posn(-2, 0), new Posn(506, 104));
-  ILo<Ship> appendedShips = new ConsLo<>(this.s1, new ConsLo<>(this.s1Moved,
+  ILo<IActor> appendedShips = new ConsLo<>(this.s1, new ConsLo<>(this.s1Moved,
       new ConsLo<>(this.leftoffs, new ConsLo<>(this.newShip1,
           new ConsLo<>(this.newShip2,this.mtShips)))));
   
-  ILo<Ship> filteredShips = new ConsLo<>(this.s1, new ConsLo<>(this.s1Moved,this.mtShips));
-  ILo<Bullet> filteredBullets = new ConsLo<>(this.b1, new ConsLo<>(this.b1Moved, this.mtBullets));
+  ILo<IActor> filteredShips = new ConsLo<>(this.s1, new ConsLo<>(this.s1Moved,this.mtShips));
+  ILo<IActor> filteredBullets = new ConsLo<>(this.b1, new ConsLo<>(this.b1Moved, this.mtBullets));
   
   Ship s1MovedAgain = new Ship(this.s1Vel, new Posn(24,6));
   Ship leftOffsMoved = new Ship(this.s1VelLeft, new Posn(-17,100));
-  ILo<Ship> movedShips = new ConsLo<>(this.s1Moved, new ConsLo<>(this.s1MovedAgain,
+  ILo<IActor> movedShips = new ConsLo<>(this.s1Moved, new ConsLo<>(this.s1MovedAgain,
       new ConsLo<>(this.leftOffsMoved,this.mtShips)));
   
   Bullet b1MovedAgain = new Bullet(this.b1Vel, new Posn(6, 8), 0);
   Bullet rightOffMoved = new Bullet(this.b1Vel, new Posn(506, 104), 0);
-  ILo<Bullet> movedBullets = new ConsLo<>(this.b1Moved, new ConsLo<>(this.rightOffMoved,
+  ILo<IActor> movedBullets = new ConsLo<>(this.b1Moved, new ConsLo<>(this.rightOffMoved,
       new ConsLo<>(this.b1MovedAgain, this.mtBullets)));
   
   GameWorld gameSpawn = new GameWorld(0, this.random1, 10, 0,
@@ -312,9 +289,22 @@ class ExamplesGameWorld {
     return t.checkExpect(this.game1.incTick(),
             new GameWorld(1, this.random1, 10, 0, this.listShips, this.listBullets));
   }
+
+  boolean testExplodeBullets(Tester t) {
+    IActor ship1 = new Ship(new Posn(5, 0), new Posn(30, 40));
+    IActor bullet1 = new Bullet(new Posn(2, 4), new Posn(32, 44), 1);
+    IActor exploded1 = new Bullet(new Posn(-1 * Bullet.SPEED, 0), new Posn(32, 44), 2);
+    IActor exploded2 = new Bullet(new Posn(Bullet.SPEED, 0), new Posn(32, 44), 2);
+    GameWorld gToExplode = new GameWorld(0, this.random1, 10, 0, new ConsLo<>(ship1, new MtLo<>()),
+            new ConsLo<>(bullet1, new MtLo<>()));
+
+    return t.checkExpect(gToExplode.explodeBullets(),
+            new GameWorld(0, this.random1, 10, 0, new ConsLo<>(ship1, new MtLo<>()),
+                    new ConsLo<>(exploded1, new ConsLo<>(exploded2, new MtLo<>()))));
+  }
   
   public boolean testNotOffscreen(Tester t) {
-    IActorDispF<Boolean> os = new NotOffscreen();
+    IPred<IActor> os = new NotOffscreen();
     
     return t.checkExpect(os.call(this.rightoff), false)
         && t.checkExpect(os.call(this.leftoff), false)
