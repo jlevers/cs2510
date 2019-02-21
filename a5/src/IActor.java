@@ -1,6 +1,8 @@
 import tester.*;
-import javalib.funworld.*;
 import java.awt.*;
+
+import javalib.worldimages.CircleImage;
+import javalib.worldimages.OutlineMode;
 import javalib.worldimages.Posn;
 
 interface IActor {
@@ -185,5 +187,13 @@ class ExamplesIActors {
   boolean testExplode(Tester t) {
     return t.checkExpect(this.bullet.explode(), this.exploded)
             && t.checkExpect(this.s1.explode(), new ConsLo<>(this.s1, new MtLo<>()));
+  }
+  
+  //Tests if an IActor accepts the given DispF
+  boolean testAccept(Tester t) {
+    return t.checkExpect(this.b1.accept(new DrawThat()), 
+        new CircleImage(this.b1.size, OutlineMode.SOLID, Bullet.COLOR))
+        && t.checkExpect(this.s1.accept(new DrawThat()), 
+            new CircleImage(Ship.SIZE, OutlineMode.SOLID, Ship.COLOR));
   }
 }

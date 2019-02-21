@@ -33,11 +33,13 @@ class Utils {
 }
 
 class ExamplesUtils {
+  //Tests if the appropriate radius is returned for a Bullet
   boolean testCalcRad(Tester t) {
     return t.checkExpect(Utils.calcRad(3), 8)
             && t.checkExpect(Utils.calcRad(7), 10);
   }
 
+  //Tests if appropriate distance is returned
   boolean testDistance(Tester t) {
     Posn a = new Posn(0, 0);
     Posn b = new Posn(3, 4);
@@ -47,6 +49,7 @@ class ExamplesUtils {
             && t.checkInexact(Utils.distance(b, c), Math.sqrt(8), 0.001);
   }
   
+  //Tests if the counter String is returned
   boolean testCounterTest(Tester t) {
     return t.checkExpect(Utils.counterText(4,5), 
         "Bullets Left: 4; Ships Down: 5");

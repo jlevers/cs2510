@@ -1,6 +1,7 @@
+import javalib.worldimages.CircleImage;
+import javalib.worldimages.OutlineMode;
 import javalib.worldimages.Posn;
 import tester.*;
-import javalib.funworld.*;
 import java.awt.*;
 import java.util.Random;
 
@@ -62,9 +63,36 @@ class BuildShip implements IFunc<Integer, IActor> {
 
 // Tests Ship and BuildShip
 class ExamplesShips {
+  IActor ship = new Ship(new Posn(0,7), new Posn (0,0));
+  IActor moved = new Ship(new Posn(0,7), new Posn (0,7));
+  IActor ship2 = new Ship(new Posn(5,5), new Posn(0,5));
+  IActor bullet = new Bullet(new Posn(2,3), new Posn(0,14), 1);
+  Bullet bulletspef = new Bullet(new Posn(2,3), new Posn(0,14), 1);
+  
+  //Tests if the expected Ship was built given a Random seed
   boolean testBuildShip(Tester t) {
     Random rand = new Random(1);
     BuildShip bs = new BuildShip(rand);
     return t.checkExpect(bs.call(1), new Ship(new Posn(2, 0), new Posn(-6, 70)));
+  }
+  
+  boolean testMove(Tester t) {
+    return t.checkExpect(ship.move(), moved);
+  }
+  
+  boolean testIsTouching(Tester t) {
+    return t.checkExpect(this.ship.isTouching(ship2), false)
+        && t.checkExpect(this.ship.isTouching(bullet), false)
+        && t.checkExpect(this.moved.isTouching(bullet), true);
+  }
+  
+  boolean testIsTouchingBullet(Tester t) {
+    return t.checkExpect(this.ship.isTouchingBullet(bulletspef), false)
+        && t.checkExpect(this.moved.isTouchingBullet(bulletspef), true);
+  }
+  
+  boolean testAccept(Tester t) {
+    return t.checkExpect(this.ship.accept(new DrawThat()),
+        new CircleImage(Ship.SIZE, OutlineMode.SOLID, Ship.COLOR));
   }
 }

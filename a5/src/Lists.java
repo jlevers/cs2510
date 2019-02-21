@@ -279,22 +279,26 @@ class ExamplesLists {
                   new ConsLo<Integer>(2,
                           new ConsLo<Integer>(1,
                                   new ConsLo<Integer>(0, new MtLo<Integer>())))));
-
+  
+  //Tests whether the appropriate Dispatch Function is visited 
   boolean testVisit(Tester t) {
     return t.checkExpect(this.s1.visit(this.df), this.afterMap);
   }
-
+  
+  //Tests whether the given Dispatch Function is called
   boolean testCallIFunc(Tester t) {
 
     return t.checkExpect(this.f.call("test"), 4)
             && t.checkExpect(this.df.call(this.s1), this.afterMap);
   }
-
+  
+  //Tests whether the Function works for Empty and NonEmpty lists
   boolean testMap(Tester t) {
     return t.checkExpect(this.df.forCons(this.s1), this.afterMap)
             && t.checkExpect(this.df.forMt(this.mt), new MtLo<Integer>());
   }
 
+  //Tests whether the appropriate list is built
   boolean testBuildList(Tester t) {
     // Just for testing purposes
     class Identity implements IFunc<Integer, Integer> {
@@ -307,6 +311,7 @@ class ExamplesLists {
     return t.checkExpect(simple.call(5), this.results);
   }
 
+  //Tests FoldR
   boolean testFoldR(Tester t) {
     // Just for testing
     class Sum implements IRed<Integer, Integer> {
@@ -319,6 +324,7 @@ class ExamplesLists {
     return t.checkExpect(this.results.visit(fold), 10);
   }
 
+  //Tests Filter
   boolean testFilter(Tester t) {
     // Just for testing!
     class NotDog implements IPred<String> {
@@ -333,6 +339,7 @@ class ExamplesLists {
             && t.checkExpect(noDogFilter.call(new MtLo<String>()), new MtLo<String>());
   }
 
+  //Tests Append
   boolean testAppend(Tester t) {
     ILo<String> toAppend = new ConsLo<>("one",
             new ConsLo<>("two",
@@ -348,6 +355,7 @@ class ExamplesLists {
             && t.checkExpect(append.call(new MtLo<>()), toAppend);
   }
 
+  //Tests if the length of the list is returned
   boolean testLengthRed(Tester t) {
     ILoDispF<Integer, Integer> foldLen = new FoldR<>(new LengthRed<>(), 0);
     return t.checkExpect(this.results.visit(foldLen), 5)
