@@ -20,8 +20,7 @@ class Bullet extends AActor {
 
   // Creates a bullet that the player shot
   Bullet() {
-    super(new Posn(0, Bullet.SPEED), new Posn(GameWorld.WIDTH / 2, GameWorld.HEIGHT/ 2), 1, Bullet.SPEED,
-            Bullet.COLOR);
+    this(new Posn(0, -1 * Bullet.SPEED), new Posn(GameWorld.WIDTH / 2, GameWorld.HEIGHT), 1);
   }
 
   /*

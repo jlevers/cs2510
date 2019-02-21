@@ -84,7 +84,7 @@ class GameWorld extends World {
   // Checks if the world should end, and if it should, shows a final scene
   public WorldEnd worldEnds() {
     FoldR<IActor, Integer> bulletLen = new FoldR<>(new LengthRed<>(), 0);
-    if (this.bullets.visit(bulletLen) == 0) {
+    if (this.bullets.visit(bulletLen) == 0 && this.bulletsLeft == 0) {
       return new WorldEnd(true, this.makeAFinalScene());
     } else {
       return new WorldEnd(false, this.makeScene());
@@ -100,7 +100,7 @@ class GameWorld extends World {
 
   // Spawns between Ship.SPAWN_MIN and Ship.SPAWN_MAX Ships
   GameWorld spawn() {
-    if (this.ticks % 28 == 0) {
+    if (this.ticks % GameWorld.SHIP_SPAWN_FREQ == 0) {
       int toSpawn = this.rand.nextInt(Ship.SHIP_SPAWN_MAX - Ship.SHIP_SPAWN_MIN)
               + Ship.SHIP_SPAWN_MIN;
 
@@ -109,15 +109,14 @@ class GameWorld extends World {
       ILo<IActor> newShips = buildShips.call(toSpawn);
       ILoDispF<IActor, ILo<IActor>> append = new Append<>(newShips);
 
-      return new GameWorld(0, this.rand, this.bulletsLeft, this.shipsDown,
-              append.call(this.ships),
+      return new GameWorld(0, this.rand, this.bulletsLeft, this.shipsDown, append.call(this.ships),
               this.bullets);
     }
 
     return this;
   }
   
-  // Moves all of the Actors in this Gameworld
+  // Moves all of the Actors in this GameWorld
   GameWorld moveActors() {
     ILoDispF<IActor, ILo<IActor>> moveActors = new Map<>(new MoveIActor());
     return new GameWorld(this.ticks, this.rand, this.bulletsLeft, this.shipsDown,
@@ -126,11 +125,11 @@ class GameWorld extends World {
 
   // Fires a bullet when the space key is pressed
   public GameWorld onKeyEvent(String key) {
-    if (key.equals(" ")) {
-      System.out.println("hit space");
+    if (key.equals(" ") && this.bulletsLeft > 0) {
       return new GameWorld(this.ticks, this.rand, (this.bulletsLeft - 1), this.shipsDown,
-              this.ships, new ConsLo<IActor>(new Bullet(), this.bullets));
+              this.ships, new ConsLo<>(new Bullet(), this.bullets));
     }
+
     return this;
   }
 
@@ -145,6 +144,7 @@ class GameWorld extends World {
     ILoDispF<IActor, ILo<IActor>> foldToList =
         new FoldR<>(new CondExplodeBullet(this.ships), new MtLo<>());
     ILo<IActor> bulletLists = this.bullets.visit(foldToList);
+
     return new GameWorld(this.ticks, this.rand, this.bulletsLeft, this.shipsDown, this.ships,
             bulletLists);
   }
@@ -207,7 +207,7 @@ class CondExplodeBullet implements IRed<IActor, ILo<IActor>> {
      
     if (this.ships.visit(isHitBullet)) {
       return append.call(bulletListBase);
-    } else {
+    }  else {
       return new ConsLo<>(bullet, bulletListBase);
     }
   }
@@ -245,9 +245,11 @@ class ShipTouchingBullet implements IPred<IActor> {
   }
 }
 
+
+// Draws an IActor, dispatching so that it can be drawn based on its subclass
 class DrawIActor implements IRed<IActor, WorldImage> {
 
-  //Creates a WorldImage with the given IActor overlaid on the base
+  // Creates a WorldImage with the given IActor overlaid on the base
   public WorldImage red(IActor that, WorldImage base) {
     IActorDispF<Posn> determinePosn = new DeterminePosn();
     
@@ -258,37 +260,40 @@ class DrawIActor implements IRed<IActor, WorldImage> {
   } 
 }
 
+
+// Represents a dispatch function for figuring out the Posn of an IActor
 class DeterminePosn implements IActorDispF<Posn> {
 
-  //Allows the given IActor to accept this function
+  // Allows the given IActor to accept this function
   public Posn call(IActor x) {
     return x.accept(this);
   }
   
-  //Determines the position of this ship
+  // Determines the position of this ship
   public Posn forShip(Ship ship) {
     return new Posn(ship.pos.x - GameWorld.WIDTH/2, ship.pos.y - GameWorld.HEIGHT/2);
   }
 
-  //Determines the position of this bullet
+  // Determines the position of this bullet
   public Posn forBullet(Bullet bullet) {
     return new Posn(bullet.pos.x - GameWorld.WIDTH/2, bullet.pos.y - GameWorld.HEIGHT/2);
   }  
 }
 
+// Draws some IActor on the WorldImage
 class DrawThat implements IActorDispF<WorldImage> {
 
-  //Allows the given IActor to call this function
+  // Allows the given IActor to call this function
   public WorldImage call(IActor x) {
     return x.accept(this);
   }
 
-  //Draws the given Ship
+  // Draws the given Ship
   public WorldImage forShip(Ship ship) {
     return new CircleImage(ship.size, OutlineMode.SOLID, ship.COLOR);
   }
 
-  //Draws the given Bullet
+  // Draws the given Bullet
   public WorldImage forBullet(Bullet bullet) {
     return new CircleImage(bullet.size, OutlineMode.SOLID, bullet.COLOR);
   }
@@ -422,20 +427,19 @@ class ExamplesGameWorld {
     return t.checkExpect(ma.call(this.b1), this.b1Moved)
         && t.checkExpect(ma.call(this.s1), this.s1Moved);
   }
-  
- /* public boolean testMakeScene(Tester t) {
-   IActor ship1 = new Ship(new Posn(10,0), new Posn(250,100));
-   IActor bullet1 = new Bullet(new Posn(5, 2), new Posn(400, 250), 1);
-   GameWorld drawg = new GameWorld(0, this.random1, 10, 0, 
-       new ConsLo<IActor>(ship1, new MtLo<IActor>()),
-       new ConsLo<IActor>(bullet1, new MtLo<IActor>()));
-   
-   WorldImage textImage =
-   
-   return t.checkExpect(drawg.makeScene(),
-       getEmptyScene().PlaceImageXY()
-  }
-  */
+
+//  public boolean testMakeScene(Tester t) {
+//   IActor ship1 = new Ship(new Posn(10,0), new Posn(250,100));
+//   IActor bullet1 = new Bullet(new Posn(5, 2), new Posn(400, 250), 1);
+//   GameWorld drawg = new GameWorld(0, this.random1, 10, 0,
+//       new ConsLo<IActor>(ship1, new MtLo<IActor>()),
+//       new ConsLo<IActor>(bullet1, new MtLo<IActor>()));
+//
+//   WorldImage textImage =
+//
+//   return t.checkExpect(drawg.makeScene(),
+//       getEmptyScene().PlaceImageXY()
+//  }
   
   public boolean testDeterminePosn(Tester t) {
     IActorDispF<Posn> dp = new DeterminePosn();
@@ -456,7 +460,7 @@ class ExamplesGameWorld {
   boolean testBigBang(Tester t) {
     GameWorld gw = new GameWorld(10);
     
-    return gw.bigBang(GameWorld.WIDTH, GameWorld.HEIGHT, 0);
+    return gw.bigBang(GameWorld.WIDTH, GameWorld.HEIGHT, GameWorld.TICK_RATE);
   }
   
   public boolean testCondExplodeBullet(Tester t) {

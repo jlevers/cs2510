@@ -16,7 +16,7 @@ class Utils {
 
   // Calculates the radius for a Bullet
   static int calcRad(int explosionNum) {
-    int rad = Bullet.INIT_BULLET_RAD + (Bullet.INIT_BULLET_RAD * explosionNum);
+    int rad = Bullet.INIT_BULLET_RAD + (Bullet.BULLET_RAD_INC * explosionNum);
     return rad >= 10 ? 10 : rad;
   }
 
