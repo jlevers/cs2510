@@ -57,7 +57,7 @@ class GameWorld extends World {
  // Draws the current state of the GameWorld
     public WorldScene makeScene() {
       WorldImage blank = 
-          new RectangleImage(this.WIDTH, this.HEIGHT, OutlineMode.SOLID, Color.WHITE);
+          new RectangleImage(GameWorld.WIDTH, GameWorld.HEIGHT, OutlineMode.SOLID, Color.WHITE);
       
       //Remember to movePinholeTo in DrawShip
       ILoDispF<IActor,WorldImage> drawShips= new FoldR<>(new DrawIActor(), blank);
@@ -67,14 +67,14 @@ class GameWorld extends World {
       WorldImage bullets = this.bullets.visit(drawBullets);
       
       //Adjust position here if needed
-      Posn counterPinhole = new Posn(this.WIDTH/4,this.HEIGHT * (7/16));
+      Posn counterPinhole = new Posn(GameWorld.WIDTH/-4,GameWorld.HEIGHT / 8 * 3);
       WorldImage text = 
           new TextImage(Utils.counterText(this.bulletsLeft, this.shipsDown), Color.BLACK);
       
       WorldImage counters = new OverlayImage(text, bullets.movePinholeTo(counterPinhole));
       WorldImage recenterPinhole = counters.movePinholeTo(new Posn(0, 0));
       
-      return getEmptyScene().placeImageXY(recenterPinhole, 0, 0);
+      return getEmptyScene().placeImageXY(recenterPinhole, GameWorld.WIDTH/2, GameWorld.HEIGHT/2);
   }
 
   
@@ -115,8 +115,9 @@ class GameWorld extends World {
   }
 
   // Fires a bullet when the space key is pressed
-  GameWorld onKey(String key) {
+  public GameWorld onKeyEvent(String key) {
     if (key.equals(" ")) {
+      System.out.println("hit space");
       return new GameWorld(this.ticks, this.rand, (this.bulletsLeft - 1), this.shipsDown,
               this.ships, new ConsLo<IActor>(new Bullet(), this.bullets));
     }
@@ -255,12 +256,12 @@ class DeterminePosn implements IActorDispF<Posn> {
   
   //Determines the position of this ship
   public Posn forShip(Ship ship) {
-    return ship.pos;
+    return new Posn(ship.pos.x - GameWorld.WIDTH/2, ship.pos.y - GameWorld.HEIGHT/2);
   }
 
   //Determines the position of this bullet
   public Posn forBullet(Bullet bullet) {
-    return bullet.pos;
+    return new Posn(bullet.pos.x - GameWorld.WIDTH/2, bullet.pos.y - GameWorld.HEIGHT/2);
   }  
 }
 
@@ -354,10 +355,10 @@ class ExamplesGameWorld {
   }
   
   public boolean testOnKey(Tester t) {
-    return t.checkExpect(this.game1.onKey(" "), 
+    return t.checkExpect(this.game1.onKeyEvent(" "), 
         new GameWorld(0, this.random1, 9, 0, this.listShips,
                 new ConsLo<>(new Bullet(), this.listBullets)))
-        && t.checkExpect(this.game1.onKey("A"), this.game1);
+        && t.checkExpect(this.game1.onKeyEvent("A"), this.game1);
   }
 
   boolean testIncTick(Tester t) {
@@ -400,7 +401,39 @@ class ExamplesGameWorld {
         && t.checkExpect(ma.call(this.s1), this.s1Moved);
   }
   
- // public boolean testMakeScene(Tester t) {
-  //  GameWorld drawg = 
- // }
+ /* public boolean testMakeScene(Tester t) {
+   IActor ship1 = new Ship(new Posn(10,0), new Posn(250,100));
+   IActor bullet1 = new Bullet(new Posn(5, 2), new Posn(400, 250), 1);
+   GameWorld drawg = new GameWorld(0, this.random1, 10, 0, 
+       new ConsLo<IActor>(ship1, new MtLo<IActor>()),
+       new ConsLo<IActor>(bullet1, new MtLo<IActor>()));
+   
+   WorldImage textImage =
+   
+   return t.checkExpect(drawg.makeScene(),
+       getEmptyScene().PlaceImageXY()
+  }
+  */
+  
+  public boolean testDeterminePosn(Tester t) {
+    IActorDispF<Posn> dp = new DeterminePosn();
+    
+    return t.checkExpect(this.b1.accept(dp), new Posn(-250, -150))
+        && t.checkExpect(this.s1.accept(dp), new Posn(-246, -144));
+  }
+  
+  public boolean testDrawThat(Tester t) {
+    IActorDispF<WorldImage> dt = new DrawThat();
+    
+    return t.checkExpect(this.b1.accept(dt), 
+        new CircleImage(this.b1.size, OutlineMode.SOLID, Bullet.COLOR))
+        && t.checkExpect(this.s1.accept(dt), 
+            new CircleImage(this.s1.size, OutlineMode.SOLID, Ship.COLOR));
+  }
+  
+  boolean testBigBang(Tester t) {
+    GameWorld gw = new GameWorld(10);
+    
+    return gw.bigBang(GameWorld.WIDTH, GameWorld.HEIGHT, 0);
+  }
 }
