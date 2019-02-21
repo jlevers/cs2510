@@ -27,7 +27,8 @@ interface IActor {
   // Explodes this IActor, if possible
   ILo<IActor> explode();
 
-  // Generates a sub-bullet from this IActor (only applicable in the case of Bullet, but needs to be
+  // Generates a sub-bullet from this IActor (only applicable in the case of
+  // Bullet, but needs to be
   // implemented in all IActors for dispatch reasons
   IActor genSubBullet(Posn p);
 }
@@ -49,26 +50,19 @@ abstract class AActor implements IActor {
   }
 
   /*
-   * Template:
-   * Fields:
-   * this.vel ... Posn
-   * this.pos ... Posn
-   * this.size ... int
-   * this.speed ... int
-   * this.color ... Color
+   * Template: Fields: this.vel ... Posn this.pos ... Posn this.size ... int
+   * this.speed ... int this.color ... Color
    *
-   * Methods:
-   * this.move() ... IActor
-   * this.isTouching(IActor) ... boolean
-   * this.isTouchingShip(Ship) ... boolean
-   * this.isTouchingBullet(Bullet) ... boolean
-   * this.offscreen() ... boolean
+   * Methods: this.move() ... IActor this.isTouching(IActor) ... boolean
+   * this.isTouchingShip(Ship) ... boolean this.isTouchingBullet(Bullet) ...
+   * boolean this.offscreen() ... boolean
    */
 
   // Moves this Actor in the GameWorld
   public abstract IActor move();
 
-  // Checks if this Actor is touching the given Actor, taking into account their sizes
+  // Checks if this Actor is touching the given Actor, taking into account their
+  // sizes
   public abstract boolean isTouching(IActor that);
 
   // Checks if this AActor is touching the given Ship
@@ -84,7 +78,7 @@ abstract class AActor implements IActor {
   // Checks if this AActor is offscreen
   public boolean offscreen() {
     return this.pos.x - this.size > GameWorld.WIDTH || this.pos.x + this.size < 0
-            || this.pos.y - this.size > GameWorld.HEIGHT || this.pos.y + this.size < 0;
+        || this.pos.y - this.size > GameWorld.HEIGHT || this.pos.y + this.size < 0;
   }
 
   // Accepts a dispatch
@@ -108,7 +102,7 @@ class ExamplesIActors {
   Bullet b1Moved = new Bullet(this.b1Vel, this.b1Vel, 0);
   Bullet rightoff = new Bullet(this.b1Vel, new Posn(503, 100), 0);
   Bullet leftoff = new Bullet(this.b1Vel, new Posn(-3, 100), 0);
-  Bullet topoff = new Bullet(this.b1Vel, new Posn (100, 303), 0);
+  Bullet topoff = new Bullet(this.b1Vel, new Posn(100, 303), 0);
   Bullet bottomoff = new Bullet(this.b1Vel, new Posn(100, -3), 0);
 
   Posn s1Loc = new Posn(4, 6);
@@ -119,7 +113,7 @@ class ExamplesIActors {
   Ship s1Moved = new Ship(this.s1Vel, this.s1MovedLoc);
   Ship rightoffs = new Ship(this.b1Vel, new Posn(509, 100));
   Ship leftoffs = new Ship(this.b1Vel, new Posn(-9, 100));
-  Ship topoffs = new Ship(this.b1Vel, new Posn (100, 309));
+  Ship topoffs = new Ship(this.b1Vel, new Posn(100, 309));
   Ship bottomoffs = new Ship(this.b1Vel, new Posn(100, -9));
 
   Posn origin = new Posn(0, 0);
@@ -136,35 +130,35 @@ class ExamplesIActors {
   // Tests IActor.move()
   boolean testMove(Tester t) {
     return t.checkExpect(this.b1.move(), this.b1Moved)
-            && t.checkExpect(this.s1.move(), this.s1Moved);
+        && t.checkExpect(this.s1.move(), this.s1Moved);
   }
 
   // Tests IActor.isTouching()
   boolean testIsTouching(Tester t) {
     return t.checkExpect(this.b1.isTouching(this.s1), true)
-            && t.checkExpect(this.b1.isTouching(this.b1), false)
-            && t.checkExpect(this.b1.isTouching(this.s1Moved), false)
-            && t.checkExpect(this.s1.isTouching(this.b1), true)
-            && t.checkExpect(this.s1.isTouching(this.s1), false)
-            && t.checkExpect(this.s1Moved.isTouching(this.b1), false);
+        && t.checkExpect(this.b1.isTouching(this.b1), false)
+        && t.checkExpect(this.b1.isTouching(this.s1Moved), false)
+        && t.checkExpect(this.s1.isTouching(this.b1), true)
+        && t.checkExpect(this.s1.isTouching(this.s1), false)
+        && t.checkExpect(this.s1Moved.isTouching(this.b1), false);
   }
 
   // Tests IActor.isTouchingBullet()
   boolean testIsTouchingBullet(Tester t) {
     return t.checkExpect(this.b1.isTouchingBullet(this.b1Moved), false)
-            && t.checkExpect(this.s1Moved.isTouchingBullet(this.b1), false)
-            && t.checkExpect(this.s1.isTouchingBullet(this.b1), true);
+        && t.checkExpect(this.s1Moved.isTouchingBullet(this.b1), false)
+        && t.checkExpect(this.s1.isTouchingBullet(this.b1), true);
   }
 
   // Tests IActor.isTouchingShip()
   boolean testIsTouchingShip(Tester t) {
     return t.checkExpect(this.b1.isTouchingShip(this.s1), true)
-            && t.checkExpect(this.b1.isTouchingShip(this.s1Moved), false)
-            && t.checkExpect(this.s1.isTouchingShip(this.s1), false);
+        && t.checkExpect(this.b1.isTouchingShip(this.s1Moved), false)
+        && t.checkExpect(this.s1.isTouchingShip(this.s1), false);
   }
-  
-  //Tests whether the given Actor is offscreen
-  boolean  testIsOffscreen(Tester t) {
+
+  // Tests whether the given Actor is offscreen
+  boolean testIsOffscreen(Tester t) {
     return t.checkExpect(this.rightoff.offscreen(), true)
         && t.checkExpect(this.leftoff.offscreen(), true)
         && t.checkExpect(this.topoff.offscreen(), true)
@@ -173,27 +167,26 @@ class ExamplesIActors {
         && t.checkExpect(this.leftoffs.offscreen(), true)
         && t.checkExpect(this.topoffs.offscreen(), true)
         && t.checkExpect(this.bottomoffs.offscreen(), true)
-        && t.checkExpect(this.b1.offscreen(), false)
-        && t.checkExpect(this.s1.offscreen(), false);
+        && t.checkExpect(this.b1.offscreen(), false) && t.checkExpect(this.s1.offscreen(), false);
   }
 
   // Tests Bullet.genSubBullet()
   boolean testGenSubBullet(Tester t) {
     return t.checkExpect(this.bullet.genSubBullet(new Posn(2, 2)), this.otherPosBullet)
-            && t.checkExpect(this.s1.genSubBullet(new Posn(2, 2)), new Bullet());
+        && t.checkExpect(this.s1.genSubBullet(new Posn(2, 2)), new Bullet());
   }
 
   // Tests Bullet.explode()
   boolean testExplode(Tester t) {
     return t.checkExpect(this.bullet.explode(), this.exploded)
-            && t.checkExpect(this.s1.explode(), new ConsLo<>(this.s1, new MtLo<>()));
+        && t.checkExpect(this.s1.explode(), new ConsLo<>(this.s1, new MtLo<>()));
   }
-  
-  //Tests if an IActor accepts the given DispF
+
+  // Tests if an IActor accepts the given DispF
   boolean testAccept(Tester t) {
-    return t.checkExpect(this.b1.accept(new DrawThat()), 
+    return t.checkExpect(this.b1.accept(new DrawThat()),
         new CircleImage(this.b1.size, OutlineMode.SOLID, Bullet.COLOR))
-        && t.checkExpect(this.s1.accept(new DrawThat()), 
+        && t.checkExpect(this.s1.accept(new DrawThat()),
             new CircleImage(Ship.SIZE, OutlineMode.SOLID, Ship.COLOR));
   }
 }

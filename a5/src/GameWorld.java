@@ -1,5 +1,3 @@
-import javalib.worldimages.Posn;
-import javalib.worldimages.WorldImage;
 import tester.*;
 import javalib.funworld.*;
 
@@ -66,12 +64,7 @@ class GameWorld extends World {
 
   // Performs a set of actions at the given tick speed
   public GameWorld onTick() {
-    return this.spawn()
-        .moveActors()
-        .explodeBullets()
-        .destroyShips()
-        .removeOffscreen()
-        .incTick();
+    return this.spawn().moveActors().explodeBullets().destroyShips().removeOffscreen().incTick();
   }
 
   // Checks if the world should end, and if it should, shows a final scene
@@ -361,19 +354,19 @@ class ExamplesGameWorld {
     return t.checkExpect(this.game1.spawn(), this.gameSpawn);
   }
 
-  //Tests if the appropriate IActors get removed offscreen
+  // Tests if the appropriate IActors get removed offscreen
   public boolean testRemoveOffscreen(Tester t) {
     return t.checkExpect(this.game1.removeOffscreen(),
         new GameWorld(0, this.random1, 10, 0, this.filteredShips, this.filteredBullets));
   }
 
-  //Tests if all the IActors move by their respective velocities
+  // Tests if all the IActors move by their respective velocities
   public boolean testMoveActors(Tester t) {
     return t.checkExpect(this.game1.moveActors(),
         new GameWorld(0, this.random1, 10, 0, this.movedShips, this.movedBullets));
   }
 
-  //Tests if a new bullet is created given the correct key
+  // Tests if a new bullet is created given the correct key
   public boolean testOnKey(Tester t) {
     return t.checkExpect(this.game1.onKeyEvent(" "),
         new GameWorld(0, this.random1, 9, 0, this.listShips,
@@ -381,13 +374,13 @@ class ExamplesGameWorld {
         && t.checkExpect(this.game1.onKeyEvent("A"), this.game1);
   }
 
-  //Tests if 1 is added to the number of ticks in the current Game
+  // Tests if 1 is added to the number of ticks in the current Game
   boolean testIncTick(Tester t) {
     return t.checkExpect(this.game1.incTick(),
         new GameWorld(1, this.random1, 10, 0, this.listShips, this.listBullets));
   }
 
-  //Tests if the appropriate bullets explode and are appended to the list
+  // Tests if the appropriate bullets explode and are appended to the list
   boolean testExplodeBullets(Tester t) {
     return t
         .checkExpect(this.gToExplode.explodeBullets(), new GameWorld(0, this.random1, 10, 0,
@@ -395,7 +388,7 @@ class ExamplesGameWorld {
         && t.checkExpect(this.mtGW.explodeBullets(), this.mtGW);
   }
 
-  //Tests if the appropriate ships are destroyed
+  // Tests if the appropriate ships are destroyed
   boolean testDestroyShips(Tester t) {
     return t.checkExpect(this.gToExplode.destroyShips(),
         new GameWorld(0, this.random1, 10, 1, new MtLo<>(),
@@ -403,7 +396,7 @@ class ExamplesGameWorld {
         && t.checkExpect(this.mtGW.destroyShips(), this.mtGW);
   }
 
-  //Tests if the given IActor is not offscreen
+  // Tests if the given IActor is not offscreen
   public boolean testNotOffscreen(Tester t) {
     IPred<IActor> os = new NotOffscreen();
 
@@ -417,38 +410,38 @@ class ExamplesGameWorld {
         && t.checkExpect(os.call(this.s1), true);
   }
 
-  //Tests if the given IActor moves
+  // Tests if the given IActor moves
   public boolean testMoveIActor(Tester t) {
     IFunc<IActor, IActor> ma = new MoveIActor();
 
     return t.checkExpect(ma.call(this.b1), this.b1Moved)
         && t.checkExpect(ma.call(this.s1), this.s1Moved);
   }
-  
-  //Tests if the makeScene function draws all IActors and Counter
+
+  // Tests if the makeScene function draws all IActors and Counter
   public boolean testMakeScene(Tester t) {
-   IActor ship1 = new Ship(new Posn(10,0), new Posn(250,100));
-   IActor bullet1 = new Bullet(new Posn(5, 2), new Posn(400, 250), 1);
-   GameWorld drawg = new GameWorld(0, this.random1, 10, 0,
-     new ConsLo<IActor>(ship1, new MtLo<IActor>()),
-     new ConsLo<IActor>(bullet1, new MtLo<IActor>()));
-   
-   WorldScene empty = new WorldScene(GameWorld.WIDTH, GameWorld.HEIGHT);
-   
-   WorldImage ship = new CircleImage(6, OutlineMode.SOLID, Ship.COLOR);
-   WorldScene drawnShip = empty.placeImageXY(ship, 250, 100);
-   
-   WorldImage bullet = new CircleImage(4 , OutlineMode.SOLID, Bullet.COLOR);
-   WorldScene drawnBullet = drawnShip.placeImageXY(bullet, 400, 250);
-   
-   WorldImage text = new TextImage("Bullets Left: 10; Ships Down: 0", 13, Color.BLACK);
-   WorldScene drawnText = 
-       drawnBullet.placeImageXY(text, GameWorld.WIDTH / 4, GameWorld.HEIGHT / 8 * 7);
-   
-   return t.checkExpect(drawg.makeScene(), drawnText);
- }
-  
-  //Tests if the position of the IActor is returned
+    IActor ship1 = new Ship(new Posn(10, 0), new Posn(250, 100));
+    IActor bullet1 = new Bullet(new Posn(5, 2), new Posn(400, 250), 1);
+    GameWorld drawg = new GameWorld(0, this.random1, 10, 0,
+        new ConsLo<IActor>(ship1, new MtLo<IActor>()),
+        new ConsLo<IActor>(bullet1, new MtLo<IActor>()));
+
+    WorldScene empty = new WorldScene(GameWorld.WIDTH, GameWorld.HEIGHT);
+
+    WorldImage ship = new CircleImage(6, OutlineMode.SOLID, Ship.COLOR);
+    WorldScene drawnShip = empty.placeImageXY(ship, 250, 100);
+
+    WorldImage bullet = new CircleImage(4, OutlineMode.SOLID, Bullet.COLOR);
+    WorldScene drawnBullet = drawnShip.placeImageXY(bullet, 400, 250);
+
+    WorldImage text = new TextImage("Bullets Left: 10; Ships Down: 0", 13, Color.BLACK);
+    WorldScene drawnText = drawnBullet.placeImageXY(text, GameWorld.WIDTH / 4,
+        GameWorld.HEIGHT / 8 * 7);
+
+    return t.checkExpect(drawg.makeScene(), drawnText);
+  }
+
+  // Tests if the position of the IActor is returned
   public boolean testDeterminePosn(Tester t) {
     IActorDispF<Posn> dp = new DeterminePosn();
 
@@ -456,7 +449,7 @@ class ExamplesGameWorld {
         && t.checkExpect(this.s1.accept(dp), new Posn(4, 6));
   }
 
-  //Tests if the appropriate image is drawn for the given IActor
+  // Tests if the appropriate image is drawn for the given IActor
   public boolean testDrawThat(Tester t) {
     IActorDispF<WorldImage> dt = new DrawThat();
 
@@ -465,30 +458,30 @@ class ExamplesGameWorld {
         && t.checkExpect(this.s1.accept(dt),
             new CircleImage(this.s1.size, OutlineMode.SOLID, Ship.COLOR));
   }
-  
-  //Tests the bigBang function
+
+  // Tests the bigBang function
   boolean testBigBang(Tester t) {
     GameWorld gw = new GameWorld(10);
 
     return gw.bigBang(GameWorld.WIDTH, GameWorld.HEIGHT, GameWorld.TICK_RATE);
   }
-  
-  //Tests if the given IActor explodes, and if it forms the correct bullets
+
+  // Tests if the given IActor explodes, and if it forms the correct bullets
   public boolean testCondExplodeBullet(Tester t) {
     CondExplodeBullet ceb = new CondExplodeBullet(new ConsLo<>(this.preExpShip, new MtLo<>()));
     return t.checkExpect(ceb.red(this.preExpBullet, new MtLo<>()), this.explodedList)
         && t.checkExpect(ceb.red(this.b1, new MtLo<>()), new ConsLo<>(this.b1, new MtLo<>()));
   }
 
-  //Tests if the given IActor hit any IActors in a list
+  // Tests if the given IActor hit any IActors in a list
   public boolean testIActorHitIActor(Tester t) {
     IActorHitIActor iahia = new IActorHitIActor(this.b1);
     return t.checkExpect(iahia.red(this.s1, false), true)
         && t.checkExpect(iahia.red(this.exploded1, false), false)
         && t.checkExpect(iahia.red(this.exploded1, true), true);
   }
-  
-  //Tests if a Ship is touching any Bullet in a list of Bullets
+
+  // Tests if a Ship is touching any Bullet in a list of Bullets
   public boolean testShipTouchingBullet(Tester t) {
     ShipTouchingBullet stb = new ShipTouchingBullet(this.listBullets);
     return t.checkExpect(stb.call(this.s1), false)

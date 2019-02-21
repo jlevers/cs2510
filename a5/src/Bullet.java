@@ -162,10 +162,10 @@ class ExamplesBullets {
         new CircleImage(this.bullet.size, OutlineMode.SOLID, Bullet.COLOR)));
   }
   
-  IActor ship1 = new Ship(new Posn(0,1), new Posn (0,6));
-  IActor ship2 = new Ship(new Posn(0,1), new Posn (10, 10));
-  Ship ship3 = new Ship(new Posn(0,1), new Posn (0,6));
-  Ship ship4 = new Ship(new Posn(0,1), new Posn (10, 10));
+  IActor ship1 = new Ship(new Posn(0,1), new Posn(0,6));
+  IActor ship2 = new Ship(new Posn(0,1), new Posn(10, 10));
+  Ship ship3 = new Ship(new Posn(0,1), new Posn(0,6));
+  Ship ship4 = new Ship(new Posn(0,1), new Posn(10, 10));
   
   //Tests if the Bullet is touching the given IActor
   boolean testIsTouching(Tester t) {
