@@ -14,7 +14,7 @@ class Course {
   boolean hasPrereq(String name) {
     IPred<Course> hasP = new IsOrHasPrereq(name);
     Ormap<Course> ormap = new Ormap<>(hasP);
-    return ormap.call(this.prereqs);
+    return ormap.apply(this.prereqs);
   }
 
   // Checks if this course is the same as the given String
@@ -25,7 +25,7 @@ class Course {
   // Returns the deepest path length of the given course
   int getDeepestPathLength() {
     IFunc<Course, Integer> dpl = new DeepestPathLength();
-    return dpl.call(this);
+    return dpl.apply(this);
   }
 }
 
@@ -38,10 +38,10 @@ class IsOrHasPrereq implements IPred<Course> {
   }
 
   // Checks if the course has this prereq
-  public Boolean call(Course c) {
+  public Boolean apply(Course c) {
     IListVisitor<Course, Boolean> ormapNames = new Ormap<>(new IsCourse(this.prereq));
     IListVisitor<Course, Boolean> ormapCourses = new Ormap<>(this);
-    return c.hasName(this.prereq) || ormapNames.call(c.prereqs) || ormapCourses.call(c.prereqs);
+    return c.hasName(this.prereq) || ormapNames.apply(c.prereqs) || ormapCourses.apply(c.prereqs);
   }
 }
 
@@ -54,7 +54,7 @@ class IsCourse implements IPred<Course> {
   }
 
   // Compares this.name to the name of the Course
-  public Boolean call(Course t) {
+  public Boolean apply(Course t) {
     return t.hasName(this.name);
   }
 }
@@ -100,7 +100,7 @@ class ConsList<T> implements IList<T> {
 // Represents a non-method function
 interface IFunc<A, R> {
   // Calls a function with input type A and return type R
-  R call(A x);
+  R apply(A x);
 }
 
 // Represents a reducer function (takes in some data to process, X, and returns a reduced version
@@ -113,7 +113,7 @@ interface IRed<X, Y> {
 // Represents a predicate for comparing two things of type T
 interface IPred<X> extends IFunc<X, Boolean> {
   // Applies this predicate to the given input T
-  Boolean call(X t);
+  Boolean apply(X t);
 }
 
 // An IFunc that builds a list of the given length, creating each list item using this.fn
@@ -126,10 +126,10 @@ class BuildList<R> implements IFunc<Integer, IList<R>> {
 
   // Creates a list by calling this.fn on each number <= to the number passed to
   // this
-  public IList<R> call(Integer integer) {
+  public IList<R> apply(Integer integer) {
     Integer currInt = integer - 1;
     if (currInt >= 0) {
-      return new ConsList<R>(this.fn.call(currInt), new BuildList<R>(this.fn).call(currInt));
+      return new ConsList<R>(this.fn.apply(currInt), new BuildList<R>(this.fn).apply(currInt));
     }
 
     return new MtList<R>();
@@ -186,12 +186,16 @@ class Map<T, R> extends AListVisitor<T, IList<R>> {
 
   // Performs this.fun on the list in the Cons case
   public IList<R> visitCons(ConsList<T> ne) {
-    return new ConsList<R>(this.fun.call(ne.first), ne.rest.accept(this));
+    return new ConsList<R>(this.fun.apply(ne.first), ne.rest.accept(this));
   }
 
   // Performs this.fun on the list in the Mt case
   public IList<R> visitMt(MtList<T> mt) {
     return new MtList<R>();
+  }
+
+  public IList<R> apply(IList<T> x) {
+    return x.accept(this);
   }
 }
 
@@ -214,6 +218,11 @@ class FoldR<T, R> extends AListVisitor<T, R> {
   public R visitMt(MtList<T> mt) {
     return base;
   }
+
+  public R apply(IList<T> x) {
+    return x.accept(this);
+  }
+
 }
 
 // Represents an ormap
@@ -236,6 +245,11 @@ class Ormap<T> extends AListVisitor<T, Boolean> {
   public Boolean visitMt(MtList<T> mt) {
     return false;
   }
+
+  public Boolean apply(IList<T> x) {
+    return x.accept(this);
+  }
+
 }
 
 // Represents a Boolean reducer function
@@ -249,7 +263,7 @@ class OrmapReduce<T> implements IRed<T, Boolean> {
   // True if this predicate is true for the given value, or if the base value is
   // true
   public Boolean red(T t, Boolean base) {
-    return pred.call(t) || base;
+    return pred.apply(t) || base;
   }
 }
 
@@ -271,7 +285,7 @@ class Filter<X> extends AListVisitor<X, IList<X>> {
 
   // Filters through a non-empty list
   public IList<X> visitCons(ConsList<X> ne) {
-    if (this.pred.call(ne.first)) {
+    if (this.pred.apply(ne.first)) {
       return new ConsList<X>(ne.first, ne.rest.accept(this));
     }
 
@@ -282,12 +296,16 @@ class Filter<X> extends AListVisitor<X, IList<X>> {
   public IList<X> visitMt(MtList<X> mt) {
     return new MtList<X>();
   }
+
+  public IList<X> apply(IList<X> x) {
+    return x.accept(this);
+  }
 }
 
 //Represents a function that finds the deepest path of prereqs for a Course
 class DeepestPathLength implements IFunc<Course, Integer> {
 
-  public Integer call(Course x) {
+  public Integer apply(Course x) {
     IListVisitor<Course, Integer> maxpathofprereqs = new FoldR<>(new PreReqPathLength(), 0);
 
     return 1 + x.prereqs.accept(maxpathofprereqs);
@@ -322,13 +340,13 @@ class ExamplesCourse {
 
   // Just for testing!
   class StrLen implements IFunc<String, Integer> {
-    public Integer call(String s) {
+    public Integer apply(String s) {
       return s.length();
     }
   }
 
   class GreaterThan4 implements IPred<Integer> {
-    public Boolean call(Integer t) {
+    public Boolean apply(Integer t) {
       return t > 4;
     }
   }
@@ -363,18 +381,18 @@ class ExamplesCourse {
   boolean testIsCourse(Tester t) {
     IPred<Course> isCourse = new IsCourse("Algo");
 
-    return t.checkExpect(isCourse.call(this.cs1800), false)
-        && t.checkExpect(isCourse.call(this.cs3000), true);
+    return t.checkExpect(isCourse.apply(this.cs1800), false)
+        && t.checkExpect(isCourse.apply(this.cs3000), true);
   }
 
   // Tests if a course has the given prereq
   boolean testHasPrereqClass(Tester t) {
     IPred<Course> hasPrereq = new IsOrHasPrereq("Fundies 1");
 
-    return t.checkExpect(hasPrereq.call(this.cs2500), true)
-        && t.checkExpect(hasPrereq.call(this.cs2510), true)
-        && t.checkExpect(hasPrereq.call(this.cs4100), true)
-        && t.checkExpect(hasPrereq.call(this.cs1800), false);
+    return t.checkExpect(hasPrereq.apply(this.cs2500), true)
+        && t.checkExpect(hasPrereq.apply(this.cs2510), true)
+        && t.checkExpect(hasPrereq.apply(this.cs4100), true)
+        && t.checkExpect(hasPrereq.apply(this.cs1800), false);
   }
 
   // tests visit
@@ -385,8 +403,8 @@ class ExamplesCourse {
   // tests call to a Function
   boolean testCallIFunc(Tester t) {
 
-    return t.checkExpect(this.f.call("test"), 4)
-        && t.checkExpect(this.df.call(this.s1), this.afterMap);
+    return t.checkExpect(this.f.apply("test"), 4)
+        && t.checkExpect(this.df.apply(this.s1), this.afterMap);
   }
 
   // tests Map
@@ -399,14 +417,14 @@ class ExamplesCourse {
   boolean testBuildList(Tester t) {
     // Just for testing purposes
     class Identity implements IFunc<Integer, Integer> {
-      public Integer call(Integer integer) {
+      public Integer apply(Integer integer) {
         return integer;
       }
     }
-    
+
     IFunc<Integer, IList<Integer>> simple = new BuildList<Integer>(new Identity());
 
-    return t.checkExpect(simple.call(5), this.results);
+    return t.checkExpect(simple.apply(5), this.results);
   }
 
   // Tests Foldr
@@ -440,15 +458,15 @@ class ExamplesCourse {
   boolean testFilter(Tester t) {
     // Just for testing!
     class NotDog implements IPred<String> {
-      public Boolean call(String s) {
+      public Boolean apply(String s) {
         return !s.equals("dog");
       }
     }
 
     IListVisitor<String, IList<String>> noDogFilter = new Filter<String>(new NotDog());
     IList<String> noDogs = new ConsList<String>("table", new MtList<String>());
-    return t.checkExpect(noDogFilter.call(this.s1), noDogs)
-        && t.checkExpect(noDogFilter.call(new MtList<String>()), new MtList<String>());
+    return t.checkExpect(noDogFilter.apply(this.s1), noDogs)
+        && t.checkExpect(noDogFilter.apply(new MtList<String>()), new MtList<String>());
   }
 
   // Tests the deepest path of a course
