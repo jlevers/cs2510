@@ -9,45 +9,74 @@ class Course {
     this.name = name;
     this.prereqs = prereqs;
   }
+
+  // Checks if this Course has a prereq with the given name
+  boolean hasPrereq(String name) {
+    IPred hasP = new HasPrereq(name);
+    IListVisitor<Course, Boolean> ormap = new Ormap<>(hasP);
+    return this.prereqs.accept(ormap);
+  }
+
+  // Checks if this course is the same as the given String
+  boolean hasName(String otherName) {
+    return this.name.equals(otherName);
+  }
 }
 
-// Represents a predicate function for checking if a Course has a specific prereq Course
+// Represents a predicate function for checking if a Course has a specific prereq course (by name)
 class HasPrereq implements IPred<Course> {
-  Course prereq;
+  String prereq;
 
-  HasPrereq(Course prereq) {
+  HasPrereq(String prereq) {
     this.prereq = prereq;
   }
 
   // Checks if the course has this prereq
   public Boolean call(Course c) {
-    return false;
+    IListVisitor<Course, Boolean> ormapNames = new Ormap<>(new IsCourse(this.prereq));
+    IListVisitor<Course, Boolean> ormapCourses = new Ormap<>(this);
+    return ormapNames.call(c.prereqs) || ormapCourses.call(c.prereqs);
+  }
+}
+
+// Represents a function that checks if a String is the same as the name of a given Course
+class IsCourse implements IPred<Course> {
+  String name;
+
+  IsCourse(String name) {
+    this.name = name;
+  }
+
+  // Compares this.name to the name of the Course
+  public Boolean call(Course t) {
+    return t.hasName(this.name);
   }
 }
 
 // Represents a function that finds the deepest path of prereqs for a Course
-class DeepestPathLength extends AListVisitor<Course, Integer> {
-  public Integer forCons(ConsList<Course> ne) {
-    Map<Course, Integer> toDepth = new Map<>();
-    return null;
-  }
-
-  public Integer forMt(MtList<Course> mt) {
-    return 0;
-  }
-}
+//class DeepestPathLength extends AListVisitor<Course, Integer> {
+//  public Integer visitCons(ConsList<Course> ne) {
+//    Map<Course, Integer> toDepth = new Map<>(new DeepestPathLength());
+//    IList<Integer> depths = toDepth.call(ne);
+//    return null;
+//  }
+//
+//  public Integer visitMt(MtList<Course> mt) {
+//    return 0;
+//  }
+//}
 
 // A generic list of T
 interface IList<T> {
   // Runs the given ILoDispF on this IList<T>, producing something of type R
-  <R> R visit(IListVisitor<T, R> disp);
+  <R> R accept(IListVisitor<T, R> disp);
 }
 
 // Represents an empty list of T
 class MtList<T> implements IList<T> {
   // Dispatches the given ILoDispF on this empty list
-  public <R> R visit(IListVisitor<T, R> disp) {
-    return disp.forMt(this);
+  public <R> R accept(IListVisitor<T, R> disp) {
+    return disp.visitMt(this);
   }
 }
 
@@ -68,15 +97,15 @@ class ConsList<T> implements IList<T> {
    * this.rest ... IList<T>
    *
    * Methods:
-   * this.visit(IListVisitor<T, R>) ... R
+   * this.accept(IListVisitor<T, R>) ... R
    *
    * Methods of fields:
-   * this.rest.visit(IListVisitor<T, R>) ... R
+   * this.rest.accept(IListVisitor<T, R>) ... R
    */
 
   // Dispatches the given ILoDispF on this non-empty list
-  public <R> R visit(IListVisitor<T, R> disp) {
-    return disp.forCons(this);
+  public <R> R accept(IListVisitor<T, R> disp) {
+    return disp.visitCons(this);
   }
 }
 
@@ -126,9 +155,9 @@ class BuildList<R> implements IFunc<Integer, IList<R>> {
 // Interface for dispatching over lists of type T
 interface IListVisitor<T, R> extends IFunc<IList<T>, R> {
   // Dispatches this function in the case of a non-empty list
-  R forCons(ConsList<T> ne);
+  R visitCons(ConsList<T> ne);
   // Dispatches this function in the case of an empty list
-  R forMt(MtList<T> mt);
+  R visitMt(MtList<T> mt);
 }
 
 
@@ -136,7 +165,7 @@ interface IListVisitor<T, R> extends IFunc<IList<T>, R> {
 abstract class AListVisitor<T, R> implements IListVisitor<T, R> {
   // Calls whatever this list function is on the given list
   public R call(IList<T> x) {
-    return x.visit(this);
+    return x.accept(this);
   }
 
   /*
@@ -145,17 +174,17 @@ abstract class AListVisitor<T, R> implements IListVisitor<T, R> {
    *
    * Methods:
    * this.call(IList<T>) ... R
-   * this.forCons(ConsList<T>) ... R
-   * this.forMt(MtList<T>) ... R
+   * this.visitCons(ConsList<T>) ... R
+   * this.visitMt(MtList<T>) ... R
    *
    * Methods of Fields:
    */
 
   // Performs the list operation on a non-empty list
-  public abstract R forCons(ConsList<T> ne);
+  public abstract R visitCons(ConsList<T> ne);
 
   // Performs the list operation on an empty list
-  public abstract R forMt(MtList<T> mt);
+  public abstract R visitMt(MtList<T> mt);
 }
 
 
@@ -179,12 +208,12 @@ class Map<T, R> extends AListVisitor<T, IList<R>> {
    */
 
   // Performs this.fun on the list in the Cons case
-  public IList<R> forCons(ConsList<T> ne) {
-    return new ConsList<R>(this.fun.call(ne.first), ne.rest.visit(this));
+  public IList<R> visitCons(ConsList<T> ne) {
+    return new ConsList<R>(this.fun.call(ne.first), ne.rest.accept(this));
   }
 
   // Performs this.fun on the list in the Mt case
-  public IList<R> forMt(MtList<T> mt) {
+  public IList<R> visitMt(MtList<T> mt) {
     return new MtList<R>();
   }
 }
@@ -200,13 +229,48 @@ class FoldR<T, R> extends AListVisitor<T, R> {
   }
 
   // Folds down a non-empty list
-  public R forCons(ConsList<T> ne) {
+  public R visitCons(ConsList<T> ne) {
     return new FoldR<>(this.fn, fn.red(ne.first, this.base)).call(ne.rest);
   }
 
   // Returns the folded value
-  public R forMt(MtList<T> mt) {
+  public R visitMt(MtList<T> mt) {
     return base;
+  }
+}
+
+// Represents an ormap
+class Ormap<T> extends AListVisitor<T, Boolean> {
+  IPred<T> pred;
+
+  Ormap(IPred<T> pred) {
+    this.pred = pred;
+  }
+
+  // Creates a boolean reducer from this.pred and FoldR's over the given list using it
+  public Boolean visitCons(ConsList<T> ne) {
+    IRed<T, Boolean> red = new OrmapReduce<>(this.pred);
+    IListVisitor<T, Boolean> fold = new FoldR<>(red, false);
+    return ne.accept(fold);
+  }
+
+  // Returns false because the base case of an ormap is always fales
+  public Boolean visitMt(MtList<T> mt) {
+    return false;
+  }
+}
+
+// Represents a Boolean reducer function
+class OrmapReduce<T> implements IRed<T, Boolean> {
+  IPred<T> pred;
+
+  OrmapReduce(IPred<T> pred) {
+    this.pred = pred;
+  }
+
+  // True if this predicate is true for the given value, or if the base value is true
+  public Boolean red(T t, Boolean base) {
+    return pred.call(t) || base;
   }
 }
 
@@ -231,22 +295,27 @@ class Filter<X> extends AListVisitor<X, IList<X>> {
    */
 
   // Filters through a non-empty list
-  public IList<X> forCons(ConsList<X> ne) {
+  public IList<X> visitCons(ConsList<X> ne) {
     if (this.pred.call(ne.first)) {
-      return new ConsList<X>(ne.first, ne.rest.visit(this));
+      return new ConsList<X>(ne.first, ne.rest.accept(this));
     }
 
-    return ne.rest.visit(this);
+    return ne.rest.accept(this);
   }
 
   // Filters through an empty list
-  public IList<X> forMt(MtList<X> mt) {
+  public IList<X> visitMt(MtList<X> mt) {
     return new MtList<X>();
   }
 }
 
 
 class ExamplesCourse {
+
+  IList<Course> mtListCourses = new MtList<>();
+  Course cs2500 = new Course("Fundies 1", this.mtListCourses);
+  Course cs2510 = new Course("Fundies 2", new ConsList<>(this.cs2500, this.mtListCourses));
+  Course cs3000 = new Course("Algo", new ConsList<>(this.cs2510, this.mtListCourses));
 
   // Just for testing!
   class StrLen implements IFunc<String, Integer> {
@@ -270,7 +339,7 @@ class ExamplesCourse {
                                   new ConsList<Integer>(0, new MtList<Integer>())))));
 
   boolean testVisit(Tester t) {
-    return t.checkExpect(this.s1.visit(this.df), this.afterMap);
+    return t.checkExpect(this.s1.accept(this.df), this.afterMap);
   }
 
   boolean testCallIFunc(Tester t) {
@@ -280,8 +349,8 @@ class ExamplesCourse {
   }
 
   boolean testMap(Tester t) {
-    return t.checkExpect(this.df.forCons(this.s1), this.afterMap)
-            && t.checkExpect(this.df.forMt(this.mt), new MtList<Integer>());
+    return t.checkExpect(this.df.visitCons(this.s1), this.afterMap)
+            && t.checkExpect(this.df.visitMt(this.mt), new MtList<Integer>());
   }
 
   boolean testBuildList(Tester t) {
@@ -305,7 +374,7 @@ class ExamplesCourse {
     }
 
     IListVisitor<Integer, Integer> fold = new FoldR<>(new Sum(), 0);
-    return t.checkExpect(this.results.visit(fold), 10);
+    return t.checkExpect(this.results.accept(fold), 10);
   }
 
   boolean testFilter(Tester t) {

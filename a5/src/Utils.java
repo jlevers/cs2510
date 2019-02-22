@@ -3,13 +3,6 @@ import tester.Tester;
 
 // This class contains various utility methods to be used with the NBullets game
 class Utils {
-  /*
-   * Template: Fields:
-   *
-   * Methods: this.calcRad(int) ... int this.distance(Posn, Posn) ... boolean
-   *
-   * Methods of fields:
-   */
 
   // Calculates the radius for a Bullet
   static int calcRad(int explosionNum) {

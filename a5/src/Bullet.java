@@ -24,16 +24,6 @@ class Bullet extends AActor {
     this(new Posn(0, -1 * Bullet.SPEED), new Posn(GameWorld.WIDTH / 2, GameWorld.HEIGHT), 1);
   }
 
-  /*
-   * Template:
-   * Fields:
-   * this.explosionNum ... int
-   *
-   * Methods:
-   * this.explode() ... ILo<Bullet>
-   * this.genSubBullet(Posn) ... Bullet
-   */
-
   // Creates a list of Bullets resulting from the explosion of this Bullet
   public ILo<IActor> explode() {
     IFunc<Integer, ILo<Posn>> buildVelList = new BuildList<>(new BulletDir(this.explosionNum));
@@ -81,15 +71,6 @@ class BulletDir implements IFunc<Integer, Posn> {
     this.explosionNum = explosionNum;
   }
 
-  /*
-   * Template:
-   * Fields:
-   * this.explosionNum ... int
-   *
-   * Methods:
-   * this.call(Integer) ... Posn
-   */
-
   // Gets the direction that a Bullet of a certain explosion number should go in degrees
   public Posn call(Integer bulletNum) {
     int bulletAngle = bulletNum * (360 / (this.explosionNum + 1));
@@ -110,19 +91,6 @@ class BulletGen implements IFunc<Posn, IActor> {
     this.bullet = bullet;
   }
 
-  /*
-   * Template:
-   * Fields:
-   * this.bullet ... IActor
-   *
-   * Methods:
-   * this.call(Posn) ... IActor
-   *
-   * Methods of Fields:
-   * this.bullet.explode() ... ILo<IActor>
-   * this.bullet.genSubBullet(Posn) ... IActor
-   */
-
   // Gets the new Bullet using the Bullet.genSubBullet method
   public IActor call(Posn posn) {
     return this.bullet.genSubBullet(posn);
@@ -140,7 +108,7 @@ class ExamplesBullets {
   ILo<IActor> explodedList = new ConsLo<>(new Bullet(this.p2, this.origin, 2),
       new ConsLo<>(new Bullet(this.p1, this.origin, 2), new MtLo<>()));
   
-  //Tests if BulletDir returns the appropriate Posn representing an exploded velocity
+  // Tests if BulletDir returns the appropriate Posn representing an exploded velocity
   boolean testBulletDir(Tester t) {
     IFunc<Integer, Posn> bulletDir = new BulletDir(1);
 
@@ -148,7 +116,7 @@ class ExamplesBullets {
             && t.checkExpect(bulletDir.call(1), this.p2);
   }
 
-  //Tests if BulletGen creates appropriate bullet given a velocity Posn
+  // Tests if BulletGen creates appropriate bullet given a velocity Posn
   boolean testBulletGen(Tester t) {
     IFunc<Posn, IActor> bulletGen = new BulletGen(this.bullet);
 
@@ -156,7 +124,7 @@ class ExamplesBullets {
             && t.checkExpect(bulletGen.call(this.p1), this.explode2);
   }
   
-  //Tests the accept
+  // Tests the accept
   boolean testAccept(Tester t) {
     return (t.checkExpect(this.bullet.accept(new DrawThat()), 
         new CircleImage(this.bullet.size, OutlineMode.SOLID, Bullet.COLOR)));
@@ -167,7 +135,7 @@ class ExamplesBullets {
   Ship ship3 = new Ship(new Posn(0,1), new Posn(0,6));
   Ship ship4 = new Ship(new Posn(0,1), new Posn(10, 10));
   
-  //Tests if the Bullet is touching the given IActor
+  // Tests if the Bullet is touching the given IActor
   boolean testIsTouching(Tester t) {
     return t.checkExpect(this.bullet.isTouching(this.bullet), false)
         && t.checkExpect(this.bullet.isTouching(this.ship1), true)
@@ -175,24 +143,24 @@ class ExamplesBullets {
         
   }
   
-  //Tests if the Bullet is touching the given Ship
+  // Tests if the Bullet is touching the given Ship
   boolean testIsTouchingShip(Tester t) {
     return t.checkExpect(this.bullet.isTouchingShip(this.ship3), true)
         && t.checkExpect(this.bullet.isTouchingShip(this.ship4), false); 
   }
   
-  //Tests if the Bullet moves to the appropriate location
+  // Tests if the Bullet moves to the appropriate location
   boolean testMove(Tester t) {
     return t.checkExpect(this.bullet.move(), new Bullet(this.vel, this.vel, 1));
   }
   
-  //Tests if the correct bullet is generated
+  // Tests if the correct bullet is generated
   boolean testGenSubBullet(Tester t) {
     return t.checkExpect(this.bullet.genSubBullet(this.p1),
         new Bullet(this.p1, this.bullet.pos, 2));
   }
   
-  //Tests if the bullet explodes into an appropriate list
+  // Tests if the bullet explodes into an appropriate list
   boolean testExplode(Tester t) {
     return t.checkExpect(this.bullet.explode(), this.explodedList);
   }

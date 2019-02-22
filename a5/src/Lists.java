@@ -24,14 +24,6 @@ class ConsLo<T> implements ILo<T> {
     this.rest = rest;
   }
 
-  /*
-   * Template: Fields: this.first ... T this.rest ... ILo<T>
-   *
-   * Methods: this.visit(ILoDispF<T, R>) ... R
-   *
-   * Methods of fields: this.rest.visit(ILoDispF<T, R>) ... R
-   */
-
   // Dispatches the given ILoDispF on this non-empty list
   public <R> R visit(ILoDispF<T, R> disp) {
     return disp.forCons(this);
@@ -102,15 +94,6 @@ abstract class ALoDispF<T, R> implements ILoDispF<T, R> {
     return x.visit(this);
   }
 
-  /*
-   * Template: Fields:
-   *
-   * Methods: this.call(ILo<T>) ... R this.forCons(ConsLo<T>) ... R
-   * this.forMt(MtLo<T>) ... R
-   *
-   * Methods of Fields:
-   */
-
   // Performs the list operation on a non-empty list
   public abstract R forCons(ConsLo<T> ne);
 
@@ -153,14 +136,6 @@ class Map<T, R> extends ALoDispF<T, ILo<R>> {
     this.fun = fun;
   }
 
-  /*
-   * Template: Fields: this.fun ... IFunc<T, R>
-   *
-   * Methods:
-   *
-   * Methods of Fields: this.fun.call(ILo<T>, R)
-   */
-
   // Performs this.fun on the list in the Cons case
   public ILo<R> forCons(ConsLo<T> ne) {
     return new ConsLo<R>(this.fun.call(ne.first), ne.rest.visit(this));
@@ -200,14 +175,6 @@ class Filter<T> extends ALoDispF<T, ILo<T>> {
   Filter(IPred<T> pred) {
     this.pred = pred;
   }
-
-  /*
-   * Template: Fields: this.pred ... IPred<T>
-   *
-   * Methods:
-   *
-   * Methods of Fields: this.pred.call(T) ... boolean
-   */
 
   // Filters through a non-empty list
   public ILo<T> forCons(ConsLo<T> ne) {

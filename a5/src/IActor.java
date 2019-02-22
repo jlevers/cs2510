@@ -49,15 +49,6 @@ abstract class AActor implements IActor {
     this.color = color;
   }
 
-  /*
-   * Template: Fields: this.vel ... Posn this.pos ... Posn this.size ... int
-   * this.speed ... int this.color ... Color
-   *
-   * Methods: this.move() ... IActor this.isTouching(IActor) ... boolean
-   * this.isTouchingShip(Ship) ... boolean this.isTouchingBullet(Bullet) ...
-   * boolean this.offscreen() ... boolean
-   */
-
   // Moves this Actor in the GameWorld
   public abstract IActor move();
 
