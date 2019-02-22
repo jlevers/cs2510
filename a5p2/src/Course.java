@@ -12,9 +12,9 @@ class Course {
 
   // Checks if this Course has a prereq with the given name
   boolean hasPrereq(String name) {
-    IPred hasP = new HasPrereq(name);
-    IListVisitor<Course, Boolean> ormap = new Ormap<>(hasP);
-    return this.prereqs.accept(ormap);
+    IPred hasP = new IsOrHasPrereq(name);
+    Ormap<Course> ormap = new Ormap<>(hasP);
+    return ormap.call(this.prereqs);
   }
 
   // Checks if this course is the same as the given String
@@ -24,10 +24,10 @@ class Course {
 }
 
 // Represents a predicate function for checking if a Course has a specific prereq course (by name)
-class HasPrereq implements IPred<Course> {
+class IsOrHasPrereq implements IPred<Course> {
   String prereq;
 
-  HasPrereq(String prereq) {
+  IsOrHasPrereq(String prereq) {
     this.prereq = prereq;
   }
 
@@ -35,7 +35,7 @@ class HasPrereq implements IPred<Course> {
   public Boolean call(Course c) {
     IListVisitor<Course, Boolean> ormapNames = new Ormap<>(new IsCourse(this.prereq));
     IListVisitor<Course, Boolean> ormapCourses = new Ormap<>(this);
-    return ormapNames.call(c.prereqs) || ormapCourses.call(c.prereqs);
+    return c.hasName(this.prereq) || ormapNames.call(c.prereqs) || ormapCourses.call(c.prereqs);
   }
 }
 
@@ -313,9 +313,17 @@ class Filter<X> extends AListVisitor<X, IList<X>> {
 class ExamplesCourse {
 
   IList<Course> mtListCourses = new MtList<>();
+  Course cs1800 = new Course("Discrete", this.mtListCourses);
   Course cs2500 = new Course("Fundies 1", this.mtListCourses);
   Course cs2510 = new Course("Fundies 2", new ConsList<>(this.cs2500, this.mtListCourses));
-  Course cs3000 = new Course("Algo", new ConsList<>(this.cs2510, this.mtListCourses));
+  IList<Course> post2510reqs = new ConsList<>(this.cs2510, new ConsList<>(this.cs1800,
+          this.mtListCourses));
+  Course cs2800 = new Course("Logic/comp", this.post2510reqs);
+  Course cs3000 = new Course("Algo", this.post2510reqs);
+  Course cs3500 = new Course("OOD", this.post2510reqs);
+  Course cs4100 = new Course("AI", new ConsList<>(this.cs3500, this.mtListCourses));
+
+
 
   // Just for testing!
   class StrLen implements IFunc<String, Integer> {
@@ -323,12 +331,16 @@ class ExamplesCourse {
       return s.length();
     }
   }
+  class GreaterThan4 implements IPred<Integer> {
+    public Boolean call(Integer t) {
+      return t > 4;
+    }
+  }
 
-  // Making sure IList<T> typechecks as expected
   MtList<String> mt = new MtList<>();
   ConsList<String> s1 = new ConsList<>("table", new ConsList<>("dog", this.mt));
+
   IFunc<String, Integer> f = new StrLen();
-  // Making sure IListVisitor<T, R> and Map<T, R> typecheck as expected
   IListVisitor<String, IList<Integer>> df = new Map<>(this.f);
   IList<Integer> afterMap = new ConsList<>(5, new ConsList<>(3, new MtList<>()));
 
@@ -337,6 +349,35 @@ class ExamplesCourse {
                   new ConsList<Integer>(2,
                           new ConsList<Integer>(1,
                                   new ConsList<Integer>(0, new MtList<Integer>())))));
+
+  boolean testHasName(Tester t) {
+    return t.checkExpect(this.cs2510.hasName("Fundies 2"), true)
+            && t.checkExpect(this.cs2500.hasName("Algo"), false);
+  }
+
+  boolean testHasPrereqMethod(Tester t) {
+    return t.checkExpect(this.cs2500.hasPrereq("Algo"), false)
+            && t.checkExpect(this.cs2510.hasPrereq("Fundies 1"), true)
+            && t.checkExpect(this.cs3500.hasPrereq("Fundies 2"), true)
+            && t.checkExpect(this.cs4100.hasPrereq("Fundies 1"), true)
+            && t.checkExpect(this.cs4100.hasPrereq("Algo"), false);
+  }
+
+  boolean testIsCourse(Tester t) {
+    IPred<Course> isCourse = new IsCourse("Algo");
+
+    return t.checkExpect(isCourse.call(this.cs1800), false)
+            && t.checkExpect(isCourse.call(this.cs3000), true);
+  }
+
+  boolean testHasPrereqClass(Tester t) {
+    IPred<Course> hasPrereq = new IsOrHasPrereq("Fundies 1");
+
+    return t.checkExpect(hasPrereq.call(this.cs2500), true)
+            && t.checkExpect(hasPrereq.call(this.cs2510), true)
+            && t.checkExpect(hasPrereq.call(this.cs4100), true)
+            && t.checkExpect(hasPrereq.call(this.cs1800), false);
+  }
 
   boolean testVisit(Tester t) {
     return t.checkExpect(this.s1.accept(this.df), this.afterMap);
@@ -375,6 +416,20 @@ class ExamplesCourse {
 
     IListVisitor<Integer, Integer> fold = new FoldR<>(new Sum(), 0);
     return t.checkExpect(this.results.accept(fold), 10);
+  }
+
+  boolean testOrmapReduce(Tester t) {
+    IRed<Integer, Boolean> red = new OrmapReduce<>(new GreaterThan4());
+    return t.checkExpect(red.red(5, true), true)
+            && t.checkExpect(red.red(5, false), true)
+            && t.checkExpect(red.red(4, true), true)
+            && t.checkExpect(red.red(4, false), false);
+  }
+
+  boolean testOrmap(Tester t) {
+    IListVisitor<Integer, Boolean> ormap = new Ormap<>(new GreaterThan4());
+    return t.checkExpect(this.afterMap.accept(ormap), true)
+            && t.checkExpect(this.results.accept(ormap), false);
   }
 
   boolean testFilter(Tester t) {
