@@ -319,7 +319,7 @@ class ExamplesCourse {
   Course game1101 = new Course("Games and Society", this.mtListCourses);
   Course cs3540 = new Course("Game Programming",
       new ConsList<>(this.cs3500, new ConsList<>(this.game1101, this.mtListCourses)));
-  
+
   // Just for testing!
   class StrLen implements IFunc<String, Integer> {
     public Integer call(String s) {
@@ -344,13 +344,13 @@ class ExamplesCourse {
       new ConsList<Integer>(3, new ConsList<Integer>(2,
           new ConsList<Integer>(1, new ConsList<Integer>(0, new MtList<Integer>())))));
 
-  //Tests if the course has the given name
+  // Tests if the course has the given name
   boolean testHasName(Tester t) {
     return t.checkExpect(this.cs2510.hasName("Fundies 2"), true)
         && t.checkExpect(this.cs2500.hasName("Algo"), false);
   }
-  
-  //Tests if the Course has the given prereq
+
+  // Tests if the Course has the given prereq
   boolean testHasPrereqMethod(Tester t) {
     return t.checkExpect(this.cs2500.hasPrereq("Algo"), false)
         && t.checkExpect(this.cs2510.hasPrereq("Fundies 1"), true)
@@ -359,7 +359,7 @@ class ExamplesCourse {
         && t.checkExpect(this.cs4100.hasPrereq("Algo"), false);
   }
 
-  //Tests if the given course matches the string
+  // Tests if the given course matches the string
   boolean testIsCourse(Tester t) {
     IPred<Course> isCourse = new IsCourse("Algo");
 
@@ -367,7 +367,7 @@ class ExamplesCourse {
         && t.checkExpect(isCourse.call(this.cs3000), true);
   }
 
-  //Tests if a course has the given prereq
+  // Tests if a course has the given prereq
   boolean testHasPrereqClass(Tester t) {
     IPred<Course> hasPrereq = new IsOrHasPrereq("Fundies 1");
 
@@ -377,25 +377,25 @@ class ExamplesCourse {
         && t.checkExpect(hasPrereq.call(this.cs1800), false);
   }
 
-  //tests visit
+  // tests visit
   boolean testVisit(Tester t) {
     return t.checkExpect(this.s1.accept(this.df), this.afterMap);
   }
 
-  //tests call to a Function
+  // tests call to a Function
   boolean testCallIFunc(Tester t) {
 
     return t.checkExpect(this.f.call("test"), 4)
         && t.checkExpect(this.df.call(this.s1), this.afterMap);
   }
 
-  //tests Map
+  // tests Map
   boolean testMap(Tester t) {
     return t.checkExpect(this.df.visitCons(this.s1), this.afterMap)
         && t.checkExpect(this.df.visitMt(this.mt), new MtList<Integer>());
   }
 
-  //Tests build list
+  // Tests build list
   boolean testBuildList(Tester t) {
     // Just for testing purposes
     class Identity implements IFunc<Integer, Integer> {
@@ -403,12 +403,13 @@ class ExamplesCourse {
         return integer;
       }
     }
+    
     IFunc<Integer, IList<Integer>> simple = new BuildList<Integer>(new Identity());
 
     return t.checkExpect(simple.call(5), this.results);
   }
 
-  //Tests Foldr
+  // Tests Foldr
   boolean testFoldR(Tester t) {
     // Just for testing
     class Sum implements IRed<Integer, Integer> {
@@ -421,21 +422,21 @@ class ExamplesCourse {
     return t.checkExpect(this.results.accept(fold), 10);
   }
 
-  //tests OrmapReduce
+  // tests OrmapReduce
   boolean testOrmapReduce(Tester t) {
     IRed<Integer, Boolean> red = new OrmapReduce<>(new GreaterThan4());
     return t.checkExpect(red.red(5, true), true) && t.checkExpect(red.red(5, false), true)
         && t.checkExpect(red.red(4, true), true) && t.checkExpect(red.red(4, false), false);
   }
 
-  //tests Ormap
+  // tests Ormap
   boolean testOrmap(Tester t) {
     IListVisitor<Integer, Boolean> ormap = new Ormap<>(new GreaterThan4());
     return t.checkExpect(this.afterMap.accept(ormap), true)
         && t.checkExpect(this.results.accept(ormap), false);
   }
 
-  //tests Filter
+  // tests Filter
   boolean testFilter(Tester t) {
     // Just for testing!
     class NotDog implements IPred<String> {
@@ -450,7 +451,7 @@ class ExamplesCourse {
         && t.checkExpect(noDogFilter.call(new MtList<String>()), new MtList<String>());
   }
 
-  //Tests the deepest path of a course
+  // Tests the deepest path of a course
   boolean testGetDeepestPath(Tester t) {
     return t.checkExpect(this.cs1800.getDeepestPathLength(), 1)
         && t.checkExpect(this.cs2510.getDeepestPathLength(), 2)
