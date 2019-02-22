@@ -12,7 +12,7 @@ class Course {
 
   // Checks if this Course has a prereq with the given name
   boolean hasPrereq(String name) {
-    IPred<Course> hasP = new IsOrHasPrereq(name);
+    IPred<Course> hasP = new HasPrereq(name);
     Ormap<Course> ormap = new Ormap<>(hasP);
     return ormap.apply(this.prereqs);
   }
@@ -30,10 +30,10 @@ class Course {
 }
 
 // Represents a predicate function for checking if a Course has a specific prereq course (by name)
-class IsOrHasPrereq implements IPred<Course> {
+class HasPrereq implements IPred<Course> {
   String prereq;
 
-  IsOrHasPrereq(String prereq) {
+  HasPrereq(String prereq) {
     this.prereq = prereq;
   }
 
@@ -321,7 +321,7 @@ class PreReqPathLength implements IRed<Course, Integer> {
   }
 }
 
-class ExamplesCourse {
+class ExamplesCourses {
 
   IList<Course> mtListCourses = new MtList<>();
   Course cs1800 = new Course("Discrete", this.mtListCourses);
@@ -387,7 +387,7 @@ class ExamplesCourse {
 
   // Tests if a course has the given prereq
   boolean testHasPrereqClass(Tester t) {
-    IPred<Course> hasPrereq = new IsOrHasPrereq("Fundies 1");
+    IPred<Course> hasPrereq = new HasPrereq("Fundies 1");
 
     return t.checkExpect(hasPrereq.apply(this.cs2500), true)
         && t.checkExpect(hasPrereq.apply(this.cs2510), true)
