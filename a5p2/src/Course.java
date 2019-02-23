@@ -370,10 +370,14 @@ class ExamplesCourses {
   // Tests if the Course has the given prereq
   boolean testHasPrereqMethod(Tester t) {
     return t.checkExpect(this.cs2500.hasPrereq("Algo"), false)
+        && t.checkExpect(this.cs2510.hasPrereq("Fundies 2"), false)
         && t.checkExpect(this.cs2510.hasPrereq("Fundies 1"), true)
         && t.checkExpect(this.cs3500.hasPrereq("Fundies 2"), true)
         && t.checkExpect(this.cs4100.hasPrereq("Fundies 1"), true)
-        && t.checkExpect(this.cs4100.hasPrereq("Algo"), false);
+        && t.checkExpect(this.cs4100.hasPrereq("Algo"), false)
+        && t.checkExpect(this.cs4100.hasPrereq("AI"), false)
+        && t.checkExpect(this.cs3540.hasPrereq("Fundies 1"), true)
+        && t.checkExpect(this.cs2500.hasPrereq("Fundies 1"), false);
   }
 
   // Tests if the given course matches the string
