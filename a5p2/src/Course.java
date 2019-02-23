@@ -124,8 +124,7 @@ class BuildList<R> implements IFunc<Integer, IList<R>> {
     this.fn = fn;
   }
 
-  // Creates a list by calling this.fn on each number <= to the number passed to
-  // this
+  // Creates a list by calling this.fn on each number <= to the number passed to this
   public IList<R> apply(Integer integer) {
     Integer currInt = integer - 1;
     if (currInt >= 0) {
@@ -194,6 +193,7 @@ class Map<T, R> extends AListVisitor<T, IList<R>> {
     return new MtList<R>();
   }
 
+  //Accepts the given list, allows for delegation
   public IList<R> apply(IList<T> x) {
     return x.accept(this);
   }
@@ -219,6 +219,7 @@ class FoldR<T, R> extends AListVisitor<T, R> {
     return base;
   }
 
+  //Accepts the given list, allows for delegation
   public R apply(IList<T> x) {
     return x.accept(this);
   }
@@ -246,6 +247,7 @@ class Ormap<T> extends AListVisitor<T, Boolean> {
     return false;
   }
 
+  //Accepts the given list, allows for delegation
   public Boolean apply(IList<T> x) {
     return x.accept(this);
   }
@@ -260,8 +262,7 @@ class OrmapReduce<T> implements IRed<T, Boolean> {
     this.pred = pred;
   }
 
-  // True if this predicate is true for the given value, or if the base value is
-  // true
+  // True if this predicate is true for the given value, or if the base value is true
   public Boolean red(T t, Boolean base) {
     return pred.apply(t) || base;
   }
@@ -304,20 +305,18 @@ class Filter<X> extends AListVisitor<X, IList<X>> {
 
 //Represents a function that finds the deepest path of prereqs for a Course
 class DeepestPathLength implements IFunc<Course, Integer> {
-
   public Integer apply(Course x) {
     IListVisitor<Course, Integer> maxpathofprereqs = new FoldR<>(new PreReqPathLength(), 0);
 
-    return 1 + x.prereqs.accept(maxpathofprereqs);
+    return  x.prereqs.accept(maxpathofprereqs);
   }
-
 }
 
 //Represents a function that finds the deepest path of prereqs in this List
 class PreReqPathLength implements IRed<Course, Integer> {
 
   public Integer red(Course course, Integer base) {
-    return Math.max(course.getDeepestPathLength(), base);
+    return Math.max(course.getDeepestPathLength() + 1, base);
   }
 }
 
@@ -471,8 +470,9 @@ class ExamplesCourses {
 
   // Tests the deepest path of a course
   boolean testGetDeepestPath(Tester t) {
-    return t.checkExpect(this.cs1800.getDeepestPathLength(), 1)
-        && t.checkExpect(this.cs2510.getDeepestPathLength(), 2)
-        && t.checkExpect(this.cs3540.getDeepestPathLength(), 4);
+    return t.checkExpect(this.cs1800.getDeepestPathLength(), 0)
+        && t.checkExpect(this.cs2510.getDeepestPathLength(), 1)
+        && t.checkExpect(this.cs3500.getDeepestPathLength(), 2)
+        && t.checkExpect(this.cs3540.getDeepestPathLength(), 3);
   }
 }
