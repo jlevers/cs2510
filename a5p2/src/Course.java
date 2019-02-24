@@ -13,8 +13,7 @@ class Course {
   // Checks if this Course has a prereq with the given name
   boolean hasPrereq(String name) {
     IPred<Course> hasP = new HasPrereq(name);
-    Ormap<Course> ormap = new Ormap<>(hasP);
-    return ormap.apply(this.prereqs);
+    return hasP.apply(this);
   }
 
   // Checks if this course is the same as the given String
@@ -41,7 +40,7 @@ class HasPrereq implements IPred<Course> {
   public Boolean apply(Course c) {
     IListVisitor<Course, Boolean> ormapNames = new Ormap<>(new IsCourse(this.prereq));
     IListVisitor<Course, Boolean> ormapCourses = new Ormap<>(this);
-    return c.hasName(this.prereq) || ormapNames.apply(c.prereqs) || ormapCourses.apply(c.prereqs);
+    return ormapNames.apply(c.prereqs) || ormapCourses.apply(c.prereqs);
   }
 }
 
@@ -303,16 +302,16 @@ class Filter<X> extends AListVisitor<X, IList<X>> {
   }
 }
 
-//Represents a function that finds the deepest path of prereqs for a Course
+// Represents a function that finds the deepest path of prereqs for a Course
 class DeepestPathLength implements IFunc<Course, Integer> {
   public Integer apply(Course x) {
-    IListVisitor<Course, Integer> maxpathofprereqs = new FoldR<>(new PreReqPathLength(), 0);
+    IListVisitor<Course, Integer> maxPathOfPrereqs = new FoldR<>(new PreReqPathLength(), 0);
 
-    return  x.prereqs.accept(maxpathofprereqs);
+    return x.prereqs.accept(maxPathOfPrereqs);
   }
 }
 
-//Represents a function that finds the deepest path of prereqs in this List
+// Represents a function that finds the deepest path of prereqs in this List
 class PreReqPathLength implements IRed<Course, Integer> {
 
   public Integer red(Course course, Integer base) {
@@ -392,7 +391,7 @@ class ExamplesCourses {
   boolean testHasPrereqClass(Tester t) {
     IPred<Course> hasPrereq = new HasPrereq("Fundies 1");
 
-    return t.checkExpect(hasPrereq.apply(this.cs2500), true)
+    return t.checkExpect(hasPrereq.apply(this.cs2500), false)
         && t.checkExpect(hasPrereq.apply(this.cs2510), true)
         && t.checkExpect(hasPrereq.apply(this.cs4100), true)
         && t.checkExpect(hasPrereq.apply(this.cs1800), false);
