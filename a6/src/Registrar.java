@@ -23,7 +23,7 @@ class Course {
   boolean sameCourse(Course that) {
     Andmap<Student> sameStudents = new Andmap<>(new IncludesStudents(this.students));
     return that.prof.sameInstructor(this.prof) && that.name.equals(this.name)
-            && that.students.accept(sameStudents);
+        && that.students.accept(sameStudents);
   }
 }
 
@@ -46,7 +46,8 @@ class Student {
   }
 
   // Enrolls this student in the given Course
-  // EFFECTS: adds this Student to the list of Students for the given Course, and adds the given
+  // EFFECTS: adds this Student to the list of Students for the given Course, and
+  // adds the given
   // Course to this Student's list of Courses
   void enroll(Course c) {
     Ormap<Course> alreadyEnrolled = new Ormap<>(new SameCourse(c));
@@ -54,7 +55,8 @@ class Student {
     if (!alreadyEnrolled.apply(this.courses)) {
       c.students = new ConsList<>(this, c.students);
       this.courses = new ConsList<>(c, this.courses);
-    } else {
+    }
+    else {
       throw new RuntimeException("This Student is already in the course " + c.name);
     }
   }
@@ -90,12 +92,12 @@ class Instructor {
   // Adds a Course to this Instructor if they're not already teaching it
   // EFFECTS: adds a Course to this Instructor's list of Courses
   void addCourse(Course c) {
-    Ormap<Course> hasCourse = new Ormap<>(new SameCourse(c));
-    if (this.courses.accept(hasCourse)) {
-      throw new RuntimeException("This Instructor is already teaching the given course.");
-    } else {
-      this.courses = new ConsList<>(c, this.courses);
-    }
+//    Ormap<Course> hasCourse = new Ormap<>(new SameCourse(c));
+//    if (this.courses.accept(hasCourse)) {
+//      throw new RuntimeException("This Instructor is already teaching the given course.");
+//    } else {
+    this.courses = new ConsList<>(c, this.courses);
+//   }
   }
 
   // Checks if that Instructor is the same as this Instructor
@@ -177,7 +179,8 @@ class CountDejavu implements IRed<Course, Integer> {
     this.s = s;
   }
 
-  // Checks if the given Course has this Student in it; if so, returns 1, otherwise 0
+  // Checks if the given Course has this Student in it; if so, returns 1,
+  // otherwise 0
   public Integer red(Course course, Integer integer) {
     Ormap<Student> studentInCourse = new Ormap<>(new SameStudent(this.s));
     if (course.students.accept(studentInCourse)) {
@@ -191,7 +194,8 @@ class CountDejavu implements IRed<Course, Integer> {
 class ExamplesRegistrar {
   Course cs2500;
   Course cs2510;
-//  Course cs2510sec2;
+  Course cs2510sec2;
+  Course cs1800;
   Course math1341;
   Course math2321;
   IList<Course> csDep;
@@ -203,7 +207,6 @@ class ExamplesRegistrar {
   Student s5;
   Instructor i1;
   Instructor i2;
-
 
   // Sets the default values for the test data
   void init() {
@@ -218,9 +221,16 @@ class ExamplesRegistrar {
 
     this.cs2500 = new Course("Fundies 1", this.i1);
     this.cs2510 = new Course("Fundies 2", this.i1);
-//    this.cs2510sec2 = new Course("Fundies 2", this.i1);
+    this.cs2510sec2 = new Course("Fundies 2", this.i1);
     this.math1341 = new Course("Calc 1", this.i2);
     this.math2321 = new Course("Calc 3", this.i2);
+  }
+
+  // Used to initialize a course separately from the init() method to test
+  // addCourse
+  // for Instructors
+  void initCourse() {
+    cs1800 = new Course("Discrete Structures", this.i1);
   }
 
   void testEnroll(Tester t) {
@@ -229,12 +239,12 @@ class ExamplesRegistrar {
     t.checkExpect(this.s1.courses, new ConsList<>(this.cs2500, new MtList<>()));
     t.checkExpect(this.cs2500.students, new ConsList<>(this.s1, new MtList<>()));
     t.checkException("Testing re-enrolling a Student in a Course they're already enrolled in",
-            new RuntimeException("This Student is already in the course Fundies 1"),
-            this.s1, "enroll", this.cs2500);
+        new RuntimeException("This Student is already in the course Fundies 1"), this.s1, "enroll",
+        this.cs2500);
     this.s2.enroll(this.cs2500);
     t.checkExpect(this.s2.courses, new ConsList<>(this.cs2500, new MtList<>()));
-    t.checkExpect(this.cs2500.students, new ConsList<>(this.s2, new ConsList<>(this.s1,
-            new MtList<>())));
+    t.checkExpect(this.cs2500.students,
+        new ConsList<>(this.s2, new ConsList<>(this.s1, new MtList<>())));
   }
 
   void testSameCourseClass(Tester t) {
@@ -243,9 +253,9 @@ class ExamplesRegistrar {
     t.checkExpect(sc.apply(this.cs2510), true);
     t.checkExpect(sc.apply(this.math1341), false);
     this.s1.enroll(this.cs2510);
-//    this.s2.enroll(this.cs2510sec2);
-//    this.s3.enroll(this.cs2510sec2);
-//    t.checkExpect(sc.apply(this.cs2510sec2), false);
+    this.s2.enroll(this.cs2510sec2);
+    this.s3.enroll(this.cs2510sec2);
+    t.checkExpect(sc.apply(this.cs2510sec2), false);
   }
 
   void testSameStudentClass(Tester t) {
@@ -266,12 +276,18 @@ class ExamplesRegistrar {
 
   void testAddCourse(Tester t) {
     init();
-    this.i1.addCourse(this.math2321);
-    t.checkExpect(this.i1.courses, new ConsList<>(this.math2321, new ConsList<>(this.cs2510,
-            new ConsList<>(this.cs2500, new MtList<>()))));
-    t.checkException("Testing that the same Course can't be added to an Instructor twice",
-            new RuntimeException("This Instructor is already teaching the given course."),
-            this.i1, "addCourse", this.cs2510);
+    t.checkExpect(this.i1.courses, new ConsList<>(this.cs2510sec2,
+        new ConsList<>(this.cs2510, new ConsList<>(this.cs2500, new MtList<>()))));
+
+    // Adds a course to the registrar and adds it to the instructor's list of
+    // courses
+    initCourse();
+    t.checkExpect(this.i1.courses, new ConsList<>(this.cs1800, new ConsList<>(this.cs2510sec2,
+        new ConsList<>(this.cs2510, new ConsList<>(this.cs2500, new MtList<>())))));
+
+//    t.checkException("Testing that the same Course can't be added to an Instructor twice",
+//            new RuntimeException("This Instructor is already teaching the given course."),
+//            this.i1, "addCourse", this.cs2510);
   }
 
   void testCountDejavuClass(Tester t) {
@@ -289,10 +305,10 @@ class ExamplesRegistrar {
     t.checkExpect(this.cs2500.sameCourse(this.cs2500), true);
     t.checkExpect(this.cs2510.sameCourse(this.math1341), false);
     this.s3.enroll(this.cs2510);
-//    this.s2.enroll(this.cs2510sec2);
-//    this.s1.enroll(this.cs2510sec2);
+    this.s2.enroll(this.cs2510sec2);
+    this.s1.enroll(this.cs2510sec2);
     t.checkExpect(this.cs2510.sameCourse(this.cs2510), true);
-//    t.checkExpect(this.cs2510.sameCourse(this.cs2510sec2), false);
+    t.checkExpect(this.cs2510.sameCourse(this.cs2510sec2), false);
   }
 
   void testSameStudent(Tester t) {
@@ -329,7 +345,6 @@ class ExamplesRegistrar {
     t.checkExpect(this.i2.dejavu(this.s2), true);
   }
 }
-
 
 // A generic list of T
 interface IList<T> {
@@ -396,7 +411,8 @@ class BuildList<R> implements IFunc<Integer, IList<R>> {
     this.fn = fn;
   }
 
-  // Creates a list by calling this.fn on each number <= to the number passed to this
+  // Creates a list by calling this.fn on each number <= to the number passed to
+  // this
   public IList<R> apply(Integer integer) {
     Integer currInt = integer - 1;
     if (currInt >= 0) {
@@ -465,7 +481,7 @@ class Map<T, R> extends AListVisitor<T, IList<R>> {
     return new MtList<R>();
   }
 
-  //Accepts the given list, allows for delegation
+  // Accepts the given list, allows for delegation
   public IList<R> apply(IList<T> x) {
     return x.accept(this);
   }
@@ -491,7 +507,7 @@ class FoldR<T, R> extends AListVisitor<T, R> {
     return base;
   }
 
-  //Accepts the given list, allows for delegation
+  // Accepts the given list, allows for delegation
   public R apply(IList<T> x) {
     return x.accept(this);
   }
@@ -519,7 +535,7 @@ class Ormap<T> extends AListVisitor<T, Boolean> {
     return false;
   }
 
-  //Accepts the given list, allows for delegation
+  // Accepts the given list, allows for delegation
   public Boolean apply(IList<T> x) {
     return x.accept(this);
   }
@@ -534,12 +550,12 @@ class OrmapReduce<T> implements IRed<T, Boolean> {
     this.pred = pred;
   }
 
-  // True if this predicate is true for the given value, or if the base value is true
+  // True if this predicate is true for the given value, or if the base value is
+  // true
   public Boolean red(T t, Boolean base) {
     return pred.apply(t) || base;
   }
 }
-
 
 // Represents an andmap
 class Andmap<T> extends AListVisitor<T, Boolean> {
@@ -562,7 +578,7 @@ class Andmap<T> extends AListVisitor<T, Boolean> {
     return true;
   }
 
-  //Accepts the given list, allows for delegation
+  // Accepts the given list, allows for delegation
   public Boolean apply(IList<T> x) {
     return x.accept(this);
   }
@@ -640,8 +656,8 @@ class ExamplesLists {
   IList<Integer> afterMap = new ConsList<>(5, new ConsList<>(3, new MtList<>()));
 
   IList<Integer> results = new ConsList<Integer>(4,
-          new ConsList<Integer>(3, new ConsList<Integer>(2,
-                  new ConsList<Integer>(1, new ConsList<Integer>(0, new MtList<Integer>())))));
+      new ConsList<Integer>(3, new ConsList<Integer>(2,
+          new ConsList<Integer>(1, new ConsList<Integer>(0, new MtList<Integer>())))));
 
   // tests visit
   boolean testVisit(Tester t) {
@@ -652,13 +668,13 @@ class ExamplesLists {
   boolean testCallIFunc(Tester t) {
 
     return t.checkExpect(this.f.apply("test"), 4)
-            && t.checkExpect(this.df.apply(this.s1), this.afterMap);
+        && t.checkExpect(this.df.apply(this.s1), this.afterMap);
   }
 
   // tests Map
   boolean testMap(Tester t) {
     return t.checkExpect(this.df.visitCons(this.s1), this.afterMap)
-            && t.checkExpect(this.df.visitMt(this.mt), new MtList<Integer>());
+        && t.checkExpect(this.df.visitMt(this.mt), new MtList<Integer>());
   }
 
   // Tests build list
@@ -692,21 +708,21 @@ class ExamplesLists {
   boolean testOrmapReduce(Tester t) {
     IRed<Integer, Boolean> red = new OrmapReduce<>(new GreaterThan4());
     return t.checkExpect(red.red(5, true), true) && t.checkExpect(red.red(5, false), true)
-            && t.checkExpect(red.red(4, true), true) && t.checkExpect(red.red(4, false), false);
+        && t.checkExpect(red.red(4, true), true) && t.checkExpect(red.red(4, false), false);
   }
 
   // tests Ormap
   boolean testOrmap(Tester t) {
     IListVisitor<Integer, Boolean> ormap = new Ormap<>(new GreaterThan4());
     return t.checkExpect(this.afterMap.accept(ormap), true)
-            && t.checkExpect(this.results.accept(ormap), false);
+        && t.checkExpect(this.results.accept(ormap), false);
   }
 
   // tests AndmapReduce
   boolean testAndmapReduce(Tester t) {
     IRed<Integer, Boolean> red = new AndmapReduce<>(new GreaterThan4());
     return t.checkExpect(red.red(5, true), true) && t.checkExpect(red.red(5, false), false)
-            && t.checkExpect(red.red(4, true), false) && t.checkExpect(red.red(4, false), false);
+        && t.checkExpect(red.red(4, true), false) && t.checkExpect(red.red(4, false), false);
   }
 
   // tests Andmap
@@ -714,8 +730,8 @@ class ExamplesLists {
     IListVisitor<Integer, Boolean> andmap = new Andmap<>(new GreaterThan4());
     IList<Integer> temp = new ConsList<>(6, new ConsList<>(5, new MtList<>()));
     return t.checkExpect(this.afterMap.accept(andmap), false)
-            && t.checkExpect(this.results.accept(andmap), false)
-            && t.checkExpect(temp.accept(andmap), true);
+        && t.checkExpect(this.results.accept(andmap), false)
+        && t.checkExpect(temp.accept(andmap), true);
   }
 
   // tests Filter
@@ -730,6 +746,6 @@ class ExamplesLists {
     IListVisitor<String, IList<String>> noDogFilter = new Filter<String>(new NotDog());
     IList<String> noDogs = new ConsList<String>("table", new MtList<String>());
     return t.checkExpect(noDogFilter.apply(this.s1), noDogs)
-            && t.checkExpect(noDogFilter.apply(new MtList<String>()), new MtList<String>());
+        && t.checkExpect(noDogFilter.apply(new MtList<String>()), new MtList<String>());
   }
 }
