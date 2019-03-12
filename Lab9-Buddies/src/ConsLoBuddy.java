@@ -26,10 +26,14 @@ class ConsLoBuddy implements ILoBuddy {
     if (visited.hasBuddy(this.first)) {
       return this.rest.hasExtendedBuddy(that, visited);
     } else {
-      return this.first.hasDirectBuddy(that)
-              || this.first.hasExtendedBuddyAcc(that, new ConsLoBuddy(this.first, visited))
+      return this.first.samePerson(that)
+              || this.first.hasExtendedBuddyAcc(that, visited)
               || this.rest.hasExtendedBuddy(that, new ConsLoBuddy(this.first, visited));
     }
-
+  }
+  
+  //Returns the amount of buddies in this list of buddies
+  public int length() {
+    return 1 + this.rest.length();
   }
 }
