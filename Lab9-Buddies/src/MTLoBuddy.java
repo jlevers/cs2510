@@ -17,4 +17,9 @@ class MTLoBuddy implements ILoBuddy {
     public boolean hasExtendedBuddy(Person that, ILoBuddy visited) {
         return false;
     }
+
+    // An MTLoBuddy never has any extended buddies
+    public int countExtendedBuddies(ILoBuddy visited) {
+        return 0;
+    }
 }

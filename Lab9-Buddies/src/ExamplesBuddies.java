@@ -101,6 +101,7 @@ public class ExamplesBuddies {
     init();
     t.checkExpect(this.ed.hasExtendedBuddy(this.fay), true);
     t.checkExpect(this.ann.hasExtendedBuddy(this.hank), true);
+    t.checkExpect(this.ann.hasExtendedBuddy(this.gabi), true);
     t.checkExpect(this.cole.hasExtendedBuddy(this.dan), true);
     t.checkExpect(this.jan.hasExtendedBuddy(this.cole), false);
   }
@@ -120,12 +121,21 @@ public class ExamplesBuddies {
   void testHasExtendedBuddyList(Tester t) {
     init();
     t.checkExpect(this.ed.buddies.hasExtendedBuddy(this.fay, new ConsLoBuddy(this.ed, this.mt)),
-            false);
+            true);
     t.checkExpect(this.ann.buddies.hasExtendedBuddy(this.hank, this.mt), true);
     t.checkExpect(this.ann.buddies.hasExtendedBuddy(this.gabi, new ConsLoBuddy(this.ann, this.mt)),
             true);
     t.checkExpect(this.cole.buddies.hasExtendedBuddy(this.dan, new ConsLoBuddy(this.cole, this.mt)),
-            false);
+            true);
     t.checkExpect(this.jan.buddies.hasExtendedBuddy(this.cole, this.mt), false);
   }
+
+  void testPartyCount(Tester t) {
+    init();
+    t.checkExpect(this.hank.partyCount(), 1);
+    t.checkExpect(this.cole.partyCount(), 2);
+    t.checkExpect(this.ann.partyCount(), 8);
+  }
+
+  // TODO: add tests for totalExtendedBuddies and countExtendedBuddies
 }

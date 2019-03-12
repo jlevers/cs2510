@@ -11,4 +11,8 @@ interface ILoBuddy {
   // with someone who's a buddy of that Person.
   // Accumulator: collects the Persons who've already been visited
   boolean hasExtendedBuddy(Person that, ILoBuddy visited);
+
+  // Counts all the extended buddies in this list, excluding the ones that've already been visited
+  // Accumulator: the Persons who've already been visited/counted
+  int countExtendedBuddies(ILoBuddy visited);
 }

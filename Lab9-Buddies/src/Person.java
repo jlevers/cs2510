@@ -31,7 +31,17 @@ class Person {
     // returns the number of people who will show up at the party
     // given by this person
     int partyCount(){
-        return 1;
+        return this.totalExtendedBuddies(new MTLoBuddy());
+    }
+
+    // Determines the total number of extended buddies that this Person has
+    // Accumulator: the Persons that've already been visited
+    int totalExtendedBuddies(ILoBuddy visited) {
+        if (visited.hasBuddy(this)) {
+            return this.buddies.countExtendedBuddies(visited);
+        }
+
+        return 1 + this.buddies.countExtendedBuddies(new ConsLoBuddy(this, visited));
     }
 
     // returns the number of people that are direct buddies
