@@ -14,6 +14,12 @@ public class ExamplesBuddies {
   Person jan;
   Person kim;
   Person len;
+  
+  Person a;
+  Person b;
+  Person c;
+  Person d;
+  Person e;
 
   ILoBuddy mt = new MTLoBuddy();
   ILoBuddy testBuddy;
@@ -51,6 +57,17 @@ public class ExamplesBuddies {
     this.kim.addBuddy(this.len);
     this.len.addBuddy(this.jan);
     this.len.addBuddy(this.kim);
+    
+    this.a = new Person("A", this.mt, 0.95, 0.8);
+    this.b = new Person("B", this.mt, 0.85, 0.99);
+    this.c = new Person("C", this.mt, 0.95, 0.9);
+    this.d = new Person("D", this.mt, 1, 0.95);
+    this.e = new Person("E");
+    
+    this.a.addBuddy(this.b);
+    this.a.addBuddy(this.c);
+    this.b.addBuddy(this.d);
+    this.c.addBuddy(this.d);
 
     this.testBuddy = new ConsLoBuddy(this.ed, this.mt);
   }
@@ -60,7 +77,7 @@ public class ExamplesBuddies {
     t.checkExpect(this.ann.samePerson(this.ann), true);
     t.checkExpect(this.bob.samePerson(this.cole), false);
   }
-
+  
   void testHasBuddy(Tester t) {
     init();
     t.checkExpect(this.mt.hasBuddy(dan), false);
@@ -136,6 +153,44 @@ public class ExamplesBuddies {
     t.checkExpect(this.cole.partyCount(), 2);
     t.checkExpect(this.ann.partyCount(), 8);
   }
-
-  // TODO: add tests for totalExtendedBuddies and countExtendedBuddies
+  
+  void testTotalExtendedBuddies(Tester t) {
+    init();
+    t.checkExpect(this.hank.totalExtendedBuddies(this.mt), 1);
+    t.checkExpect(this.cole.totalExtendedBuddies(this.mt), 2);
+    t.checkExpect(this.ann.totalExtendedBuddies(this.mt), 8);
+  }
+  
+  void testCountExtendedBuddies(Tester t) {
+    init();
+    t.checkExpect(this.hank.buddies.countExtendedBuddies(new ConsLoBuddy(this.hank,this.mt)), 0);
+    t.checkExpect(this.cole.buddies.countExtendedBuddies(new ConsLoBuddy(this.cole,this.mt)), 1);
+    t.checkExpect(this.ann.buddies.countExtendedBuddies(new ConsLoBuddy(this.ann,this.mt)), 7);
+  }
+  
+  void testMaxLikelihood(Tester t) {
+    init();
+    t.checkExpect(this.e.maxLikelihood(this.a), 0.0);
+    t.checkExpect(this.b.maxLikelihood(this.b), 1.0);
+    t.checkExpect(this.b.maxLikelihood(this.e), 0.0);
+    t.checkInexact(this.c.maxLikelihood(this.d), 0.902, 0.001);
+    t.checkInexact(this.a.maxLikelihood(this.d), 0.772, 0.001);
+  }
+  
+  void testMaxLikelihoodList(Tester t) {
+    init();
+    t.checkInexact(this.e.buddies.maxLikelihood(this.e, this.a, 
+        new ConsLoBuddy(this.e, this.mt)), 0.0, 0.001);
+    t.checkInexact(this.b.buddies.maxLikelihood(this.b, this.a, 
+        new ConsLoBuddy(this.b, this.mt)), 0.0, 0.001);
+    t.checkInexact(this.c.buddies.maxLikelihood(this.c, this.d, 
+        new ConsLoBuddy(this.c, this.mt)), 0.902, 0.001);
+    t.checkInexact(this.a.buddies.maxLikelihood(this.a, this.d, 
+        new ConsLoBuddy(this.a, this.mt)), 0.772, 0.001);
+  }
+  
+  void testCalcLikelihood(Tester t) {
+    init();
+    t.checkInexact(this.a.calcLikelihood(this.c), 0.855, 0.001);
+  }
 }

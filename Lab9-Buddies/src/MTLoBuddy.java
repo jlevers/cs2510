@@ -22,4 +22,10 @@ class MTLoBuddy implements ILoBuddy {
     public int countExtendedBuddies(ILoBuddy visited) {
         return 0;
     }
+
+    //Determines the max likelihood the given person will hear the message
+    // 0, because if that Person is not in this list of buddies they will not receive the message
+    public double maxLikelihood(Person first, Person that, ConsLoBuddy visited) {
+      return 0;
+    }    
 }

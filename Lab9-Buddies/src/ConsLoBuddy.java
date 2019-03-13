@@ -43,4 +43,17 @@ class ConsLoBuddy implements ILoBuddy {
 
     return 1 + this.first.totalExtendedBuddies(newAcc) + this.rest.countExtendedBuddies(newAcc);
   }
+
+
+  public double maxLikelihood(Person start, Person that, ConsLoBuddy visited) {
+    if (this.first.samePerson(that)) {
+      return start.calcLikelihood(that);
+    }
+    if (visited.hasBuddy(this.first)) {
+      return this.rest.maxLikelihood(start, that, visited);
+    }
+    return start.calcLikelihood(this.first) *
+        Math.max(this.first.maxLikelihood(that), 
+        this.rest.maxLikelihood(start, that, new ConsLoBuddy(this.first, visited)));
+  }
 }

@@ -4,10 +4,25 @@ class Person {
 
     String username;
     ILoBuddy buddies;
-
+    double diction;
+    double hearing;
+ 
     Person(String username) {
-        this.username = username;
-        this.buddies = new MTLoBuddy();
+      this(username, new MTLoBuddy(), 0.0, 0.0);
+    }
+    
+    //Constructor when given a Person's diction and hearing scores
+    Person(String username, ILoBuddy buddies, double diction, double hearing) {
+      if (diction < 0 || diction > 1) {
+        throw new IllegalArgumentException("Diction score must be between 0 and 1");
+      }
+      if (hearing < 0 || hearing > 1) {
+        throw new IllegalArgumentException("Hearing score must be between 0 and 1");
+      }
+      this.username = username;
+      this.buddies = buddies;
+      this.diction = diction;
+      this.hearing = hearing;
     }
 
     // EFFECT:
@@ -66,5 +81,18 @@ class Person {
                     new ConsLoBuddy(this, visited));
         }
     }
+    
+    //Determines the max likelihood that the given Person will hear a message from this Person
+    double maxLikelihood(Person that) {
+      if (this.samePerson(that)) {
+        return 1.0;
+      }
 
+      return this.buddies.maxLikelihood(this, that, new ConsLoBuddy(this, new MTLoBuddy()));
+    }
+    
+    //Calculates the likelihood that Person will hear this correctly
+    double calcLikelihood(Person that) {
+      return this.diction * that.hearing;
+    }
 }
