@@ -1,3 +1,4 @@
+
 // represents a list of Person's buddies
 interface ILoBuddy {
   // Checks if the given Person is in this ILoBuddy
@@ -18,4 +19,3 @@ interface ILoBuddy {
   //Determines the Max Likelihood that the given person will hear
   double maxLikelihood(Person first, Person that, ConsLoBuddy visited);
 }
-

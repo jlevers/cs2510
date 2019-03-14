@@ -12,21 +12,12 @@ abstract class ANode<T> {
   ANode<T> next;
   ANode<T> prev;
 
-  ANode(ANode<T> next, ANode<T> prev) {
-    this.next = next;
-    this.prev = prev;
-  }
 }
 
 // Represents a sentinel value in in a Deque
 class Sentinel<T> extends ANode<T> {
-  Sentinel(ANode<T> next, ANode<T> prev) {
-    super(next, prev);
-  }
-
   // Sets the Sentinel's prev and next values to itself
   Sentinel() {
-    super(new Sentinel<>(), new Sentinel<>());
     this.next = this;
     this.prev = this;
   }
@@ -36,8 +27,20 @@ class Sentinel<T> extends ANode<T> {
 class Node<T> extends ANode<T> {
   T data;
 
-  Node(ANode<T> next, ANode<T> prev, T data) {
-    super(next, prev);
+  // Initialize this Node to point to null values
+  Node(T data) {
+    this.next = null;
+    this.prev = null;
+    this.data = data;
+  }
+
+  Node(T data, ANode<T> next, ANode<T> prev) {
+    if (this.next == null || this.prev == null) {
+      throw new IllegalArgumentException("The prev and next fields of a Node, when called with " +
+              "this constructor, must be non-null.");
+    }
+    this.next = next;
+    this.prev = prev;
     this.data = data;
   }
 }
