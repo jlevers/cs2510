@@ -204,4 +204,14 @@ class ExamplesBuddies {
     initBuddies();
     t.checkInexact(this.a.calcLikelihood(this.c), 0.855, 0.001);
   }
+  
+  void testPersonTelephoneConstructor(Tester t) {
+    t.checkConstructorException(
+        new IllegalArgumentException("Diction score must be between 0 and 1") ,
+        "Person", "P1", 1.1, 0.7);
+    
+    t.checkConstructorException(
+        new IllegalArgumentException("Hearing score must be between 0 and 1") ,
+        "Person", "P1", 0.8, 1.2);
+  }
 }
