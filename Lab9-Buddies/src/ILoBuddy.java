@@ -15,4 +15,7 @@ interface ILoBuddy {
   // Counts all the extended buddies in this list, excluding the ones that've already been visited
   // Accumulator: the Persons who've already been visited/counted
   int countExtendedBuddies(ILoBuddy visited);
+
+  //Determines the Max Likelihood that the given person will hear
+  double maxLikelihood(Person first, Person that, ConsLoBuddy visited);
 }

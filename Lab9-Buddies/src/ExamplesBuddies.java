@@ -2,7 +2,7 @@ import tester.*;
 
 
 // runs tests for the buddies problem
-public class ExamplesBuddies {
+class ExamplesBuddies {
   Person ann;
   Person bob;
   Person cole;
@@ -14,12 +14,18 @@ public class ExamplesBuddies {
   Person jan;
   Person kim;
   Person len;
+  
+  Person a;
+  Person b;
+  Person c;
+  Person d;
+  Person e;
 
   ILoBuddy mt = new MTLoBuddy();
   ILoBuddy testBuddy;
 
   // Initialize data
-  void init() {
+  void initBuddies() {
 
     this.ann = new Person("Ann");
     this.bob = new Person("Bob");
@@ -52,37 +58,48 @@ public class ExamplesBuddies {
     this.len.addBuddy(this.jan);
     this.len.addBuddy(this.kim);
 
+    this.a = new Person("A", 0.95, 0.8);
+    this.b = new Person("B", 0.85, 0.99);
+    this.c = new Person("C", 0.95, 0.9);
+    this.d = new Person("D", 1, 0.95);
+    this.e = new Person("E");
+
+    this.a.addBuddy(this.b);
+    this.a.addBuddy(this.c);
+    this.b.addBuddy(this.d);
+    this.c.addBuddy(this.d);
+
     this.testBuddy = new ConsLoBuddy(this.ed, this.mt);
   }
 
   void testSamePerson(Tester t) {
-    init();
+    initBuddies();
     t.checkExpect(this.ann.samePerson(this.ann), true);
     t.checkExpect(this.bob.samePerson(this.cole), false);
   }
 
   void testHasBuddy(Tester t) {
-    init();
+    initBuddies();
     t.checkExpect(this.mt.hasBuddy(dan), false);
     t.checkExpect(this.testBuddy.hasBuddy(this.ed), true);
     t.checkExpect(this.testBuddy.hasBuddy(this.fay), false);
   }
 
   void testHasDirectBuddy(Tester t) {
-    init();
+    initBuddies();
     t.checkExpect(this.fay.hasDirectBuddy(this.gabi), true);
     t.checkExpect(this.fay.hasDirectBuddy(this.dan), false);
   }
 
   void testAddBuddy(Tester t) {
-    init();
+    initBuddies();
     t.checkExpect(this.fay.hasDirectBuddy(this.kim), false);
     this.fay.addBuddy(this.kim);
     t.checkExpect(this.fay.hasDirectBuddy(this.kim), true);
   }
 
   void testCountCommonBuddiesPerson(Tester t) {
-    init();
+    initBuddies();
     t.checkExpect(this.fay.countCommonBuddies(this.gabi), 1);
     t.checkExpect(this.kim.countCommonBuddies(this.dan), 0);
     this.bob.addBuddy(this.gabi);
@@ -90,7 +107,7 @@ public class ExamplesBuddies {
   }
 
   void testCountCommonBuddiesList(Tester t) {
-    init();
+    initBuddies();
     t.checkExpect(this.fay.buddies.countCommonBuddies(this.gabi.buddies), 1);
     t.checkExpect(this.kim.buddies.countCommonBuddies(this.dan.buddies), 0);
     this.bob.addBuddy(this.gabi);
@@ -98,7 +115,7 @@ public class ExamplesBuddies {
   }
 
   void testHasExtendedBuddyPerson(Tester t) {
-    init();
+    initBuddies();
     t.checkExpect(this.ed.hasExtendedBuddy(this.fay), true);
     t.checkExpect(this.ann.hasExtendedBuddy(this.hank), true);
     t.checkExpect(this.ann.hasExtendedBuddy(this.gabi), true);
@@ -107,7 +124,7 @@ public class ExamplesBuddies {
   }
 
   void testHasExtendedBuddyAccPerson(Tester t) {
-    init();
+    initBuddies();
     t.checkExpect(this.ed.hasExtendedBuddyAcc(this.fay, this.mt), true);
     t.checkExpect(this.ann.hasExtendedBuddyAcc(this.hank, this.mt), true);
     t.checkExpect(this.bob.hasExtendedBuddyAcc(this.hank, new ConsLoBuddy(this.ann,
@@ -119,7 +136,7 @@ public class ExamplesBuddies {
   }
 
   void testHasExtendedBuddyList(Tester t) {
-    init();
+    initBuddies();
     t.checkExpect(this.ed.buddies.hasExtendedBuddy(this.fay, new ConsLoBuddy(this.ed, this.mt)),
             true);
     t.checkExpect(this.ann.buddies.hasExtendedBuddy(this.hank, this.mt), true);
@@ -131,11 +148,49 @@ public class ExamplesBuddies {
   }
 
   void testPartyCount(Tester t) {
-    init();
+    initBuddies();
     t.checkExpect(this.hank.partyCount(), 1);
     t.checkExpect(this.cole.partyCount(), 2);
     t.checkExpect(this.ann.partyCount(), 8);
   }
 
-  // TODO: add tests for totalExtendedBuddies and countExtendedBuddies
+  void testTotalExtendedBuddies(Tester t) {
+    initBuddies();
+    t.checkExpect(this.hank.totalExtendedBuddies(this.mt), 1);
+    t.checkExpect(this.cole.totalExtendedBuddies(this.mt), 2);
+    t.checkExpect(this.ann.totalExtendedBuddies(this.mt), 8);
+  }
+
+  void testCountExtendedBuddies(Tester t) {
+    initBuddies();
+    t.checkExpect(this.hank.buddies.countExtendedBuddies(new ConsLoBuddy(this.hank,this.mt)), 0);
+    t.checkExpect(this.cole.buddies.countExtendedBuddies(new ConsLoBuddy(this.cole,this.mt)), 1);
+    t.checkExpect(this.ann.buddies.countExtendedBuddies(new ConsLoBuddy(this.ann,this.mt)), 7);
+  }
+
+  void testMaxLikelihood(Tester t) {
+    initBuddies();
+    t.checkExpect(this.e.maxLikelihood(this.a), 0.0);
+    t.checkExpect(this.b.maxLikelihood(this.b), 1.0);
+    t.checkExpect(this.b.maxLikelihood(this.e), 0.0);
+    t.checkInexact(this.c.maxLikelihood(this.d), 0.902, 0.001);
+    t.checkInexact(this.a.maxLikelihood(this.d), 0.772, 0.001);
+  }
+
+  void testMaxLikelihoodList(Tester t) {
+    initBuddies();
+    t.checkInexact(this.e.buddies.maxLikelihood(this.e, this.a,
+        new ConsLoBuddy(this.e, this.mt)), 0.0, 0.001);
+    t.checkInexact(this.b.buddies.maxLikelihood(this.b, this.a,
+        new ConsLoBuddy(this.b, this.mt)), 0.0, 0.001);
+    t.checkInexact(this.c.buddies.maxLikelihood(this.c, this.d,
+        new ConsLoBuddy(this.c, this.mt)), 0.902, 0.001);
+    t.checkInexact(this.a.buddies.maxLikelihood(this.a, this.d,
+        new ConsLoBuddy(this.a, this.mt)), 0.772, 0.001);
+  }
+
+  void testCalcLikelihood(Tester t) {
+    initBuddies();
+    t.checkInexact(this.a.calcLikelihood(this.c), 0.855, 0.001);
+  }
 }
