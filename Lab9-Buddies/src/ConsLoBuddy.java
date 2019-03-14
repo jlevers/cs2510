@@ -57,3 +57,5 @@ class ConsLoBuddy implements ILoBuddy {
         this.rest.maxLikelihood(start, that, new ConsLoBuddy(this.first, visited)));
   }
 }
+
+
