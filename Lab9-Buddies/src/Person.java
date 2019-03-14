@@ -10,7 +10,7 @@ class Person {
     this(username, 0.0, 0.0);
   }
 
-  //Constructor when given a Person's diction and hearing scores
+  // Constructor when given a Person's diction and hearing scores
   Person(String username, double diction, double hearing) {
     if (diction < 0 || diction > 1) {
       throw new IllegalArgumentException("Diction score must be between 0 and 1");
@@ -32,7 +32,8 @@ class Person {
     }
   }
 
-  // Checks if that Person is the same as this Person (based on their unique usernames)
+  // Checks if that Person is the same as this Person (based on their unique
+  // usernames)
   boolean samePerson(Person that) {
     return this.username.equals(that.username);
   }
@@ -45,7 +46,7 @@ class Person {
   // returns the number of people who will show up at the party
   // given by this person
   int partyCount() {
-    return this.totalExtendedBuddies(new MTLoBuddy());
+    return 1 + this.totalExtendedBuddies(new ConsLoBuddy(this, new MTLoBuddy()));
   }
 
   // Determines the total number of extended buddies that this Person has
@@ -75,22 +76,30 @@ class Person {
   boolean hasExtendedBuddyAcc(Person that, ILoBuddy visited) {
     if (visited.hasBuddy(this)) {
       return false;
-    } else {
-      return this.hasDirectBuddy(that) || this.buddies.hasExtendedBuddy(that,
-              new ConsLoBuddy(this, visited));
+    }
+    else {
+      return this.hasDirectBuddy(that)
+          || this.buddies.hasExtendedBuddy(that, new ConsLoBuddy(this, visited));
     }
   }
 
-  //Determines the max likelihood that the given Person will hear a message from this Person
+  // Determines the max likelihood that the given Person will hear a message from this Person
   double maxLikelihood(Person that) {
     if (this.samePerson(that)) {
       return 1.0;
     }
-
-    return this.buddies.maxLikelihood(this, that, new ConsLoBuddy(this, new MTLoBuddy()));
+    return this.maxLikelihoodAcc(that, new ConsLoBuddy(this, new MTLoBuddy()));
   }
 
-  //Calculates the likelihood that Person will hear this correctly
+  // Determines the max likelihood that the given Person will hear a message from this Person
+  double maxLikelihoodAcc(Person that, ILoBuddy visited) {
+    if (this.samePerson(that)) {
+      return 1.0;
+    }
+    return this.buddies.maxLikelihood(this, that, new ConsLoBuddy(this, visited));
+  }
+
+  // Calculates the likelihood that Person will hear this correctly
   double calcLikelihood(Person that) {
     return this.diction * that.hearing;
   }

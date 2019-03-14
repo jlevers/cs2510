@@ -20,6 +20,9 @@ class ExamplesBuddies {
   Person c;
   Person d;
   Person e;
+  
+  Person w;
+  Person z;
 
   ILoBuddy mt = new MTLoBuddy();
   ILoBuddy testBuddy;
@@ -68,6 +71,11 @@ class ExamplesBuddies {
     this.a.addBuddy(this.c);
     this.b.addBuddy(this.d);
     this.c.addBuddy(this.d);
+    
+    this.w = new Person("W", 1, 0.9);
+    this.z = new Person("Z", 1, 0.9);
+    this.w.addBuddy(this.z);
+    this.z.addBuddy(this.w);
 
     this.testBuddy = new ConsLoBuddy(this.ed, this.mt);
   }
@@ -152,6 +160,7 @@ class ExamplesBuddies {
     t.checkExpect(this.hank.partyCount(), 1);
     t.checkExpect(this.cole.partyCount(), 2);
     t.checkExpect(this.ann.partyCount(), 8);
+    t.checkExpect(this.bob.partyCount(), 8);
   }
 
   void testTotalExtendedBuddies(Tester t) {
@@ -175,6 +184,8 @@ class ExamplesBuddies {
     t.checkExpect(this.b.maxLikelihood(this.e), 0.0);
     t.checkInexact(this.c.maxLikelihood(this.d), 0.902, 0.001);
     t.checkInexact(this.a.maxLikelihood(this.d), 0.772, 0.001);
+    t.checkInexact(this.a.maxLikelihood(this.b), 0.9405, 0.001);
+    t.checkInexact(this.w.maxLikelihood(this.z), 0.9, 0.001);
   }
 
   void testMaxLikelihoodList(Tester t) {
