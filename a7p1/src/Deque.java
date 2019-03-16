@@ -13,6 +13,17 @@ class Deque<T> {
   Deque(Sentinel<T> header) {
     this.header = header;
   }
+
+  // Determines the amount of Nodes in the Deque
+  int size() {
+    return this.header.size();
+  }
+  
+  //Adds A new node with the given value to the end the front
+  void addAtHead(T value) {
+   ANode<T> temp = this.header.next;
+   this.header.next = new Node<>(value, temp, this.header);
+  }
 }
 
 // Represents a node in a Deque
@@ -29,6 +40,11 @@ abstract class ANode<T> {
   void setPrev(ANode<T> prev) {
     this.prev = prev;
   }
+
+  //Determines the size of the list
+  public int listSize() {
+    return 0;
+  }
 }
 
 // Represents a sentinel value in in a Deque
@@ -37,6 +53,11 @@ class Sentinel<T> extends ANode<T> {
   Sentinel() {
     this.next = this;
     this.prev = this;
+  }
+
+  //Determines the number of Nodes after this sentinel
+  public int size() {
+    return this.next.listSize();
   }
 }
 
@@ -54,8 +75,8 @@ class Node<T> extends ANode<T> {
   // Allows the data, and prev/next references to be set for this Node
   Node(T data, ANode<T> next, ANode<T> prev) {
     if (next == null || prev == null) {
-      throw new IllegalArgumentException("The prev and next fields of a Node, when called with " +
-              "this constructor, must be non-null.");
+      throw new IllegalArgumentException("The prev and next fields of a Node, when called with "
+          + "this constructor, must be non-null.");
     }
 
     this.data = data;
@@ -63,6 +84,12 @@ class Node<T> extends ANode<T> {
     this.prev = prev;
     this.next.setPrev(this);
     this.prev.setNext(this);
+  }
+
+  @Override
+  //Adds this node to the size
+  public int listSize() {
+    return 1 + this.next.listSize();
   }
 }
 
@@ -76,7 +103,7 @@ class ExamplesDeque {
     this.s1 = new Sentinel<>();
     this.s2 = new Sentinel<>();
     this.s3 = new Sentinel<>();
-    
+
     this.deque1 = new Deque<>(this.s1);
     this.deque2 = new Deque<>(this.s2);
     this.deque3 = new Deque<>(this.s3);
@@ -85,32 +112,45 @@ class ExamplesDeque {
     this.bcd = new Node<>("bcd");
     this.cde = new Node<>("cde");
     this.def = new Node<>("def");
-    
-    this.abc = new Node<>("abc", this.s2, this.bcd);
-    this.bcd = new Node<>("bcd", this.abc, this.cde);
-    this.cde = new Node<>("cde", this.bcd, this.def);
-    this.def = new Node<>("def", this.cde, this.s2);
+
+    this.abc = new Node<>("abc", this.bcd, this.s2);
+    this.bcd = new Node<>("bcd", this.cde, this.abc);
+    this.cde = new Node<>("cde", this.def, this.bcd);
+    this.def = new Node<>("def", this.s2, this.cde);
 
     this.only = new Node<>("only");
     this.made = new Node<>("made");
     this.to = new Node<>("to");
     this.test = new Node<>("test");
-    
-    this.only = new Node<>("only",this.s3, this.made);
-    this.made = new Node<>("made", this.only, this.to);
-    this.to = new Node<>("to", this.made, this.test);
-    this.test = new Node<>("test", this.to, this.s3);
+
+    this.only = new Node<>("only", this.made, this.s3);
+    this.made = new Node<>("made", this.to, this.only);
+    this.to = new Node<>("to", this.test, this.made);
+    this.test = new Node<>("test", this.s3, this.to);
   }
 
   void testNodeConstructor(Tester t) {
-    t.checkConstructorException(new IllegalArgumentException("The prev and next fields of a Node, "
+    t.checkConstructorException(
+        new IllegalArgumentException("The prev and next fields of a Node, "
             + "when called with this constructor, must be non-null."),
-            "Node", "test", null, new Node<String>("asdf"));
+        "Node", "test", null, new Node<String>("asdf"));
   }
-  
+
   void testNodeConstructorSet(Tester t) {
     init();
     t.checkExpect(this.abc.next.prev, this.abc);
     t.checkExpect(this.bcd.prev.next, this.bcd);
+  }
+  
+  void testSize(Tester t) {
+    init();
+    t.checkExpect(this.deque1.size(), 0);
+    t.checkExpect(this.deque2.size(), 4);
+  }
+  
+  void testAddBeginning(Tester t) {
+    init();
+    this.deque2.addAtHead("0ab");
+    t.checkExpect(this.deque2.header.next, new Node<>("0ab", this.abc, this.deque2.header));
   }
 }
