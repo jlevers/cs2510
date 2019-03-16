@@ -18,11 +18,42 @@ class Deque<T> {
   int size() {
     return this.header.size();
   }
-  
-  //Adds A new node with the given value to the end the front
+
+  // Adds a new node with the given value to the front of the list
   void addAtHead(T value) {
-   ANode<T> temp = this.header.next;
-   this.header.next = new Node<>(value, temp, this.header);
+    ANode<T> temp = this.header.next;
+    this.header.next = new Node<>(value, temp, this.header);
+  }
+
+  // Adds a new node with the given value to the end of the list
+  void addAtTail(T value) {
+    ANode<T> temp = this.header.prev;
+    this.header.prev = new Node<>(value, this.header, temp);
+  }
+
+  // Removes the first node from the deck and returns its value
+  T removeFromHead() {
+    if (this.header.isEmpty()) {
+      throw new RuntimeException("Cannot remove an item from an Empty Deque");
+    }
+    ANode<T> removed = this.header.next;
+    this.header.next = this.header.next.next;
+    this.header.next.prev = this.header;
+
+    return removed.dataFromNode();
+  }
+
+  // Removes the last node from the deck and returns its value
+  T removeFromTail() {
+    if (this.header.isEmpty()) {
+      throw new RuntimeException("Cannot remove an item from an Empty Deque");
+    }
+
+    ANode<T> removed = this.header.prev;
+    this.header.prev = this.header.prev.prev;
+    this.header.prev.next = this.header;
+
+    return removed.dataFromNode();
   }
 }
 
@@ -36,14 +67,21 @@ abstract class ANode<T> {
     this.next = next;
   }
 
+  public abstract T dataFromNode();
+
   // EFFECT: sets this ANode's prev reference to the given node
   void setPrev(ANode<T> prev) {
     this.prev = prev;
   }
 
-  //Determines the size of the list
+  // Determines the size of the list
   public int listSize() {
     return 0;
+  }
+
+  // Returns true if the ANode is a Sentinel
+  public boolean isSentinal() {
+    return false;
   }
 }
 
@@ -55,9 +93,24 @@ class Sentinel<T> extends ANode<T> {
     this.prev = this;
   }
 
-  //Determines the number of Nodes after this sentinel
+  public boolean isEmpty() {
+    return this.next.isSentinal() && this.prev.isSentinal();
+  }
+
+  // Determines the number of Nodes after this sentinel
   public int size() {
     return this.next.listSize();
+  }
+
+  // Always returns true because this ANode is a Sentinel
+  public boolean isSentinal() {
+    return true;
+  }
+
+  @Override
+  // Throws an exception as a Sentinel does not have data
+  public T dataFromNode() {
+    throw new RuntimeException("Sentinels do not have data to access");
   }
 }
 
@@ -87,9 +140,15 @@ class Node<T> extends ANode<T> {
   }
 
   @Override
-  //Adds this node to the size
+  // Adds this node to the size
   public int listSize() {
     return 1 + this.next.listSize();
+  }
+
+  @Override
+  // Returns the data from this node
+  public T dataFromNode() {
+    return this.data;
   }
 }
 
@@ -141,16 +200,66 @@ class ExamplesDeque {
     t.checkExpect(this.abc.next.prev, this.abc);
     t.checkExpect(this.bcd.prev.next, this.bcd);
   }
-  
+
   void testSize(Tester t) {
     init();
     t.checkExpect(this.deque1.size(), 0);
     t.checkExpect(this.deque2.size(), 4);
   }
-  
-  void testAddBeginning(Tester t) {
+
+  void testListSize(Tester t) {
+    init();
+    t.checkExpect(this.s1.listSize(), 0);
+    t.checkExpect(this.def.listSize(), 1);
+    t.checkExpect(this.cde.listSize(), 2);
+  }
+
+  void testAddAtHead(Tester t) {
     init();
     this.deque2.addAtHead("0ab");
     t.checkExpect(this.deque2.header.next, new Node<>("0ab", this.abc, this.deque2.header));
+  }
+
+  void testAddAtTail(Tester t) {
+    init();
+    this.deque2.addAtTail("efg");
+    t.checkExpect(this.deque2.header.prev, new Node<>("efg", this.deque2.header, this.def));
+  }
+
+  void testRemoveFromHead(Tester t) {
+    init();
+    t.checkException(new RuntimeException("Cannot remove an item from an Empty Deque"), 
+        this.deque1,"removeFromHead");
+    t.checkExpect(this.deque2.removeFromHead(), "abc");
+    t.checkExpect(this.deque2.header.next, this.bcd);
+    t.checkExpect(this.bcd.prev, this.deque2.header);
+  }
+
+  void testRemoveFromTail(Tester t) {
+    init();
+    t.checkException(new RuntimeException("Cannot remove an item from an Empty Deque"), this.deque1,
+        "removeFromTail");
+    t.checkExpect(this.deque2.removeFromTail(), "def");
+    t.checkExpect(this.deque2.header.prev, this.cde);
+    t.checkExpect(this.cde.next, this.deque2.header);
+  }
+
+  void testIsEmpty(Tester t) {
+    init();
+    t.checkExpect(this.deque1.header.isEmpty(), true);
+    t.checkExpect(this.deque2.header.isEmpty(), false);
+  }
+
+  void testIsSentinal(Tester t) {
+    init();
+    t.checkExpect(this.s1.isSentinal(), true);
+    t.checkExpect(this.abc.isSentinal(), false);
+  }
+
+  void testDataFromNode(Tester t) {
+    init();
+    t.checkException(new RuntimeException("Sentinels do not have data to access"), this.s1,
+        "dataFromNode");
+    t.checkExpect(this.abc.dataFromNode(), "abc");
   }
 }
