@@ -8,11 +8,9 @@ import java.util.Random;
  */
 class PermutationCode {
   // The original list of characters to be encoded
-  ArrayList<String> alphabet = 
-      new ArrayList<String>(Arrays.asList(
-                  "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", 
-                  "k", "l", "m", "n", "o", "p", "q", "r", "s", 
-                  "t", "u", "v", "w", "x", "y", "z"));
+  ArrayList<String> alphabet = new ArrayList<String>(
+      Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
+          "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
 
   // The encoded alphabet: the 1-string at index 0 is the encoding of "a",
   // the 1-string at index 1 is the encoding of "b", etc.
@@ -21,17 +19,19 @@ class PermutationCode {
   // A random number generator
   Random rand;
 
-  // Create a new random instance of the encoder/decoder with a new permutation code 
+  // Create a new random instance of the encoder/decoder with a new permutation
+  // code
   PermutationCode() {
     this(new Random());
   }
+
   // Create a particular random instance of the encoder/decoder
   PermutationCode(Random r) {
     this.rand = r;
     this.code = this.initEncoder();
   }
 
-  // Create a new instance of the encoder/decoder with the given code 
+  // Create a new instance of the encoder/decoder with the given code
   PermutationCode(ArrayList<String> code) {
     this.code = code;
     this.rand = new Random(); // won't be used, but best to not leave fields null
@@ -53,21 +53,43 @@ class PermutationCode {
   // You can assume the given string consists only of lowercase characters
   String encode(String source) {
     String encoded = "";
-    for(char c : source.toCharArray()) {
-      int index = this.alphabet.indexOf(c);
-      encoded += this.code.get(index);
-    }
-    return encoded;
+
+//    for (int i = 0; i <= source.length() - 1; i++) {
+//      char letter = source.charAt(i);
+//      String letterString = String.valueOf(letter);
+//      int index = this.alphabet.indexOf(letterString);
+//      encoded += this.code.get(index);
+//    }
+//
+//    return encoded;
+    return this.convert(source, this.alphabet, this.code);
   }
 
   // produce a decoded String from the given String
   // You can assume the given string consists only of lowercase characters
   String decode(String code) {
-    String decoded = "";
-    for(char c : code.toCharArray()) {
-      int index = this.code.indexOf(c);
-      decoded += this.alphabet.get(index);
+//    String decoded = "";
+//
+//    for (int i = 0; i <= code.length() - 1; i++) {
+//      char letter = code.charAt(i);
+//      String letterString = String.valueOf(letter);
+//      int index = this.code.indexOf(letterString);
+//      decoded += this.alphabet.get(index);
+//    }
+//    return decoded;
+    return this.convert(code, this.code, this.alphabet);
+  }
+
+  // Converts the given String using two coded ArrayLists
+  String convert(String s, ArrayList<String> original, ArrayList<String> converter) {
+    String converted = "";
+
+    for (int i = 0; i <= s.length() - 1; i++) {
+      char letter = s.charAt(i);
+      String letterString = String.valueOf(letter);
+      int index = original.indexOf(letterString);
+      converted += converter.get(index);
     }
-    return decoded;
+    return converted;
   }
 }
