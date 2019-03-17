@@ -52,31 +52,12 @@ class PermutationCode {
   // produce an encoded String from the given String
   // You can assume the given string consists only of lowercase characters
   String encode(String source) {
-    String encoded = "";
-
-//    for (int i = 0; i <= source.length() - 1; i++) {
-//      char letter = source.charAt(i);
-//      String letterString = String.valueOf(letter);
-//      int index = this.alphabet.indexOf(letterString);
-//      encoded += this.code.get(index);
-//    }
-//
-//    return encoded;
     return this.convert(source, this.alphabet, this.code);
   }
 
   // produce a decoded String from the given String
   // You can assume the given string consists only of lowercase characters
   String decode(String code) {
-//    String decoded = "";
-//
-//    for (int i = 0; i <= code.length() - 1; i++) {
-//      char letter = code.charAt(i);
-//      String letterString = String.valueOf(letter);
-//      int index = this.code.indexOf(letterString);
-//      decoded += this.alphabet.get(index);
-//    }
-//    return decoded;
     return this.convert(code, this.code, this.alphabet);
   }
 
