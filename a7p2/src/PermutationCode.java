@@ -8,13 +8,13 @@ import java.util.Random;
  */
 class PermutationCode {
   // The original list of characters to be encoded
-  ArrayList<String> alphabet = new ArrayList<String>(
-      Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
-          "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
+  ArrayList<Character> alphabet = new ArrayList<>(
+      Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+          'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'));
 
-  // The encoded alphabet: the 1-string at index 0 is the encoding of "a",
-  // the 1-string at index 1 is the encoding of "b", etc.
-  ArrayList<String> code;
+  // The encoded alphabet: the 1-string at index 0 is the encoding of 'a',
+  // the 1-string at index 1 is the encoding of 'b', etc.
+  ArrayList<Character> code;
 
   // A random number generator
   Random rand;
@@ -32,18 +32,18 @@ class PermutationCode {
   }
 
   // Create a new instance of the encoder/decoder with the given code
-  PermutationCode(ArrayList<String> code) {
+  PermutationCode(ArrayList<Character> code) {
     this.code = code;
     this.rand = new Random(); // won't be used, but best to not leave fields null
   }
 
   // Initialize the encoding permutation of the characters
-  ArrayList<String> initEncoder() {
-    ArrayList<String> cloned = new ArrayList<>(this.alphabet);
-    ArrayList<String> encoder = new ArrayList<>(26);
+  ArrayList<Character> initEncoder() {
+    ArrayList<Character> cloned = new ArrayList<>(this.alphabet);
+    ArrayList<Character> encoder = new ArrayList<>(26);
     for (int i = cloned.size(); i > 0; i--) {
       int random = this.rand.nextInt(cloned.size());
-      String removed = cloned.remove(random);
+      char removed = cloned.remove(random);
       encoder.add(removed);
     }
     return encoder;
@@ -62,13 +62,12 @@ class PermutationCode {
   }
 
   // Converts the given String using two coded ArrayLists
-  String convert(String s, ArrayList<String> original, ArrayList<String> converter) {
+  String convert(String s, ArrayList<Character> original, ArrayList<Character> converter) {
     String converted = "";
 
-    for (int i = 0; i <= s.length() - 1; i++) {
+    for (int i = 0; i < s.length(); i++) {
       char letter = s.charAt(i);
-      String letterString = String.valueOf(letter);
-      int index = original.indexOf(letterString);
+      int index = original.indexOf(letter);
       converted += converter.get(index);
     }
     return converted;
