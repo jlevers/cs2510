@@ -9,11 +9,15 @@ import javalib.worldimages.*;
 
 // Represents a game of Minesweeper
 class Minesweeper extends World {
-  public static final Color VISIBLE_TILE = Color.DARK_GRAY;
-  public static final Color HIDDEN_TILE = Color.CYAN;
-  public static final ArrayList<Color> MINE_NUM_COLORS = new ArrayList<>(
-          Arrays.asList(Minesweeper.VISIBLE_TILE, Color.BLUE, Color.GREEN, Color.RED, Color.MAGENTA,
-              Color.PINK, Color.ORANGE, Color.YELLOW, Color.BLACK));
+  static final Color VISIBLE_TILE = Color.DARK_GRAY;
+  static final Color HIDDEN_TILE = Color.CYAN;
+  static final ArrayList<Color> MINE_NUM_COLORS = new ArrayList<>(
+          Arrays.asList(Minesweeper.VISIBLE_TILE, Color.BLUE, Color.GREEN, Color.RED, Color.PINK));
+  static final ArrayList<ArrayList<Integer>> VECTORS = new ArrayList<>(Arrays.asList(
+          new ArrayList<>(Arrays.asList(-1, -1)),
+          new ArrayList<>(Arrays.asList(-1, 0)),
+          new ArrayList<>(Arrays.asList(-1, 1)),
+          new ArrayList<>(Arrays.asList(0, -1))));
   public static final int TILE_WIDTH = 16;
   public static final int OBJECT_WIDTH = TILE_WIDTH / 2;
 
@@ -76,23 +80,26 @@ class Minesweeper extends World {
   // EFFECT: updates the neighbors of the tiles up and to the left of the one at the given
   // coordinates
   void updateNeighbors(Tile t, int x, int y) {
-    if (x - 1 >= 0) {
-      if (y - 1 >= 0) {
-        t.neighbors.add(this.grid.get(x - 1).get(y - 1));
+    for (ArrayList<Integer> al : Minesweeper.VECTORS) {
+      int nx = x + al.get(0);
+      int ny = y + al.get(1);
+      if (validCoords(nx, ny)) {
+        t.neighbors.add(this.tileAt(nx, ny));
       }
-
-      t.neighbors.add(this.grid.get(x - 1).get(y));
-
-      if (y + 1 < this.width) {
-        t.neighbors.add(this.grid.get(x - 1).get(y + 1));
-      }
-    }
-
-    if (y - 1 >= 0) {
-      t.neighbors.add(this.grid.get(x).get(y - 1));
     }
 
     t.updateNeighbors();
+  }
+
+  // Checks if the given coordinates exist in this Minesweeper grid
+  boolean validCoords(int x, int y) {
+    return x >= 0 && x < this.width
+            && y >= 0 && y < this.height;
+  }
+
+  // Retrieves the tile at the given coordinates in the grid
+  Tile tileAt(int x, int y) {
+    return this.grid.get(x).get(y);
   }
 
   // Draws the current state of the game
@@ -211,40 +218,3 @@ class ExamplesMinesweeper {
 //        true
 //        true
 }
-
-// Represents
-//class Posn {
-//  int x;
-//  int y;
-//
-//  Posn(int x, int y) {
-//    this.x = x;
-//    this.y = y;
-//  }
-//
-//  // Checks if this Posn is within the bounds of the Minesweeper grid
-//  boolean validPosn() {
-//    return this.x >= 0 && this.x < this.width
-//            && this.y >= 0 && this.y < this.height;
-//  }
-//
-//  // Validates the given list of Posns
-//  // EFFECT: removes invalid Posns
-//  void validate(ArrayList<Posn> toValidate) {
-//    for(int i = toValidate.size() - 1; i >= 0; i--) {
-//      if (!toValidate.get(i).validPosn()) {
-//        toValidate.remove(i);
-//      }
-//    }
-//  }
-//
-//  // Generates all Posns up and to the left of this one, within the bounds of the Minesweeper grid
-//  ArrayList<Posn> genUpLeftPosns() {
-//    ArrayList<Posn> generated = new ArrayList<>(Arrays.asList(new Posn(this.x - 1, this.y - 1),
-//            new Posn(this.x, this.y - 1), new Posn(this.x + 1, this.y - 1),
-//            new Posn(this.x - 1, this.y)));
-//    this.validate(generated);
-//
-//    return generated;
-//  }
-//}
