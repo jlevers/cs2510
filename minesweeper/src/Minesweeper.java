@@ -108,7 +108,7 @@ class Minesweeper extends World {
         drawn.placeImageXY(drawnTile, x, y);
       }
     }
-    return drawn;
+    return drawn;  
   }
 }
 
@@ -187,6 +187,7 @@ class ExamplesMinesweeper {
         new ArrayList<>(Arrays.asList(this.c20, this.c21, this.c22, this.c23)),
         new ArrayList<>(Arrays.asList(this.c30, this.c31, this.c32, this.c33))
     ));
+    
   }
 
   void testInit(Tester t) {
