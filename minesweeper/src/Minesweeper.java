@@ -9,25 +9,32 @@ import javalib.worldimages.*;
 
 // Represents a game of Minesweeper
 class Minesweeper extends World {
-  static final Color VISIBLE_TILE = Color.DARK_GRAY;
-  static final Color HIDDEN_TILE = Color.CYAN;
-  static final ArrayList<Color> MINE_NUM_COLORS = new ArrayList<>(
-          Arrays.asList(Minesweeper.VISIBLE_TILE, Color.BLUE, Color.GREEN, Color.RED, Color.PINK));
+  public static final Color VISIBLE_TILE = Color.DARK_GRAY;
+  public static final Color HIDDEN_TILE = Color.CYAN;
+  public static final ArrayList<Color> MINE_NUM_COLORS = new ArrayList<>(
+          Arrays.asList(Minesweeper.VISIBLE_TILE, Color.BLUE, Color.GREEN, Color.RED, Color.MAGENTA,
+              Color.PINK, Color.ORANGE, Color.YELLOW, Color.BLACK));
+  public static final int TILE_WIDTH = 16;
+  public static final int OBJECT_WIDTH = TILE_WIDTH / 2;
 
   Random rand;
   int width;
   int height;
   int numMines;
   ArrayList<ArrayList<Tile>> grid = new ArrayList<>(this.width);
+  int windowHeight;
+  int windowWidth;
 
   Minesweeper(Random rand, int width, int height, int numMines) {
     this.rand = rand;
     this.width = width;
     this.height = height;
     this.numMines = numMines;
+    this.windowHeight = this.height * Minesweeper.TILE_WIDTH;
+    this.windowWidth = this.width * Minesweeper.TILE_WIDTH; 
 
     this.initGrid();
-    this.addMines();
+    this.addMines(this.numMines);
   }
 
   Minesweeper(int width, int height, int numMines) {
@@ -38,6 +45,7 @@ class Minesweeper extends World {
   void initGrid() {
     for (int i = 0; i < this.height; i++) {
       this.grid.add(new ArrayList<>());
+      
       ArrayList<Tile> temp = this.grid.get(i);
 
       for (int j = 0; j < this.width; j++) {
@@ -49,16 +57,19 @@ class Minesweeper extends World {
   }
 
   // EFFECT: randomly adds mines to the grid
-  void addMines() {
-    int minesLeft = this.numMines;
+  void addMines(int remaining) {
+    int minesLeft = remaining;
 
     for (ArrayList<Tile> al : this.grid) {
       for (Tile t : al) {
-        if (minesLeft > 0 && rand.nextBoolean()) {
+        if (minesLeft > 0 && rand.nextBoolean() && !t.mine) {
           t.mine = true;
           minesLeft -= 1;
         }
       }
+    }
+    if(minesLeft != 0) {
+      this.addMines(minesLeft);
     }
   }
 
@@ -86,7 +97,18 @@ class Minesweeper extends World {
 
   // Draws the current state of the game
   public WorldScene makeScene() {
-    return null;
+    WorldScene drawn = new WorldScene(this.windowWidth, this.windowHeight);
+    
+    for(int i = 0; i < this.height; i++) {
+      for(int j = 0; j < this.width; j++ ) {
+        int x = (j * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
+        int y = (j * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
+        WorldImage drawnTile = this.grid.get(i).get(j).drawTile();
+        
+        drawn.placeImageXY(drawnTile, x, y);
+      }
+    }
+    return drawn;
   }
 }
 
