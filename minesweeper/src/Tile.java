@@ -1,13 +1,7 @@
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import javalib.worldimages.CircleImage;
-import javalib.worldimages.OutlineMode;
-import javalib.worldimages.OverlayImage;
-import javalib.worldimages.RectangleImage;
-import javalib.worldimages.TextImage;
-import javalib.worldimages.WorldImage;
+import javalib.worldimages.*;
 import tester.*;
 
 // Represents a tile in Minesweeper
@@ -17,6 +11,7 @@ class Tile {
   boolean visible;
   ArrayList<Tile> neighbors;
 
+  // Constants
   static final WorldImage MINE_IMAGE = new CircleImage(Minesweeper.OBJECT_WIDTH, OutlineMode.SOLID,
           Color.BLACK);
   static final WorldImage OUTLINE_TILE = new RectangleImage(Minesweeper.TILE_WIDTH,
@@ -42,14 +37,14 @@ class Tile {
     this(mine, false, false, neighbors);
   }
   
-  Tile(boolean mine, boolean flagged, boolean visible, ArrayList<Tile> neighbors){
+  Tile(boolean mine, boolean flagged, boolean visible, ArrayList<Tile> neighbors) {
     this.mine = mine;
     this.flagged = flagged;
     this.visible = visible;
     this.neighbors = neighbors;
   }
 
-  // Updates this tile's neighbors
+  // EFFECT: updates this tile's neighbors
   void updateNeighbors() {
     for (Tile t : this.neighbors) {
       t.neighbors.add(this);
@@ -59,7 +54,7 @@ class Tile {
   // Calculates the number of mines surrounding this tile
   int countMines() {
     int mines = 0;
-    for(Tile t : this.neighbors){
+    for (Tile t : this.neighbors) {
       if (t.mine) {
         mines += 1;
       }
@@ -67,9 +62,41 @@ class Tile {
     return mines;
   }
 
+  // EFFECT: toggles the flag on or off
+  void toggleFlag() {
+    this.flagged = !this.flagged;
+  }
+
+  // EFFECT: makes this tile visible
+  void setVisible() {
+    this.visible = true;
+  }
+
+  // Checks if this is a mine
+  boolean isMine() {
+    return this.mine;
+  }
+
+  // Checks if this mine has been clicked
+  boolean exploded() {
+    return this.mine && this.visible;
+  }
+
+  // EFFECT: makes this tile visible, and makes neighboring tiles visible if necessary
+  void flood() {
+    if (!this.visible) {
+      this.visible = true;
+      if (this.countMines() == 0) {
+        for (Tile t : this.neighbors) {
+          t.flood();
+        }
+      }
+    }
+  }
+
   // Draws the given tile
   public WorldImage drawTile() {
-       int minesNearby = this.countMines();
+    int minesNearby = this.countMines();
     WorldImage textImage = new TextImage(Integer.toString(minesNearby),
         Minesweeper.MINE_NUM_COLORS.get(minesNearby));
 
@@ -81,13 +108,7 @@ class Tile {
         return Tile.HIDDEN_TILE;
       } else {
         return new OverlayImage(textImage, Tile.TILE_IMAGE);
-//        if (this.visible && this.mine) {
-//          return new OverlayImage(Tile.MINE_IMAGE, Tile.TILE_IMAGE);
-//        } else {
-//          return new OverlayImage(textImage, Tile.TILE_IMAGE);
-//        }
       }
-
     }
   }
 }
@@ -98,8 +119,7 @@ class ExamplesTile {
   Tile t2;
   Tile t3;
   Tile t4;
-  Tile test;
-  
+
   WorldImage t0img = new OverlayImage(new TextImage("0", Minesweeper.VISIBLE_TILE),
           Tile.TILE_IMAGE);
   WorldImage t1img = new OverlayImage(new TextImage("1" ,Color.BLUE), Tile.TILE_IMAGE);
@@ -136,6 +156,14 @@ class ExamplesTile {
     t.checkExpect(this.t1.countMines(), 1);
     t.checkExpect(this.t3.countMines(), 2);
   }
+
+  void testToggleFlag(Tester t) {
+    init();
+    this.t0.toggleFlag();
+    t.checkExpect(this.t0.flagged, true);
+    this.t0.toggleFlag();
+    t.checkExpect(this.t0.flagged, false);
+  }
   
   void testDrawTile(Tester t) {
     init();
@@ -144,6 +172,5 @@ class ExamplesTile {
     t.checkExpect(this.t1.drawTile(), this.t1img);
     t.checkExpect(this.t2.drawTile(), this.t2img);
     t.checkExpect(this.t3.drawTile(), this.t3img);
-//    t.checkExpect(this.t4.drawTile(), this.t4img);
   }
 }

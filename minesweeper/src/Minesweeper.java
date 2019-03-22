@@ -1,4 +1,3 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import tester.*;
 import javalib.impworld.*;
@@ -9,6 +8,8 @@ import javalib.worldimages.*;
 
 // Represents a game of Minesweeper
 class Minesweeper extends World {
+
+  // Constants
   static final Color VISIBLE_TILE = Color.DARK_GRAY;
   static final Color HIDDEN_TILE = Color.CYAN;
   static final ArrayList<Color> MINE_NUM_COLORS = new ArrayList<>(Arrays.asList(
@@ -19,7 +20,7 @@ class Minesweeper extends World {
           new ArrayList<>(Arrays.asList(-1, 0)),
           new ArrayList<>(Arrays.asList(-1, 1)),
           new ArrayList<>(Arrays.asList(0, -1))));
-  public static final int TILE_WIDTH = 16;
+  public static final int TILE_WIDTH = 64;
   public static final int OBJECT_WIDTH = TILE_WIDTH / 2;
 
   Random rand;
@@ -87,7 +88,8 @@ class Minesweeper extends World {
         }
       }
     }
-    if(minesLeft != 0) {
+
+    if (minesLeft != 0) {
       this.addMines(minesLeft);
     }
   }
@@ -98,25 +100,93 @@ class Minesweeper extends World {
             && y >= 0 && y < this.height;
   }
 
+  // Checks if the given Posn is within the bounds of the game window
+  boolean validDrawnCoords(Posn p) {
+    return p.x >= 0 && p.x <= this.windowWidth
+            && p.y >= 0 && p.y <= this.windowHeight;
+  }
+
   // Retrieves the tile at the given coordinates in the grid
   Tile tileAt(int x, int y) {
     return this.grid.get(x).get(y);
+  }
+
+  // Retrieves the tile drawn at the given Posn (pixel coordinates, not grid coordinates)
+  Tile tileAtDrawnPosn(Posn p) {
+    int y = p.x / Minesweeper.TILE_WIDTH;
+    int x = p.y / Minesweeper.TILE_WIDTH;
+
+    return this.tileAt(x, y);
+  }
+
+  // EFFECT: toggles the flag of the Tile at the given Posn
+  void toggleFlag(Posn p) {
+    if (this.validDrawnCoords(p)) {
+      Tile t = this.tileAtDrawnPosn(p);
+      t.toggleFlag();
+    }
+  }
+
+  // EFFECT: reveals the clicked Tile, whether it's a mine or not
+  void onTileClick(Posn p) {
+    if (this.validDrawnCoords(p)) {
+      Tile t = this.tileAtDrawnPosn(p);
+      if (!t.isMine()) {
+        t.flood();
+      } else {
+        t.setVisible();
+      }
+    }
   }
 
   // Draws the current state of the game
   public WorldScene makeScene() {
     WorldScene drawn = new WorldScene(this.windowWidth, this.windowHeight);
     
-    for(int i = 0; i < this.height; i++) {
-      for(int j = 0; j < this.width; j++) {
+    for (int i = 0; i < this.height; i++) {
+      for (int j = 0; j < this.width; j++) {
         int x = (j * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
         int y = (i * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
-        WorldImage drawnTile = this.grid.get(i).get(j).drawTile();
+        WorldImage drawnTile = this.tileAt(i, j).drawTile();
         
         drawn.placeImageXY(drawnTile, x, y);
       }
     }
     return drawn;  
+  }
+
+  // Handles user mouse input
+  public void onMouseClicked(Posn pos, String buttonName) {
+    if (buttonName.equals("RightButton")) {
+      this.toggleFlag(pos);
+    } else if (buttonName.equals("LeftButton")) {
+      this.onTileClick(pos);
+    }
+  }
+
+  // Checks if the world should end
+  public WorldEnd worldEnds() {
+    boolean mineClicked = false;
+    int hidden = 0;
+
+    for (int i = 0; i < this.height; i++) {
+      for (int j = 0; j < this.width; j++) {
+        Tile t = this.tileAt(i, j);
+        if (t.exploded()) {
+          return this.lost();
+        }
+
+        if (!t.visible) {
+          hidden += 1;
+        }
+      }
+    }
+
+    if (hidden == this.numMines) {
+      return this.win();
+    }
+
+    return new WorldEnd(false, this.makeScene());
   }
 }
 
@@ -214,10 +284,24 @@ class ExamplesMinesweeper {
     t.checkExpect(this.small.validCoords(4, 2), false);
   }
 
+  void testValidDrawnCoords(Tester t) {
+    init();
+    t.checkExpect(this.small.validDrawnCoords(new Posn(20, 53)), true);
+    t.checkExpect(this.small.validDrawnCoords(new Posn(0, 64)), true);
+    t.checkExpect(this.small.validDrawnCoords(new Posn(-5, 20)), false);
+    t.checkExpect(this.small.validDrawnCoords(new Posn(30, 70)), false);
+  }
+
   void testTileAt(Tester t) {
     init();
     t.checkExpect(this.small.tileAt(0, 0), this.c00);
     t.checkExpect(this.small.tileAt(3, 2), this.c32);
+  }
+
+  void testTileAtDrawnPosn(Tester t) {
+    init();
+    t.checkExpect(this.small.tileAtDrawnPosn(new Posn(63, 18)), this.c13);
+    t.checkExpect(this.small.tileAtDrawnPosn(new Posn(43, 8)), this.c02);
   }
 
   void testMakeScene(Tester t) {
