@@ -60,6 +60,20 @@ class Minesweeper extends World {
     }
   }
 
+  // EFFECT: updates the neighbors of the tiles up and to the left of the one at the given
+  // coordinates
+  void updateNeighbors(Tile t, int x, int y) {
+    for (ArrayList<Integer> al : Minesweeper.VECTORS) {
+      int nx = x + al.get(0);
+      int ny = y + al.get(1);
+      if (validCoords(nx, ny)) {
+        t.neighbors.add(this.tileAt(nx, ny));
+      }
+    }
+
+    t.updateNeighbors();
+  }
+
   // EFFECT: randomly adds mines to the grid
   void addMines(int remaining) {
     int minesLeft = remaining;
@@ -75,20 +89,6 @@ class Minesweeper extends World {
     if(minesLeft != 0) {
       this.addMines(minesLeft);
     }
-  }
-
-  // EFFECT: updates the neighbors of the tiles up and to the left of the one at the given
-  // coordinates
-  void updateNeighbors(Tile t, int x, int y) {
-    for (ArrayList<Integer> al : Minesweeper.VECTORS) {
-      int nx = x + al.get(0);
-      int ny = y + al.get(1);
-      if (validCoords(nx, ny)) {
-        t.neighbors.add(this.tileAt(nx, ny));
-      }
-    }
-
-    t.updateNeighbors();
   }
 
   // Checks if the given coordinates exist in this Minesweeper grid
@@ -196,24 +196,38 @@ class ExamplesMinesweeper {
     ));
   }
 
-  void testInit(Tester t) {
+  // This also tests this.updateNeighbors() and this.addMines() because we can't run initGrid()
+  // without those, and we can't run either of those without running initGrid()
+  void testInitGrid(Tester t) {
     init();
     t.checkExpect(this.small.grid, this.smallGrid);
   }
-//        true
-//        false
-//        false
-//        false
-//        false
-//        false
-//        false
-//        true
-//        true
-//        true
-//        false
-//        false
-//        true
-//        false
-//        true
-//        true
+
+  void testValidCoords(Tester t) {
+    init();
+    t.checkExpect(this.small.validCoords(2, 1), true);
+    t.checkExpect(this.small.validCoords(-1, 0), false);
+    t.checkExpect(this.small.validCoords(3, 3), true);
+    t.checkExpect(this.small.validCoords(4, 2), false);
+  }
+
+  void testTileAt(Tester t) {
+    init();
+    t.checkExpect(this.small.tileAt(0, 0), this.c00);
+    t.checkExpect(this.small.tileAt(3, 2), this.c32);
+  }
+
+  void testUpdateNeighborsTile(Tester t) {
+    init();
+    this.c00.updateNeighbors();
+    t.checkExpect(this.c01.neighbors.get(5), this.c00);
+    t.checkExpect(this.c10.neighbors.get(5), this.c00);
+    t.checkExpect(this.c11.neighbors.get(8), this.c00);
+  }
+
+  void testCountMines(Tester t) {
+    init();
+    t.checkExpect(this.c00.countMines(), 0);
+    t.checkExpect(this.c21.countMines(), 3);
+  }
 }

@@ -38,12 +38,12 @@ class Tile {
     }
   }
   
-  //Calculates the number of mines surrounding this tile
+  // Calculates the number of mines surrounding this tile
   int countMines() {
     int mines = 0;
-    for(Tile t: this.neighbors){
-      if(t.mine) {
-        mines += mines;
+    for(Tile t : this.neighbors){
+      if (t.mine) {
+        mines += 1;
       }
     }
     return mines;
@@ -84,8 +84,4 @@ class Tile {
       }
     }
   }
-}
-
-class ExamplesTile {
-
 }
