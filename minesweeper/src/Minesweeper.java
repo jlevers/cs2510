@@ -18,21 +18,27 @@ class Minesweeper extends World {
           new ArrayList<>(Arrays.asList(-1, 0)),
           new ArrayList<>(Arrays.asList(-1, 1)),
           new ArrayList<>(Arrays.asList(0, -1))));
+  public static final int TILE_WIDTH = 16;
+  public static final int OBJECT_WIDTH = TILE_WIDTH / 2;
 
   Random rand;
   int width;
   int height;
   int numMines;
   ArrayList<ArrayList<Tile>> grid = new ArrayList<>(this.width);
+  int windowHeight;
+  int windowWidth;
 
   Minesweeper(Random rand, int width, int height, int numMines) {
     this.rand = rand;
     this.width = width;
     this.height = height;
     this.numMines = numMines;
+    this.windowHeight = this.height * Minesweeper.TILE_WIDTH;
+    this.windowWidth = this.width * Minesweeper.TILE_WIDTH; 
 
     this.initGrid();
-    this.addMines();
+    this.addMines(this.numMines);
   }
 
   Minesweeper(int width, int height, int numMines) {
@@ -43,6 +49,7 @@ class Minesweeper extends World {
   void initGrid() {
     for (int i = 0; i < this.height; i++) {
       this.grid.add(new ArrayList<>());
+      
       ArrayList<Tile> temp = this.grid.get(i);
 
       for (int j = 0; j < this.width; j++) {
@@ -54,16 +61,19 @@ class Minesweeper extends World {
   }
 
   // EFFECT: randomly adds mines to the grid
-  void addMines() {
-    int minesLeft = this.numMines;
+  void addMines(int remaining) {
+    int minesLeft = remaining;
 
     for (ArrayList<Tile> al : this.grid) {
       for (Tile t : al) {
-        if (minesLeft > 0 && rand.nextBoolean()) {
+        if (minesLeft > 0 && rand.nextBoolean() && !t.mine) {
           t.mine = true;
           minesLeft -= 1;
         }
       }
+    }
+    if(minesLeft != 0) {
+      this.addMines(minesLeft);
     }
   }
 
@@ -94,7 +104,18 @@ class Minesweeper extends World {
 
   // Draws the current state of the game
   public WorldScene makeScene() {
-    return null;
+    WorldScene drawn = new WorldScene(this.windowWidth, this.windowHeight);
+    
+    for(int i = 0; i < this.height; i++) {
+      for(int j = 0; j < this.width; j++ ) {
+        int x = (j * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
+        int y = (j * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
+        WorldImage drawnTile = this.grid.get(i).get(j).drawTile();
+        
+        drawn.placeImageXY(drawnTile, x, y);
+      }
+    }
+    return drawn;
   }
 }
 
@@ -196,40 +217,3 @@ class ExamplesMinesweeper {
 //        true
 //        true
 }
-
-// Represents
-//class Posn {
-//  int x;
-//  int y;
-//
-//  Posn(int x, int y) {
-//    this.x = x;
-//    this.y = y;
-//  }
-//
-//  // Checks if this Posn is within the bounds of the Minesweeper grid
-//  boolean validPosn() {
-//    return this.x >= 0 && this.x < this.width
-//            && this.y >= 0 && this.y < this.height;
-//  }
-//
-//  // Validates the given list of Posns
-//  // EFFECT: removes invalid Posns
-//  void validate(ArrayList<Posn> toValidate) {
-//    for(int i = toValidate.size() - 1; i >= 0; i--) {
-//      if (!toValidate.get(i).validPosn()) {
-//        toValidate.remove(i);
-//      }
-//    }
-//  }
-//
-//  // Generates all Posns up and to the left of this one, within the bounds of the Minesweeper grid
-//  ArrayList<Posn> genUpLeftPosns() {
-//    ArrayList<Posn> generated = new ArrayList<>(Arrays.asList(new Posn(this.x - 1, this.y - 1),
-//            new Posn(this.x, this.y - 1), new Posn(this.x + 1, this.y - 1),
-//            new Posn(this.x - 1, this.y)));
-//    this.validate(generated);
-//
-//    return generated;
-//  }
-//}
