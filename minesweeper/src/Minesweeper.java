@@ -11,8 +11,9 @@ import javalib.worldimages.*;
 class Minesweeper extends World {
   static final Color VISIBLE_TILE = Color.DARK_GRAY;
   static final Color HIDDEN_TILE = Color.CYAN;
-  static final ArrayList<Color> MINE_NUM_COLORS = new ArrayList<>(
-          Arrays.asList(Minesweeper.VISIBLE_TILE, Color.BLUE, Color.GREEN, Color.RED, Color.PINK));
+  static final ArrayList<Color> MINE_NUM_COLORS = new ArrayList<>(Arrays.asList(
+          Minesweeper.VISIBLE_TILE, Color.BLUE, Color.GREEN, Color.RED, Color.PINK, Color.RED,
+          Color.CYAN, Color.BLACK, Color.MAGENTA));
   static final ArrayList<ArrayList<Integer>> VECTORS = new ArrayList<>(Arrays.asList(
           new ArrayList<>(Arrays.asList(-1, -1)),
           new ArrayList<>(Arrays.asList(-1, 0)),
@@ -107,9 +108,9 @@ class Minesweeper extends World {
     WorldScene drawn = new WorldScene(this.windowWidth, this.windowHeight);
     
     for(int i = 0; i < this.height; i++) {
-      for(int j = 0; j < this.width; j++ ) {
+      for(int j = 0; j < this.width; j++) {
         int x = (j * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
-        int y = (j * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
+        int y = (i * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
         WorldImage drawnTile = this.grid.get(i).get(j).drawTile();
         
         drawn.placeImageXY(drawnTile, x, y);
@@ -121,6 +122,7 @@ class Minesweeper extends World {
 
 class ExamplesMinesweeper {
   Minesweeper small;
+  Minesweeper shown;
   ArrayList<ArrayList<Tile>> smallGrid;
   Tile c00;
   Tile c01;
@@ -142,6 +144,7 @@ class ExamplesMinesweeper {
 
   void init() {
     this.small = new Minesweeper(new Random(1), 4, 4, 7);
+    this.shown = new Minesweeper(new Random(1), 4, 4, 7);
     this.c00 = new Tile(true);
     this.c01 = new Tile(false);
     this.c02 = new Tile(false);
@@ -194,7 +197,6 @@ class ExamplesMinesweeper {
         new ArrayList<>(Arrays.asList(this.c20, this.c21, this.c22, this.c23)),
         new ArrayList<>(Arrays.asList(this.c30, this.c31, this.c32, this.c33))
     ));
-    
   }
 
   // This also tests this.updateNeighbors() and this.addMines() because we can't run initGrid()
@@ -216,5 +218,37 @@ class ExamplesMinesweeper {
     init();
     t.checkExpect(this.small.tileAt(0, 0), this.c00);
     t.checkExpect(this.small.tileAt(3, 2), this.c32);
+  }
+
+  void testMakeScene(Tester t) {
+    init();
+    this.small.tileAt(2, 2).visible = true;
+    this.small.tileAt(1, 0).flagged = true;
+
+    WorldScene gameImage = new WorldScene(64, 64);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 8, 8);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 24, 8);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 40, 8);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 56, 8);
+    gameImage.placeImageXY(new OverlayImage(Tile.FLAG_IMAGE, Tile.HIDDEN_TILE), 8, 24);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 24, 24);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 40, 24);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 56, 24);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 8, 40);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 24, 40);
+    gameImage.placeImageXY(new OverlayImage(new TextImage("4", Color.PINK),
+            Tile.TILE_IMAGE), 40, 40);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 56, 40);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 8, 56);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 24, 56);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 40, 56);
+    gameImage.placeImageXY(Tile.HIDDEN_TILE, 56, 56);
+
+    t.checkExpect(this.small.makeScene(), gameImage);
+  }
+
+  void testBigBang(Tester t) {
+    init();
+    this.small.bigBang(500, 500);
   }
 }
