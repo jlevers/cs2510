@@ -115,7 +115,7 @@ class Minesweeper extends World {
         drawn.placeImageXY(drawnTile, x, y);
       }
     }
-    return drawn;
+    return drawn;  
   }
 }
 
@@ -194,6 +194,7 @@ class ExamplesMinesweeper {
         new ArrayList<>(Arrays.asList(this.c20, this.c21, this.c22, this.c23)),
         new ArrayList<>(Arrays.asList(this.c30, this.c31, this.c32, this.c33))
     ));
+    
   }
 
   // This also tests this.updateNeighbors() and this.addMines() because we can't run initGrid()
@@ -215,19 +216,5 @@ class ExamplesMinesweeper {
     init();
     t.checkExpect(this.small.tileAt(0, 0), this.c00);
     t.checkExpect(this.small.tileAt(3, 2), this.c32);
-  }
-
-  void testUpdateNeighborsTile(Tester t) {
-    init();
-    this.c00.updateNeighbors();
-    t.checkExpect(this.c01.neighbors.get(5), this.c00);
-    t.checkExpect(this.c10.neighbors.get(5), this.c00);
-    t.checkExpect(this.c11.neighbors.get(8), this.c00);
-  }
-
-  void testCountMines(Tester t) {
-    init();
-    t.checkExpect(this.c00.countMines(), 0);
-    t.checkExpect(this.c21.countMines(), 3);
   }
 }
