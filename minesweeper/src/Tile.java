@@ -13,17 +13,15 @@ class Tile {
 
   // Constants
   static final WorldImage MINE_IMAGE = new CircleImage(Minesweeper.OBJECT_WIDTH, OutlineMode.SOLID,
-          Color.BLACK);
+      Color.BLACK);
   static final WorldImage OUTLINE_TILE = new RectangleImage(Minesweeper.TILE_WIDTH,
-          Minesweeper.TILE_WIDTH, OutlineMode.OUTLINE, Color.BLACK);
-  static final WorldImage HIDDEN_TILE = new OverlayImage(Tile.OUTLINE_TILE,
-          new RectangleImage(Minesweeper.TILE_WIDTH,
-          Minesweeper.TILE_WIDTH, OutlineMode.SOLID, Minesweeper.HIDDEN_TILE));
-  static final WorldImage TILE_IMAGE = new OverlayImage(Tile.OUTLINE_TILE,
-          new RectangleImage(Minesweeper.TILE_WIDTH,
-          Minesweeper.TILE_WIDTH, OutlineMode.SOLID, Minesweeper.VISIBLE_TILE));
+      Minesweeper.TILE_WIDTH, OutlineMode.OUTLINE, Color.BLACK);
+  static final WorldImage HIDDEN_TILE = new OverlayImage(Tile.OUTLINE_TILE, new RectangleImage(
+      Minesweeper.TILE_WIDTH, Minesweeper.TILE_WIDTH, OutlineMode.SOLID, Minesweeper.HIDDEN_TILE));
+  static final WorldImage TILE_IMAGE = new OverlayImage(Tile.OUTLINE_TILE, new RectangleImage(
+      Minesweeper.TILE_WIDTH, Minesweeper.TILE_WIDTH, OutlineMode.SOLID, Minesweeper.VISIBLE_TILE));
   static final WorldImage FLAG_IMAGE = new RectangleImage(Minesweeper.OBJECT_WIDTH,
-          Minesweeper.OBJECT_WIDTH, OutlineMode.SOLID, Color.RED);
+      Minesweeper.OBJECT_WIDTH, OutlineMode.SOLID, Color.RED);
 
   Tile() {
     this(false);
@@ -36,7 +34,7 @@ class Tile {
   Tile(boolean mine, ArrayList<Tile> neighbors) {
     this(mine, false, false, neighbors);
   }
-  
+
   Tile(boolean mine, boolean flagged, boolean visible, ArrayList<Tile> neighbors) {
     this.mine = mine;
     this.flagged = flagged;
@@ -82,7 +80,8 @@ class Tile {
     return this.mine && this.visible;
   }
 
-  // EFFECT: makes this tile visible, and makes neighboring tiles visible if necessary
+  // EFFECT: makes this tile visible, and makes neighboring tiles visible if
+  // necessary
   void flood() {
     if (!this.visible) {
       this.visible = true;
@@ -102,13 +101,28 @@ class Tile {
 
     if (!this.visible && this.flagged) {
       return new OverlayImage(Tile.FLAG_IMAGE, Tile.HIDDEN_TILE);
-    } else {
+    }
+    else {
 
       if (!this.visible && !this.flagged) {
         return Tile.HIDDEN_TILE;
-      } else {
-        return new OverlayImage(textImage, Tile.TILE_IMAGE);
+
       }
+      else {
+        if (!this.mine && this.visible) {
+          return new OverlayImage(textImage, Tile.TILE_IMAGE);
+        }
+        else {
+          return new OverlayImage(Tile.MINE_IMAGE, Tile.TILE_IMAGE);
+        }
+      }
+    }
+  }
+
+  // Reveals the tile if it contains a mine and the player lost the game
+  public void revealEndTile() {
+    if (this.mine) {
+      this.visible = true;
     }
   }
 }
@@ -121,12 +135,12 @@ class ExamplesTile {
   Tile t4;
 
   WorldImage t0img = new OverlayImage(new TextImage("0", Minesweeper.VISIBLE_TILE),
-          Tile.TILE_IMAGE);
-  WorldImage t1img = new OverlayImage(new TextImage("1" ,Color.BLUE), Tile.TILE_IMAGE);
+      Tile.TILE_IMAGE);
+  WorldImage t1img = new OverlayImage(new TextImage("1", Color.BLUE), Tile.TILE_IMAGE);
   WorldImage t2img = new OverlayImage(Tile.FLAG_IMAGE, Tile.HIDDEN_TILE);
   WorldImage t3img = new OverlayImage(new TextImage("2", Color.GREEN), Tile.TILE_IMAGE);
   WorldImage t4img = new OverlayImage(Tile.MINE_IMAGE, Tile.TILE_IMAGE);
-  
+
   void init() {
     t0 = new Tile(false, false, true, new ArrayList<>());
     t1 = new Tile(false, false, true, new ArrayList<>(Arrays.asList(t0)));
@@ -134,21 +148,21 @@ class ExamplesTile {
     t3 = new Tile(false, false, true, new ArrayList<>(Arrays.asList(t2)));
     t4 = new Tile(true, false, true, new ArrayList<>(Arrays.asList(t3)));
   }
-  
+
   void connectTiles() {
     t1.updateNeighbors();
     t2.updateNeighbors();
     t3.updateNeighbors();
     t4.updateNeighbors();
   }
-  
+
   void testUpdateNeighbors(Tester t) {
     init();
     t.checkExpect(this.t1.neighbors, new ArrayList<>(Arrays.asList(t0)));
     connectTiles();
     t.checkExpect(this.t1.neighbors, new ArrayList<>(Arrays.asList(t0, t2)));
   }
-  
+
   void testCountMines(Tester t) {
     init();
     connectTiles();
@@ -164,7 +178,7 @@ class ExamplesTile {
     this.t0.toggleFlag();
     t.checkExpect(this.t0.flagged, false);
   }
-  
+
   void testDrawTile(Tester t) {
     init();
     connectTiles();

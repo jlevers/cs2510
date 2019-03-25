@@ -12,15 +12,13 @@ class Minesweeper extends World {
   // Constants
   static final Color VISIBLE_TILE = Color.DARK_GRAY;
   static final Color HIDDEN_TILE = Color.CYAN;
-  static final ArrayList<Color> MINE_NUM_COLORS = new ArrayList<>(Arrays.asList(
-          Minesweeper.VISIBLE_TILE, Color.BLUE, Color.GREEN, Color.RED, Color.PINK, Color.RED,
-          Color.CYAN, Color.BLACK, Color.MAGENTA));
-  static final ArrayList<ArrayList<Integer>> VECTORS = new ArrayList<>(Arrays.asList(
-          new ArrayList<>(Arrays.asList(-1, -1)),
-          new ArrayList<>(Arrays.asList(-1, 0)),
-          new ArrayList<>(Arrays.asList(-1, 1)),
-          new ArrayList<>(Arrays.asList(0, -1))));
-  public static final int TILE_WIDTH = 64;
+  static final ArrayList<Color> MINE_NUM_COLORS = new ArrayList<>(
+      Arrays.asList(Minesweeper.VISIBLE_TILE, Color.BLUE, Color.GREEN, Color.RED, Color.PINK,
+          Color.RED, Color.CYAN, Color.BLACK, Color.MAGENTA));
+  static final ArrayList<ArrayList<Integer>> VECTORS = new ArrayList<>(
+      Arrays.asList(new ArrayList<>(Arrays.asList(-1, -1)), new ArrayList<>(Arrays.asList(-1, 0)),
+          new ArrayList<>(Arrays.asList(-1, 1)), new ArrayList<>(Arrays.asList(0, -1))));
+  public static final int TILE_WIDTH = 16;
   public static final int OBJECT_WIDTH = TILE_WIDTH / 2;
 
   Random rand;
@@ -37,7 +35,7 @@ class Minesweeper extends World {
     this.height = height;
     this.numMines = numMines;
     this.windowHeight = this.height * Minesweeper.TILE_WIDTH;
-    this.windowWidth = this.width * Minesweeper.TILE_WIDTH; 
+    this.windowWidth = this.width * Minesweeper.TILE_WIDTH;
 
     this.initGrid();
     this.addMines(this.numMines);
@@ -51,7 +49,7 @@ class Minesweeper extends World {
   void initGrid() {
     for (int i = 0; i < this.height; i++) {
       this.grid.add(new ArrayList<>());
-      
+
       ArrayList<Tile> temp = this.grid.get(i);
 
       for (int j = 0; j < this.width; j++) {
@@ -62,7 +60,8 @@ class Minesweeper extends World {
     }
   }
 
-  // EFFECT: updates the neighbors of the tiles up and to the left of the one at the given
+  // EFFECT: updates the neighbors of the tiles up and to the left of the one at
+  // the given
   // coordinates
   void updateNeighbors(Tile t, int x, int y) {
     for (ArrayList<Integer> al : Minesweeper.VECTORS) {
@@ -96,14 +95,12 @@ class Minesweeper extends World {
 
   // Checks if the given coordinates exist in this Minesweeper grid
   boolean validCoords(int x, int y) {
-    return x >= 0 && x < this.width
-            && y >= 0 && y < this.height;
+    return x >= 0 && x < this.width && y >= 0 && y < this.height;
   }
 
   // Checks if the given Posn is within the bounds of the game window
   boolean validDrawnCoords(Posn p) {
-    return p.x >= 0 && p.x <= this.windowWidth
-            && p.y >= 0 && p.y <= this.windowHeight;
+    return p.x >= 0 && p.x <= this.windowWidth && p.y >= 0 && p.y <= this.windowHeight;
   }
 
   // Retrieves the tile at the given coordinates in the grid
@@ -111,7 +108,8 @@ class Minesweeper extends World {
     return this.grid.get(x).get(y);
   }
 
-  // Retrieves the tile drawn at the given Posn (pixel coordinates, not grid coordinates)
+  // Retrieves the tile drawn at the given Posn (pixel coordinates, not grid
+  // coordinates)
   Tile tileAtDrawnPosn(Posn p) {
     int y = p.x / Minesweeper.TILE_WIDTH;
     int x = p.y / Minesweeper.TILE_WIDTH;
@@ -133,7 +131,8 @@ class Minesweeper extends World {
       Tile t = this.tileAtDrawnPosn(p);
       if (!t.isMine()) {
         t.flood();
-      } else {
+      }
+      else {
         t.setVisible();
       }
     }
@@ -142,38 +141,38 @@ class Minesweeper extends World {
   // Draws the current state of the game
   public WorldScene makeScene() {
     WorldScene drawn = new WorldScene(this.windowWidth, this.windowHeight);
-    
+
     for (int i = 0; i < this.height; i++) {
       for (int j = 0; j < this.width; j++) {
         int x = (j * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
         int y = (i * Minesweeper.TILE_WIDTH) + (Minesweeper.TILE_WIDTH / 2);
         WorldImage drawnTile = this.tileAt(i, j).drawTile();
-        
+
         drawn.placeImageXY(drawnTile, x, y);
       }
     }
-    return drawn;  
+    return drawn;
   }
 
   // Handles user mouse input
   public void onMouseClicked(Posn pos, String buttonName) {
     if (buttonName.equals("RightButton")) {
       this.toggleFlag(pos);
-    } else if (buttonName.equals("LeftButton")) {
+    }
+    else if (buttonName.equals("LeftButton")) {
       this.onTileClick(pos);
     }
   }
 
   // Checks if the world should end
   public WorldEnd worldEnds() {
-    boolean mineClicked = false;
     int hidden = 0;
 
     for (int i = 0; i < this.height; i++) {
       for (int j = 0; j < this.width; j++) {
         Tile t = this.tileAt(i, j);
         if (t.exploded()) {
-          return this.lost();
+          return this.loss();
         }
 
         if (!t.visible) {
@@ -194,18 +193,27 @@ class Minesweeper extends World {
     WorldImage text = new TextImage("You win!", Color.BLUE);
     WorldScene textscene = new WorldScene(this.windowWidth, this.windowHeight);
     textscene.placeImageXY(text, this.windowWidth / 2, this.windowHeight / 2);
-    
+
     return new WorldEnd(true, textscene);
   }
 
-  // Returns a WorldScene for when the player hits a mine
-  // I'll make this actually return the drawn mines later
-  WorldEnd lost() {
-    WorldImage text = new TextImage("You Lose!", Color.RED);
-    WorldScene textscene = new WorldScene(this.windowWidth, this.windowHeight);
-    textscene.placeImageXY(text, this.windowWidth / 2, this.windowHeight / 2);
+  // Returns a WorldScene that reveals all the mines when the player hits a mine
+  public WorldEnd loss() {
+    this.revealMines();
+    WorldImage text= new TextImage ("You Lost!", Color.RED);
+    WorldScene endScene = this.makeScene();
+    endScene.placeImageXY(text, this.windowWidth / 2, this.windowHeight / 2);
     
-    return new WorldEnd(true, textscene);
+    return new WorldEnd(true, endScene);
+  }
+  
+  //Reveals all of the mine tiles
+  public void revealMines() {
+    for (int i = 0; i < this.height; i++) {
+      for (int j = 0; j < this.width; j++) {
+        this.grid.get(i).get(j).revealEndTile();
+      }
+    }
   }
 }
 
@@ -230,7 +238,6 @@ class ExamplesMinesweeper {
   Tile c32;
   Tile c33;
 
-
   void init() {
     this.small = new Minesweeper(new Random(1), 4, 4, 7);
     this.shown = new Minesweeper(new Random(1), 4, 4, 7);
@@ -252,43 +259,43 @@ class ExamplesMinesweeper {
     this.c33 = new Tile(true);
 
     this.c00.neighbors = new ArrayList<>(Arrays.asList(this.c01, this.c10, this.c11));
-    this.c01.neighbors = new ArrayList<>(Arrays.asList(this.c00, this.c02, this.c10,
-            this.c11, this.c12));
-    this.c02.neighbors = new ArrayList<>(Arrays.asList(this.c01, this.c03, this.c11,
-            this.c12, this.c13));
+    this.c01.neighbors = new ArrayList<>(
+        Arrays.asList(this.c00, this.c02, this.c10, this.c11, this.c12));
+    this.c02.neighbors = new ArrayList<>(
+        Arrays.asList(this.c01, this.c03, this.c11, this.c12, this.c13));
     this.c03.neighbors = new ArrayList<>(Arrays.asList(this.c02, this.c12, this.c13));
-    this.c10.neighbors = new ArrayList<>(Arrays.asList(this.c00, this.c01, this.c11,
-            this.c20, this.c21));
-    this.c11.neighbors = new ArrayList<>(Arrays.asList(this.c00, this.c01, this.c02,
-            this.c10, this.c12, this.c20, this.c21, this.c22));
+    this.c10.neighbors = new ArrayList<>(
+        Arrays.asList(this.c00, this.c01, this.c11, this.c20, this.c21));
+    this.c11.neighbors = new ArrayList<>(Arrays.asList(this.c00, this.c01, this.c02, this.c10,
+        this.c12, this.c20, this.c21, this.c22));
     this.c12.neighbors = new ArrayList<>(Arrays.asList(this.c01, this.c02, this.c03, this.c11,
-            this.c13, this.c21, this.c22, this.c23));
-    this.c13.neighbors = new ArrayList<>(Arrays.asList(this.c02, this.c03, this.c12,
-            this.c22, this.c23));
-    this.c20.neighbors = new ArrayList<>(Arrays.asList(this.c10, this.c11, this.c21,
-            this.c30, this.c31));
+        this.c13, this.c21, this.c22, this.c23));
+    this.c13.neighbors = new ArrayList<>(
+        Arrays.asList(this.c02, this.c03, this.c12, this.c22, this.c23));
+    this.c20.neighbors = new ArrayList<>(
+        Arrays.asList(this.c10, this.c11, this.c21, this.c30, this.c31));
     this.c21.neighbors = new ArrayList<>(Arrays.asList(this.c10, this.c11, this.c12, this.c20,
-            this.c22, this.c30, this.c31, this.c32));
+        this.c22, this.c30, this.c31, this.c32));
     this.c22.neighbors = new ArrayList<>(Arrays.asList(this.c11, this.c12, this.c13, this.c21,
-            this.c23, this.c31, this.c32, this.c33));
-    this.c23.neighbors = new ArrayList<>(Arrays.asList(this.c12, this.c13, this.c22,
-            this.c32, this.c33));
+        this.c23, this.c31, this.c32, this.c33));
+    this.c23.neighbors = new ArrayList<>(
+        Arrays.asList(this.c12, this.c13, this.c22, this.c32, this.c33));
     this.c30.neighbors = new ArrayList<>(Arrays.asList(this.c20, this.c21, this.c31));
-    this.c31.neighbors = new ArrayList<>(Arrays.asList(this.c20, this.c21, this.c22, this.c30,
-            this.c32));
-    this.c32.neighbors = new ArrayList<>(Arrays.asList(this.c21, this.c22, this.c23, this.c31,
-            this.c33));
+    this.c31.neighbors = new ArrayList<>(
+        Arrays.asList(this.c20, this.c21, this.c22, this.c30, this.c32));
+    this.c32.neighbors = new ArrayList<>(
+        Arrays.asList(this.c21, this.c22, this.c23, this.c31, this.c33));
     this.c33.neighbors = new ArrayList<>(Arrays.asList(this.c22, this.c23, this.c32));
 
-    this.smallGrid = new ArrayList<>(Arrays.asList(
-        new ArrayList<>(Arrays.asList(this.c00, this.c01, this.c02, this.c03)),
-        new ArrayList<>(Arrays.asList(this.c10, this.c11, this.c12, this.c13)),
-        new ArrayList<>(Arrays.asList(this.c20, this.c21, this.c22, this.c23)),
-        new ArrayList<>(Arrays.asList(this.c30, this.c31, this.c32, this.c33))
-    ));
+    this.smallGrid = new ArrayList<>(
+        Arrays.asList(new ArrayList<>(Arrays.asList(this.c00, this.c01, this.c02, this.c03)),
+            new ArrayList<>(Arrays.asList(this.c10, this.c11, this.c12, this.c13)),
+            new ArrayList<>(Arrays.asList(this.c20, this.c21, this.c22, this.c23)),
+            new ArrayList<>(Arrays.asList(this.c30, this.c31, this.c32, this.c33))));
   }
 
-  // This also tests this.updateNeighbors() and this.addMines() because we can't run initGrid()
+  // This also tests this.updateNeighbors() and this.addMines() because we can't
+  // run initGrid()
   // without those, and we can't run either of those without running initGrid()
   void testInitGrid(Tester t) {
     init();
@@ -339,8 +346,8 @@ class ExamplesMinesweeper {
     gameImage.placeImageXY(Tile.HIDDEN_TILE, 56, 24);
     gameImage.placeImageXY(Tile.HIDDEN_TILE, 8, 40);
     gameImage.placeImageXY(Tile.HIDDEN_TILE, 24, 40);
-    gameImage.placeImageXY(new OverlayImage(new TextImage("4", Color.PINK),
-            Tile.TILE_IMAGE), 40, 40);
+    gameImage.placeImageXY(new OverlayImage(new TextImage("4", Color.PINK), Tile.TILE_IMAGE), 40,
+        40);
     gameImage.placeImageXY(Tile.HIDDEN_TILE, 56, 40);
     gameImage.placeImageXY(Tile.HIDDEN_TILE, 8, 56);
     gameImage.placeImageXY(Tile.HIDDEN_TILE, 24, 56);
@@ -354,4 +361,5 @@ class ExamplesMinesweeper {
     init();
     this.small.bigBang(this.small.windowWidth, this.small.windowHeight, 1);
   }
+
 }
