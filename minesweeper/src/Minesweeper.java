@@ -188,6 +188,25 @@ class Minesweeper extends World {
 
     return new WorldEnd(false, this.makeScene());
   }
+
+  // Returns a screen when a player has revealed all number tiles
+  WorldEnd win() {
+    WorldImage text = new TextImage("You win!", Color.BLUE);
+    WorldScene textscene = new WorldScene(this.windowWidth, this.windowHeight);
+    textscene.placeImageXY(text, this.windowWidth / 2, this.windowHeight / 2);
+    
+    return new WorldEnd(true, textscene);
+  }
+
+  // Returns a WorldScene for when the player hits a mine
+  // I'll make this actually return the drawn mines later
+  WorldEnd lost() {
+    WorldImage text = new TextImage("You Lose!", Color.RED);
+    WorldScene textscene = new WorldScene(this.windowWidth, this.windowHeight);
+    textscene.placeImageXY(text, this.windowWidth / 2, this.windowHeight / 2);
+    
+    return new WorldEnd(true, textscene);
+  }
 }
 
 class ExamplesMinesweeper {
@@ -333,6 +352,6 @@ class ExamplesMinesweeper {
 
   void testBigBang(Tester t) {
     init();
-    this.small.bigBang(500, 500);
+    this.small.bigBang(this.small.windowWidth, this.small.windowHeight, 1);
   }
 }
