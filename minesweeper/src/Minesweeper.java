@@ -61,8 +61,7 @@ class Minesweeper extends World {
   }
 
   // EFFECT: updates the neighbors of the tiles up and to the left of the one at
-  // the given
-  // coordinates
+  // the given coordinates
   void updateNeighbors(Tile t, int x, int y) {
     for (ArrayList<Integer> al : Minesweeper.VECTORS) {
       int nx = x + al.get(0);
