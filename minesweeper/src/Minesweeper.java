@@ -199,14 +199,14 @@ class Minesweeper extends World {
   // Returns a WorldScene that reveals all the mines when the player hits a mine
   public WorldEnd loss() {
     this.revealMines();
-    WorldImage text= new TextImage ("You Lost!", Color.RED);
+    WorldImage text = new TextImage("You Lost!", Color.RED);
     WorldScene endScene = this.makeScene();
     endScene.placeImageXY(text, this.windowWidth / 2, this.windowHeight / 2);
-    
+
     return new WorldEnd(true, endScene);
   }
-  
-  //Reveals all of the mine tiles
+
+  // Reveals all of the mine tiles
   public void revealMines() {
     for (int i = 0; i < this.height; i++) {
       for (int j = 0; j < this.width; j++) {
@@ -361,4 +361,67 @@ class ExamplesMinesweeper {
     this.small.bigBang(this.small.windowWidth, this.small.windowHeight, 1);
   }
 
+  void testWorldEnd(Tester t) {
+    // Tests the image given if the game has not ended
+    init();
+    this.small.tileAt(2, 2).visible = true;
+    this.small.tileAt(1, 0).flagged = true;
+
+    t.checkExpect(this.small.worldEnds(), new WorldEnd(false, this.small.makeScene()));
+
+    // Tests the image given when the game is lost
+    // Also Tests GameWorld.loss()
+    init();
+    this.small.tileAt(0, 0).visible = true;
+    WorldScene lossImage = new WorldScene(64, 64);
+    WorldImage revealedMine = new OverlayImage(Tile.MINE_IMAGE, Tile.TILE_IMAGE);
+
+    lossImage.placeImageXY(revealedMine, 8, 8);
+    lossImage.placeImageXY(Tile.HIDDEN_TILE, 24, 8);
+    lossImage.placeImageXY(Tile.HIDDEN_TILE, 40, 8);
+    lossImage.placeImageXY(Tile.HIDDEN_TILE, 56, 8);
+
+    lossImage.placeImageXY(Tile.HIDDEN_TILE, 8, 24);
+    lossImage.placeImageXY(Tile.HIDDEN_TILE, 24, 24);
+    lossImage.placeImageXY(Tile.HIDDEN_TILE, 40, 24);
+    lossImage.placeImageXY(revealedMine, 56, 24);
+
+    lossImage.placeImageXY(revealedMine, 8, 40);
+    lossImage.placeImageXY(revealedMine, 24, 40);
+    lossImage.placeImageXY(Tile.HIDDEN_TILE, 40, 40);
+    lossImage.placeImageXY(Tile.HIDDEN_TILE, 56, 40);
+
+    lossImage.placeImageXY(revealedMine, 8, 56);
+    lossImage.placeImageXY(Tile.HIDDEN_TILE, 24, 56);
+    lossImage.placeImageXY(revealedMine, 40, 56);
+    lossImage.placeImageXY(revealedMine, 56, 56);
+
+    lossImage.placeImageXY(new TextImage("You Lost!", Color.RED), 32, 32);
+
+    WorldEnd loss = new WorldEnd(true, lossImage);
+
+    t.checkExpect(this.small.worldEnds(), loss);
+    t.checkExpect(this.small.loss(), loss);
+
+    // Tests the image given when the game is won
+    // Also tests GameWorld.win()
+    init();
+    this.small.tileAt(0, 1).visible = true;
+    this.small.tileAt(0, 2).visible = true;
+    this.small.tileAt(0, 3).visible = true;
+    this.small.tileAt(1, 0).visible = true;
+    this.small.tileAt(1, 1).visible = true;
+    this.small.tileAt(1, 2).visible = true;
+    this.small.tileAt(2, 2).visible = true;
+    this.small.tileAt(2, 3).visible = true;
+    this.small.tileAt(3, 1).visible = true;
+
+    WorldImage text = new TextImage("You win!", Color.BLUE);
+    WorldScene winScene = new WorldScene(64, 64);
+    winScene.placeImageXY(text, 32, 32);
+    WorldEnd win = new WorldEnd(true, winScene);
+
+    t.checkExpect(this.small.worldEnds(), win);
+    t.checkExpect(this.small.win(), win);
+  }
 }
