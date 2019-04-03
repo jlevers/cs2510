@@ -115,6 +115,7 @@ class LightEmAll extends World {
     this.board.get(toAdd.col).set(toAdd.row, toAdd);
   }
 
+  //Draws the current GameBoard
   public WorldScene makeScene() {
     WorldScene base = new WorldScene(GamePiece.SIZE * this.width, GamePiece.SIZE * this.height);
     for (int i = 0; i < this.width; i++) {
@@ -246,7 +247,7 @@ class ExamplesLightEmAll {
     init();
     
     WorldImage base = new FrameImage(
-        new RectangleImage(GamePiece.SIZE, GamePiece.SIZE, OutlineMode.SOLID, Color.BLUE),
+        new RectangleImage(GamePiece.SIZE, GamePiece.SIZE, OutlineMode.SOLID, Color.DARK_GRAY),
         Color.BLACK);
     WorldImage wireVert = 
         new RectangleImage(GamePiece.SIZE / 5, GamePiece.SIZE / 2, OutlineMode.SOLID, Color.GRAY);
