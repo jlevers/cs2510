@@ -1,7 +1,18 @@
 import tester.*;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import javalib.worldimages.AlignModeX;
+import javalib.worldimages.AlignModeY;
+import javalib.worldimages.FrameImage;
+import javalib.worldimages.OutlineMode;
+import javalib.worldimages.OverlayImage;
+import javalib.worldimages.OverlayOffsetAlign;
+import javalib.worldimages.Posn;
+import javalib.worldimages.RectangleImage;
+import javalib.worldimages.WorldImage;
 
 class GamePiece {
   // in logical coordinates, with the origin
@@ -16,7 +27,9 @@ class GamePiece {
   boolean bottom;
   // whether the power station is on this piece
   boolean powerStation;
-
+  
+  static int SIZE = 50;
+  
   GamePiece(int row, int col, boolean left, boolean right, boolean top, boolean bottom,
             boolean powerStation) {
     this.row = row;
@@ -46,6 +59,45 @@ class GamePiece {
   // Returns an identical GamePiece to this, but with new row, column, and powerStation values
   GamePiece clone(int row, int col, boolean powerStation) {
     return new GamePiece(row, col, this.left, this.right, this.top, this.bottom, powerStation);
+  }
+
+  public WorldImage drawPiece() {
+    WorldImage base = new FrameImage(
+        new RectangleImage(GamePiece.SIZE, GamePiece.SIZE, OutlineMode.SOLID, Color.BLUE),
+        Color.BLACK);
+    WorldImage wireVert = 
+        new RectangleImage(GamePiece.SIZE / 5, GamePiece.SIZE / 2, OutlineMode.SOLID, Color.GRAY);
+    WorldImage wireHoz = 
+        new RectangleImage(GamePiece.SIZE / 2, GamePiece.SIZE / 5, OutlineMode.SOLID, Color.GRAY);
+    
+    if(this.left) {
+//      base.movePinhole(GamePiece.SIZE / 4 * -1 , 0);
+//      base = new OverlayImage(wireHoz, base);
+//      base.movePinhole(GamePiece.SIZE / 4, 0);
+      base = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.MIDDLE, wireHoz, 0 , 0, base);
+    }
+    
+    if(this.right) {
+//      base.movePinhole(GamePiece.SIZE / 4 , 0);
+//      base = new OverlayImage(wireHoz, base);
+//      base.movePinhole(GamePiece.SIZE / 4 * -1 , 0);
+      base = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.MIDDLE, wireHoz, 0 , 0, base);
+    }
+    
+    if(this.top) {
+//      base.movePinhole(0 , GamePiece.SIZE / 4 * -1);
+//      base = new OverlayImage(wireVert, base);
+//      base.movePinhole(0 , GamePiece.SIZE / 4);
+      base = new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.TOP, wireVert, 0 , 0, base);
+    }
+    
+    if(this.bottom) {
+//      base.movePinhole(0 ,GamePiece.SIZE / 4);
+//      base = new OverlayImage(wireVert, base);
+//      base.movePinhole(0 , GamePiece.SIZE / 4 * -1);
+      base = new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.BOTTOM, wireVert, 0 , 0, base);
+    }
+    return base;
   }
 }
 
@@ -77,5 +129,9 @@ class ExamplesGamePiece {
     t.checkExpect(this.g1.connected(this.g2), true);
     t.checkExpect(this.g1.connected(this.g3), false);
     t.checkExpect(this.g3.connected(this.g1), true);
+  }
+  
+  void testDrawPiece(Tester t) {
+    init();
   }
 }

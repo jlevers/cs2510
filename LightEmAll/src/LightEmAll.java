@@ -116,7 +116,16 @@ class LightEmAll extends World {
   }
 
   public WorldScene makeScene() {
-    return null;
+    WorldScene base = new WorldScene(GamePiece.SIZE * this.width, GamePiece.SIZE * this.height);
+    for (int i = 0; i < this.width; i++) {
+      for (int j = 0; j < this.height; j++) {
+        int posX = (GamePiece.SIZE / 2) + i * GamePiece.SIZE;
+        int posY = (GamePiece.SIZE / 2) + j * GamePiece.SIZE;
+        WorldImage gamePiece = this.board.get(i).get(j).drawPiece();
+        base.placeImageXY(gamePiece, posX, posY);
+      }
+    }
+    return base;
   }
 }
 
@@ -225,5 +234,10 @@ class ExamplesLightEmAll {
   void testGenEdges(Tester t) {
     init();
     t.checkExpect(this.lea.mst, this.edges);
+  }
+  
+  void testBigBang(Tester t) {
+    init();
+    this.lea.bigBang(250, 250);
   }
 }
