@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.util.ArrayList;
 import tester.*;
 import javalib.impworld.*;
@@ -107,6 +108,7 @@ class LightEmAll extends World {
     }
   }
 
+  //Draws the current GameBoard
   public WorldScene makeScene() {
     WorldScene base = new WorldScene(GamePiece.SIZE * this.width, GamePiece.SIZE * this.height);
     for (int i = 0; i < this.width; i++) {
@@ -132,6 +134,9 @@ class ExamplesLightEmAll {
   int width = 5;
   int height = 5;
   ArrayList<ArrayList<GamePiece>> b1;
+  
+  LightEmAll small;
+  
   GamePiece topVert;
   GamePiece midVert;
   GamePiece bottomVert;
@@ -162,6 +167,8 @@ class ExamplesLightEmAll {
     this.col2.get(2).togglePowerStation();
 
     this.b1 = new ArrayList<>(Arrays.asList(this.col0, this.col1, this.col2, this.col3, this.col4));
+    
+    this.small = new LightEmAll(2, 3);
   }
 
   void testManualBoardInit(Tester t) {
@@ -195,6 +202,49 @@ class ExamplesLightEmAll {
     init();
     t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(63, 18)), this.col1.get(0));
     t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(140, 223)), this.col2.get(4));
+  }
+  
+  void testMakeScene(Tester t) {
+    init();
+    
+    WorldImage base = new FrameImage(
+        new RectangleImage(GamePiece.SIZE, GamePiece.SIZE, GamePiece.OUTLINE_MODE, GamePiece.BG),
+        Color.BLACK);
+    WorldImage wireVert = 
+        new RectangleImage(GamePiece.WIRE_WIDTH, GamePiece.WIRE_LENGTH, GamePiece.OUTLINE_MODE,
+                GamePiece.WIRE_COLOR);
+    WorldImage wireHoz = 
+        new RectangleImage(GamePiece.WIRE_LENGTH, GamePiece.WIRE_WIDTH, GamePiece.OUTLINE_MODE,
+                GamePiece.WIRE_COLOR);
+    WorldImage ps = new StarImage(GamePiece.SIZE / 2, 7, OutlineMode.SOLID, Color.BLUE);
+    
+    WorldImage g00img = 
+        new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.BOTTOM, wireVert, 0 , 0, base);
+    WorldImage g01img = 
+        new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.BOTTOM, wireVert, 0 , 0,
+            new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.TOP, wireVert, 0 , 0,
+                new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.MIDDLE, wireHoz, 0 , 0, base)));
+    WorldImage g02img = 
+        new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.TOP, wireVert, 0 , 0, base);
+    WorldImage g10img = 
+        new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.BOTTOM, wireVert, 0 , 0, base);
+    WorldImage g11img = new OverlayImage(ps,
+        new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.BOTTOM, wireVert, 0 , 0,
+            new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.TOP, wireVert, 0 , 0,
+                new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.MIDDLE, wireHoz, 0 , 0, base))));
+    WorldImage g12img = 
+        new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.TOP, wireVert, 0 , 0, base);
+    
+    WorldScene smallBoard = new WorldScene(100, 150);
+    
+    smallBoard.placeImageXY(g00img, 25, 25);
+    smallBoard.placeImageXY(g01img, 25, 75);
+    smallBoard.placeImageXY(g02img, 25, 125);
+    smallBoard.placeImageXY(g10img, 75, 25);
+    smallBoard.placeImageXY(g11img, 75, 75);
+    smallBoard.placeImageXY(g12img, 75, 125);
+    
+    t.checkExpect(this.small.makeScene(), smallBoard);
   }
   
   void testBigBang(Tester t) {
