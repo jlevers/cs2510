@@ -148,11 +148,10 @@ class ExamplesGamePiece {
     WorldImage base = new FrameImage(
         new RectangleImage(GamePiece.SIZE, GamePiece.SIZE, OutlineMode.SOLID, Color.DARK_GRAY),
         Color.BLACK);
-    WorldImage wireVert = new RectangleImage(GamePiece.SIZE / 5, GamePiece.SIZE / 2,
-        OutlineMode.SOLID, Color.GRAY);
-    WorldImage wireHoz = new RectangleImage(GamePiece.SIZE / 2, GamePiece.SIZE / 5,
-        OutlineMode.SOLID, Color.GRAY);
-    WorldImage ps = new CircleImage(GamePiece.SIZE / 5, OutlineMode.SOLID, Color.YELLOW);
+    WorldImage wireVert = new RectangleImage(GamePiece.WIRE_WIDTH, GamePiece.WIRE_LENGTH,
+        OutlineMode.SOLID, GamePiece.WIRE_COLOR);
+    WorldImage wireHoz = new RectangleImage(GamePiece.WIRE_LENGTH, GamePiece.WIRE_WIDTH,
+        OutlineMode.SOLID, GamePiece.WIRE_COLOR);
 
     init();
     t.checkExpect(this.g1.drawPiece(),
@@ -161,7 +160,8 @@ class ExamplesGamePiece {
                 new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.MIDDLE, wireHoz, 0, 0, base))));
 
     t.checkExpect(this.g2.drawPiece(),
-        new OverlayImage(ps, new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.TOP, wireVert, 0,
+        new OverlayImage(GamePiece.POWER_STATION, 
+            new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.TOP, wireVert, 0,
             0, new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.MIDDLE, wireHoz, 0, 0, base))));
   }
 
