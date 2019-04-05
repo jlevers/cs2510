@@ -1,9 +1,7 @@
 import java.util.ArrayList;
 import tester.*;
 import javalib.impworld.*;
-import java.awt.Color;
 import java.util.Arrays;
-
 import javalib.worldimages.*;
 
 class LightEmAll extends World {
@@ -23,19 +21,12 @@ class LightEmAll extends World {
   int powerCol;
   int radius;
 
-  static final ArrayList<ArrayList<Integer>> VECTORS = new ArrayList<>(Arrays.asList(
-          new ArrayList<>(Arrays.asList(-1, 0)),
-          new ArrayList<>(Arrays.asList(0, -1))));
-
   LightEmAll(int width, int height) {
     this.width = width;
     this.height = height;
 
     this.manualBoardInit();
     this.nodes = Utils.flatten(this.board);
-
-    this.mst = new ArrayList<>();
-    this.genEdges();
   }
 
   // EFFECT: manually populates the game grid with GamePieces
@@ -79,23 +70,9 @@ class LightEmAll extends World {
 
     int middleRow = this.height / 2;
     int middleCol = this.width / 2;
-    GamePiece center = this.board.get(middleCol).get(middleRow);
-    this.board.get(middleCol).set(middleRow, center.clone(middleRow, middleCol, true));
-  }
-
-  // EFFECT: generates the edges based on the GameBoard
-  void genEdges() {
-    for (GamePiece gp : this.nodes) {
-      ArrayList<Integer> coords = gp.position();
-      for (ArrayList<Integer> al : LightEmAll.VECTORS) {
-        int nx = coords.get(0) + al.get(0);
-        int ny = coords.get(1) + al.get(1);
-        if (this.validCoords(nx, ny) && gp.connected(this.gamePieceAt(nx, ny))) {
-          this.mst.add(new Edge(gp, this.gamePieceAt(nx, ny), 1));
-          this.mst.add(new Edge(this.gamePieceAt(nx, ny), gp, 1));
-        }
-      }
-    }
+    this.gamePieceAt(middleCol, middleRow).togglePowerStation();
+    this.powerCol = middleCol;
+    this.powerRow = middleRow;
   }
 
   // Retrieves the GamePiece at the given coordinates on the game board
@@ -103,16 +80,31 @@ class LightEmAll extends World {
     return this.board.get(x).get(y);
   }
 
+  // Checks if the given Posn is within the bounds of the game window
+  boolean validDrawnCoords(Posn p) {
+    return p.x >= 0 && p.x <= this.width * GamePiece.SIZE
+            && p.y >= 0 && p.y <= this.height * GamePiece.SIZE;
+  }
+
   // Checks if the given coordinates exist in this LightEmAll game
   boolean validCoords(int x, int y) {
     return x >= 0 && x < this.width && y >= 0 && y < this.height;
   }
 
-  // EFFECT: updates the GamePiece with the position of the given GamePiece to be the given
-  // GamePiece
-  void modifyBoardAndNodes(GamePiece toAdd) {
-    this.nodes.set(toAdd.row + (toAdd.col * this.height), toAdd);
-    this.board.get(toAdd.col).set(toAdd.row, toAdd);
+  // Retrieves the tile drawn at the given Posn (pixel coordinates, not grid
+  // coordinates)
+  GamePiece gamePieceAtDrawnPosn(Posn p) {
+    int x = p.x / GamePiece.SIZE;
+    int y = p.y / GamePiece.SIZE;
+
+    return this.gamePieceAt(x, y);
+  }
+
+  // Handles user mouse input
+  public void onMouseClicked(Posn pos) {
+    if (this.validDrawnCoords(pos)) {
+      this.gamePieceAtDrawnPosn(pos).rotate();
+    }
   }
 
   public WorldScene makeScene() {
@@ -162,66 +154,12 @@ class ExamplesLightEmAll {
     this.col1 = new ArrayList<>(Arrays.asList(topVert.clone(1, 0), midVert.clone(1, 1),
             horizontal.clone(1, 2), midVert.clone(1, 3), bottomVert.clone(1, 4)));
     this.col2 = new ArrayList<>(Arrays.asList(topVert.clone(2, 0), midVert.clone(2, 1),
-            horizontal.clone(2, 2, true), midVert.clone(2, 3), bottomVert.clone(2, 4)));
+            horizontal.clone(2, 2), midVert.clone(2, 3), bottomVert.clone(2, 4)));
     this.col3 = new ArrayList<>(Arrays.asList(topVert.clone(3, 0), midVert.clone(3, 1),
             horizontal.clone(3, 2), midVert.clone(3, 3), bottomVert.clone(3, 4)));
     this.col4 = new ArrayList<>(Arrays.asList(topVert.clone(4, 0), midVert.clone(4, 1), rightEnd,
             midVert.clone(4, 3), bottomVert.clone(4, 4)));
-
-    this.edges = new ArrayList<>(Arrays.asList(
-            new Edge(this.col0.get(1), this.col0.get(0), 1),
-            new Edge(this.col0.get(0), this.col0.get(1), 1),
-            new Edge(this.col0.get(2), this.col0.get(1), 1),
-            new Edge(this.col0.get(1), this.col0.get(2), 1),
-            new Edge(this.col0.get(3), this.col0.get(2), 1),
-            new Edge(this.col0.get(2), this.col0.get(3), 1),
-            new Edge(this.col0.get(4), this.col0.get(3), 1),
-            new Edge(this.col0.get(3), this.col0.get(4), 1),
-
-            new Edge(this.col1.get(1), this.col1.get(0), 1),
-            new Edge(this.col1.get(0), this.col1.get(1), 1),
-            new Edge(this.col1.get(2), this.col1.get(1), 1),
-            new Edge(this.col1.get(1), this.col1.get(2), 1),
-            new Edge(this.col1.get(2), this.col0.get(2), 1),
-            new Edge(this.col0.get(2), this.col1.get(2), 1),
-            new Edge(this.col1.get(3), this.col1.get(2), 1),
-            new Edge(this.col1.get(2), this.col1.get(3), 1),
-            new Edge(this.col1.get(4), this.col1.get(3), 1),
-            new Edge(this.col1.get(3), this.col1.get(4), 1),
-
-            new Edge(this.col2.get(1), this.col2.get(0), 1),
-            new Edge(this.col2.get(0), this.col2.get(1), 1),
-            new Edge(this.col2.get(2), this.col2.get(1), 1),
-            new Edge(this.col2.get(1), this.col2.get(2), 1),
-            new Edge(this.col2.get(3), this.col2.get(2), 1),
-            new Edge(this.col2.get(2), this.col2.get(3), 1),
-            new Edge(this.col2.get(2), this.col1.get(2), 1),
-            new Edge(this.col1.get(2), this.col2.get(2), 1),
-            new Edge(this.col2.get(4), this.col2.get(3), 1),
-            new Edge(this.col2.get(3), this.col2.get(4), 1),
-
-            new Edge(this.col3.get(1), this.col3.get(0), 1),
-            new Edge(this.col3.get(0), this.col3.get(1), 1),
-            new Edge(this.col3.get(2), this.col3.get(1), 1),
-            new Edge(this.col3.get(1), this.col3.get(2), 1),
-            new Edge(this.col3.get(3), this.col3.get(2), 1),
-            new Edge(this.col3.get(2), this.col3.get(3), 1),
-            new Edge(this.col3.get(2), this.col2.get(2), 1),
-            new Edge(this.col2.get(2), this.col3.get(2), 1),
-            new Edge(this.col3.get(4), this.col3.get(3), 1),
-            new Edge(this.col3.get(3), this.col3.get(4), 1),
-
-            new Edge(this.col4.get(1), this.col4.get(0), 1),
-            new Edge(this.col4.get(0), this.col4.get(1), 1),
-            new Edge(this.col4.get(2), this.col4.get(1), 1),
-            new Edge(this.col4.get(1), this.col4.get(2), 1),
-            new Edge(this.col4.get(3), this.col4.get(2), 1),
-            new Edge(this.col4.get(2), this.col4.get(3), 1),
-            new Edge(this.col4.get(2), this.col3.get(2), 1),
-            new Edge(this.col3.get(2), this.col4.get(2), 1),
-            new Edge(this.col4.get(4), this.col4.get(3), 1),
-            new Edge(this.col4.get(3), this.col4.get(4), 1)
-    ));
+    this.col2.get(2).togglePowerStation();
 
     this.b1 = new ArrayList<>(Arrays.asList(this.col0, this.col1, this.col2, this.col3, this.col4));
   }
@@ -231,9 +169,32 @@ class ExamplesLightEmAll {
     t.checkExpect(this.lea.board, this.b1);
   }
 
-  void testGenEdges(Tester t) {
+  void testValidCoords(Tester t) {
     init();
-    t.checkExpect(this.lea.mst, this.edges);
+    t.checkExpect(this.lea.validCoords(2, 1), true);
+    t.checkExpect(this.lea.validCoords(-1, 0), false);
+    t.checkExpect(this.lea.validCoords(4, 3), true);
+    t.checkExpect(this.lea.validCoords(5, 2), false);
+  }
+
+  void testValidDrawnCoords(Tester t) {
+    init();
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(20, 53)), true);
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(0, 250)), true);
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(-5, 120)), false);
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(380, 70)), false);
+  }
+
+  void testGamePieceAt(Tester t) {
+    init();
+    t.checkExpect(this.lea.gamePieceAt(0, 0), this.col0.get(0));
+    t.checkExpect(this.lea.gamePieceAt(3, 2), this.col3.get(2));
+  }
+
+  void testGamePieceAtDrawnPosn(Tester t) {
+    init();
+    t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(63, 18)), this.col1.get(0));
+    t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(140, 223)), this.col2.get(4));
   }
   
   void testBigBang(Tester t) {
