@@ -104,6 +104,7 @@ class GamePiece {
     this.right = oldTop;
     this.bottom = oldRight;
   }
+  
 }
 
 class ExamplesGamePiece {
