@@ -126,27 +126,26 @@ class LightEmAll extends World {
   }
 
   // Moves the power station if the piece is connected in that direction
-  //Down and Right don't work
   public void onKeyEvent(String key) {
 
     for (int i = 0; i < this.width; i++) {
       for (int j = 0; j < this.height; j++) {
         GamePiece current = this.board.get(i).get(j);
         if (current.powerStation) {
-          if (key.equals("right") && i + 1 < this.width && current.right) {
-            this.board.get(i + 1).get(j).powerStation = true;
+          if (key.equals("right") && (i++ < this.width) && current.right) {
+            this.board.get(i).get(j).powerStation = true;
             current.powerStation = false;
           }
-          if (key.equals("left") && i - 1 >= 0 && current.left) {
+          if (key.equals("left") && (i - 1 >= 0) && current.left) {
             this.board.get(i - 1).get(j).powerStation = true;
             current.powerStation = false;
           }
-          if (key.equals("up") && j - 1 >= 0 && current.top) {
+          if (key.equals("up") && (j - 1 >= 0) && current.top) {
             this.board.get(i).get(j - 1).powerStation = true;
             current.powerStation = false;
           }
-          if (key.equals("down") && (j + 1 < this.height) && current.bottom) {
-            this.board.get(i).get(j + 1).powerStation = true;
+          if (key.equals("down") && (j++ < this.height) && current.bottom) {
+            this.board.get(i).get(j).powerStation = true;
             current.powerStation = false;
           }
         }
@@ -275,6 +274,25 @@ class ExamplesLightEmAll {
     smallBoard.placeImageXY(g12img, 75, 125);
 
     t.checkExpect(this.small.makeScene(), smallBoard);
+  }
+  
+  void testOnKeyEvent(Tester t) {
+    init();
+    this.lea.onKeyEvent("up");
+    t.checkExpect(this.lea.board.get(2).get(1).powerStation, true);
+    init();
+    this.lea.onKeyEvent("left");
+    t.checkExpect(this.lea.board.get(1).get(2).powerStation, true);
+    init();
+    this.lea.onKeyEvent("right");
+    t.checkExpect(this.lea.board.get(3).get(2).powerStation, true);
+    this.lea.onKeyEvent("down");
+    t.checkExpect(this.lea.board.get(3).get(3).powerStation, true);
+    this.lea.onKeyEvent("right");
+    t.checkExpect(this.lea.board.get(3).get(3).powerStation, true);
+    t.checkExpect(this.lea.board.get(4).get(3).powerStation, false);
+    this.lea.onKeyEvent("a");
+    t.checkExpect(this.lea.board.get(3).get(3).powerStation, true);
   }
 
   void testBigBang(Tester t) {
