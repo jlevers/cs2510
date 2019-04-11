@@ -270,14 +270,14 @@ class ExamplesLightEmAll {
     this.g2 = new GamePiece(1, 0, false, false, false, true, false);
     this.g3 = new GamePiece(2, 0, false, false, false, true, true);
     this.g4 = new GamePiece(3, 0, false, false, false, true, false);
-    this.g5 = new GamePiece(0, 1, false, true, true, true, false);
-    this.g6 = new GamePiece(1, 1, true, false, true, false, false);
-    this.g7 = new GamePiece(2, 1, false, true, true, true, false);
-    this.g8 = new GamePiece(3, 1, true, false, true, false, false);
-    this.g9 = new GamePiece(0, 2, false, true, true, true, false);
-    this.g10 = new GamePiece(1, 2, true, false, false, false, false);
-    this.g11 = new GamePiece(2, 2, false, true, true, false, false);
-    this.g12 = new GamePiece(3, 2, true, false, false, true, false);
+    this.g5 = new GamePiece(0, 1, false, true, true, false, false);
+    this.g6 = new GamePiece(1, 1, true, false, true, true, false);
+    this.g7 = new GamePiece(2, 1, false, true, true, false, false);
+    this.g8 = new GamePiece(3, 1, true, false, true, true, false);
+    this.g9 = new GamePiece(0, 2, false, true, false, true, false);
+    this.g10 = new GamePiece(1, 2, true, false, true, false, false);
+    this.g11 = new GamePiece(2, 2, false, true, false, false, false);
+    this.g12 = new GamePiece(3, 2, true, false, true, true, false);
     this.g13 = new GamePiece(0, 3, false, false, true, true, false);
     this.g14 = new GamePiece(1, 3, false, false, false, true, false);
     this.g15 = new GamePiece(2, 3, false, false, false, true, false);
@@ -306,16 +306,14 @@ class ExamplesLightEmAll {
     t.checkExpect(this.lea.gamePieceAt(2, 0).powerStation, true);
     this.lea.onKeyEvent("down");
     t.checkExpect(this.lea.gamePieceAt(2, 1).powerStation, true);
-    this.lea.onKeyEvent("down");
-    t.checkExpect(this.lea.gamePieceAt(2, 2).powerStation, true);
     this.lea.onKeyEvent("right");
-    t.checkExpect(this.lea.gamePieceAt(3, 2).powerStation, true);
+    t.checkExpect(this.lea.gamePieceAt(3, 1).powerStation, true);
     this.lea.onKeyEvent("left");
-    t.checkExpect(this.lea.gamePieceAt(2, 2).powerStation, true);
+    t.checkExpect(this.lea.gamePieceAt(2, 1).powerStation, true);
     this.lea.onKeyEvent("left");
-    t.checkExpect(this.lea.gamePieceAt(2, 1).powerStation, false);
+    t.checkExpect(this.lea.gamePieceAt(1, 1).powerStation, false);
     this.lea.onKeyEvent("a");
-    t.checkExpect(this.lea.gamePieceAt(2, 2).powerStation, true);
+    t.checkExpect(this.lea.gamePieceAt(2, 1).powerStation, true);
   }
 
   void testValidCoords(Tester t) {
@@ -365,9 +363,9 @@ class ExamplesLightEmAll {
   }
 
   void testBigBang(Tester t) {
-//    init();
-    LightEmAll l = new LightEmAll(17, 17);
-    l.bigBang(850, 850);
-   // this.lea.bigBang(200, 250);
+    init();
+//    LightEmAll l = new LightEmAll(17, 17);
+//    l.bigBang(850, 850);
+    this.lea.bigBang(200, 250);
   }
 }
