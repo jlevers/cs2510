@@ -104,6 +104,21 @@ class GamePiece {
     this.right = oldTop;
     this.bottom = oldRight;
   }
+
+  // Returns the value of the field corresponding to the given direction
+  boolean getDirFromKeypress(String dir) {
+    if (dir.equals("up")) {
+      return this.top;
+    } else if (dir.equals("down")) {
+      return this.bottom;
+    } else if (dir.equals("left")) {
+      return this.left;
+    } else if (dir.equals("right")) {
+      return this.right;
+    }
+
+    return false;
+  }
   
 }
 
@@ -172,5 +187,14 @@ class ExamplesGamePiece {
     t.checkExpect(this.g1, new GamePiece(0, 0, true, false, true, true, false));
     this.g1.rotate();
     t.checkExpect(this.g1, new GamePiece(0, 0, true, true, true, false, false));
+  }
+
+  void testGetDirFromKeypress(Tester t) {
+    init();
+    t.checkExpect(this.g1.getDirFromKeypress("up"), false);
+    t.checkExpect(this.g1.getDirFromKeypress("down"), false);
+    t.checkExpect(this.g1.getDirFromKeypress("left"), true);
+    t.checkExpect(this.g1.getDirFromKeypress("right"), true);
+    t.checkExpect(this.g1.getDirFromKeypress("a"), false);
   }
 }

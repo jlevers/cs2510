@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import tester.*;
 import javalib.impworld.*;
 import java.util.Arrays;
+import java.util.HashMap;
+
 import javalib.worldimages.*;
 
 class LightEmAll extends World {
@@ -22,6 +24,12 @@ class LightEmAll extends World {
   int powerCol;
   int radius;
 
+  static ArrayList<Posn> VECTORS = new ArrayList<>(Arrays.asList(
+          new Posn(-1, 0), new Posn(1, 0), new Posn(0, -1), new Posn(0, 1)));
+  static ArrayList<String> DIRS = new ArrayList<>(Arrays.asList("left", "right", "up", "down"));
+  static ArrayList<String> OPPODIRS = new ArrayList<>(Arrays.asList("right", "left", "down", "up"));
+
+
   LightEmAll(int width, int height) {
     this.width = width;
     this.height = height;
@@ -29,6 +37,7 @@ class LightEmAll extends World {
     this.generateFractalBoard();
     this.setCoordinates();
     this.nodes = Utils.flatten(this.board);
+    this.radius = this.getDiameter();
   }
 
   // EFFECT: generates a fractal board layout
@@ -42,7 +51,7 @@ class LightEmAll extends World {
     this.powerRow = 0;
   }
   
-  //EFFECT: changes the coordinates of each tile
+  // EFFECT: changes the coordinates of each tile
   void setCoordinates() {
     for (int i = 0; i < this.width; i++) {
       for (int j = 0; j < this.height; j++) {
@@ -238,6 +247,56 @@ class LightEmAll extends World {
     }
   }
 
+  // Gets the diameter of the graph
+  int getDiameter() {
+    GamePiece first = this.bfs(this.nodes.get(0));
+    return this.depthBetween(first, this.bfs(first)) / 2 + 1;
+  }
+
+  // Performs a breadth-first search on this LightemAll's nodes, returns depth of the
+  // matching node
+  int depthBetween(GamePiece start, GamePiece end) {
+    Queue<GamePiece> queue = new Queue(new ArrayList<>(Arrays.asList(start)));
+    GamePiece current = start;
+    int depth = 0;
+    while(!current.equals(end) && queue.size() > 0) {
+      current = queue.pop();
+      queue.pushAll(this.getConnectedNeighbors(current));
+      depth++;
+    }
+
+    return depth;
+  }
+
+  // Performs a breadth-first search on this LightemAll's nodes, returns the deepest node
+  GamePiece bfs(GamePiece start) {
+    Queue<GamePiece> queue = new Queue(new ArrayList<>(Arrays.asList(start)));
+    GamePiece current = start;
+    while(queue.size() > 0) {
+      current = queue.pop();
+      queue.pushAll(this.getConnectedNeighbors(current));
+    }
+
+    return current;
+  }
+
+  // Gets an ArrayList of connected neighbors of the given GamePiece
+  ArrayList<GamePiece> getConnectedNeighbors(GamePiece gp) {
+    ArrayList<GamePiece> neighbors = new ArrayList<>();
+
+    for (int i = 0; i < LightEmAll.VECTORS.size(); i++) {
+      Posn p = LightEmAll.VECTORS.get(i);
+      int x = gp.col + p.x;
+      int y = gp.row + p.y;
+
+      if (this.validCoords(x, y) && gp.getDirFromKeypress(LightEmAll.DIRS.get(i)) &&
+              this.gamePieceAt(x, y).getDirFromKeypress(LightEmAll.OPPODIRS.get(i))) {
+        neighbors.add(this.gamePieceAt(x, y));
+      }
+    }
+
+    return neighbors;
+  }
 }
 
 class ExamplesLightEmAll {
@@ -366,6 +425,7 @@ class ExamplesLightEmAll {
     init();
 //    LightEmAll l = new LightEmAll(17, 17);
 //    l.bigBang(850, 850);
+    System.out.println(this.lea.bfs(this.g1).col);
     this.lea.bigBang(200, 250);
   }
 }
