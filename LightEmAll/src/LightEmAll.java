@@ -256,12 +256,14 @@ class LightEmAll extends World {
   // Performs a breadth-first search on this LightemAll's nodes, returns depth of the
   // matching node
   int depthBetween(GamePiece start, GamePiece end) {
-    Queue<GamePiece> queue = new Queue(new ArrayList<>(Arrays.asList(start)));
+    Queue<GamePiece> queue = new Queue<>(new ArrayList<>(Arrays.asList(start)));
+    ArrayList<GamePiece> visited = new ArrayList<>();
     GamePiece current = start;
     int depth = 0;
     while(!current.equals(end) && queue.size() > 0) {
       current = queue.pop();
-      queue.pushAll(this.getConnectedNeighbors(current));
+      visited.add(current);
+      queue.pushAll(this.getConnectedNeighbors(current, visited));
       depth++;
     }
 
@@ -270,18 +272,21 @@ class LightEmAll extends World {
 
   // Performs a breadth-first search on this LightemAll's nodes, returns the deepest node
   GamePiece bfs(GamePiece start) {
-    Queue<GamePiece> queue = new Queue(new ArrayList<>(Arrays.asList(start)));
+    Queue<GamePiece> queue = new Queue<>(new ArrayList<>(Arrays.asList(start)));
+    ArrayList<GamePiece> visited = new ArrayList<>();
     GamePiece current = start;
+    
     while(queue.size() > 0) {
       current = queue.pop();
-      queue.pushAll(this.getConnectedNeighbors(current));
+      visited.add(current);
+      queue.pushAll(this.getConnectedNeighbors(current, visited));
     }
 
     return current;
   }
 
   // Gets an ArrayList of connected neighbors of the given GamePiece
-  ArrayList<GamePiece> getConnectedNeighbors(GamePiece gp) {
+  ArrayList<GamePiece> getConnectedNeighbors(GamePiece gp, ArrayList<GamePiece> visited) {
     ArrayList<GamePiece> neighbors = new ArrayList<>();
 
     for (int i = 0; i < LightEmAll.VECTORS.size(); i++) {
@@ -289,8 +294,10 @@ class LightEmAll extends World {
       int x = gp.col + p.x;
       int y = gp.row + p.y;
 
-      if (this.validCoords(x, y) && gp.getDirFromKeypress(LightEmAll.DIRS.get(i)) &&
-              this.gamePieceAt(x, y).getDirFromKeypress(LightEmAll.OPPODIRS.get(i))) {
+      if (this.validCoords(x, y) && 
+          gp.getDirFromKeypress(LightEmAll.DIRS.get(i)) &&
+              this.gamePieceAt(x, y).getDirFromKeypress(LightEmAll.OPPODIRS.get(i)) &&
+              !visited.contains(this.gamePieceAt(x, y))) {
         neighbors.add(this.gamePieceAt(x, y));
       }
     }
@@ -420,12 +427,19 @@ class ExamplesLightEmAll {
     t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(63, 18)), this.g2);
     t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(135, 245)), this.g19);
   }
+  
+//  void testGetDiameter(Tester t) {
+//    init();
+//    t.checkExpect(this.lea.getDiameter(), 15);
+//  }
+  
+  void testBFS(Tester t) {
+    LightEmAll l = new LightEmAll(2,2);
+    t.checkExpect(l.bfs(l.board.get(0).get(0)), l.board.get(1).get(0));
+  }
 
   void testBigBang(Tester t) {
     init();
-//    LightEmAll l = new LightEmAll(17, 17);
-//    l.bigBang(850, 850);
-    System.out.println(this.lea.bfs(this.g1).col);
-    this.lea.bigBang(200, 250);
+   this.lea.bigBang(200, 250);
   }
 }

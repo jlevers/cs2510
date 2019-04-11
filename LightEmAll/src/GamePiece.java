@@ -192,7 +192,7 @@ class ExamplesGamePiece {
   void testGetDirFromKeypress(Tester t) {
     init();
     t.checkExpect(this.g1.getDirFromKeypress("up"), false);
-    t.checkExpect(this.g1.getDirFromKeypress("down"), false);
+    t.checkExpect(this.g1.getDirFromKeypress("down"), true);
     t.checkExpect(this.g1.getDirFromKeypress("left"), true);
     t.checkExpect(this.g1.getDirFromKeypress("right"), true);
     t.checkExpect(this.g1.getDirFromKeypress("a"), false);
