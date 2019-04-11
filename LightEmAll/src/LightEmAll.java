@@ -35,7 +35,7 @@ class LightEmAll extends World {
   }
 
   // EFFECT: generates a fractal board layout recursively
-  ArrayList generateFractalBoardHelp(int colLow, int rowLow, int colHigh,
+  ArrayList<ArrayList<GamePiece>> generateFractalBoardHelp(int colLow, int rowLow, int colHigh,
                                      int rowHigh) {
     int colDiff = colHigh - colLow;
     int rowDiff = rowHigh - rowLow;
@@ -58,8 +58,8 @@ class LightEmAll extends World {
       GamePiece left = new GamePiece(rowLow, colLow, false, true, false, false, false);
       GamePiece right = new GamePiece(rowLow, colHigh, true, false, false, false, false);
 
-      return new ArrayList(Arrays.asList(
-              new ArrayList(Arrays.asList(left)), new ArrayList(Arrays.asList(right))
+      return new ArrayList<>(Arrays.asList(
+              new ArrayList<>(Arrays.asList(left)), new ArrayList<>(Arrays.asList(right))
       ));
     } else if (colDiff == 0 && rowDiff == 0) {
       return new ArrayList<>(Arrays.asList(new ArrayList<>(
@@ -70,7 +70,7 @@ class LightEmAll extends World {
       return mergeFractals(
               generateFractalBoardHelp(colLow, rowLow, colAvg, rowAvg),
               generateFractalBoardHelp(colLow, rowAvg + 1, colAvg, rowHigh),
-              generateFractalBoardHelp(colAvg + 1, rowLow, colHigh, rowAvg + 1),
+              generateFractalBoardHelp(colAvg + 1, rowLow, colHigh, rowAvg),
               generateFractalBoardHelp(colAvg + 1, rowAvg + 1, colHigh, rowHigh));
     }
 
@@ -89,7 +89,13 @@ class LightEmAll extends World {
     br.get(tr.size() - 1).get(0).top = true;
     // Connect bottom left with bottom right
     bl.get(bl.size() - 1).get(bl.get(0).size() - 1).right = true;
-    br.get(0).get(bl.size() - 1).left = true;
+    
+    //Bottom Right ArrayList may be 1 x 1
+    if (br.size() == 1 && br.get(0).size() == 1) {
+      br.get(0).get(0).left = true;
+    } else {
+      br.get(0).get(bl.size() - 1).left = true;
+    }
 
     ArrayList<ArrayList<GamePiece>> left = mergeVert(tl, bl);
     ArrayList<ArrayList<GamePiece>> right = mergeVert(tr, br);
@@ -109,8 +115,8 @@ class LightEmAll extends World {
       for (int j = 0; j < left.size(); j++) {
         joined.get(j).add(left.get(j).get(i));
       }
-      for (int j = 0; j < right.size(); j++) {
-        joined.get(j + (joined.size() / 2)).add(right.get(j).get(i));
+      for (int j = left.size(); j < left.size() + right.size(); j++) {
+        joined.get(j).add(right.get(j - left.size()).get(i));
       }
     }
 
@@ -216,7 +222,7 @@ class ExamplesLightEmAll {
     init();
 //    this.lea.generateFractalBoard();
 //    this.lea.bigBang(250, 250);
-    LightEmAll l = new LightEmAll(4, 4);
-    l.bigBang(8 * 50, 8 * 50);
+    LightEmAll l = new LightEmAll(3, 3);
+    l.bigBang(16 * 50, 16 * 50);
   }
 }
