@@ -291,8 +291,8 @@ class LightEmAll extends World {
 
     for (int i = 0; i < LightEmAll.VECTORS.size(); i++) {
       Posn p = LightEmAll.VECTORS.get(i);
-      int x = gp.col + p.x;
-      int y = gp.row + p.y;
+      int x = gp.row + p.x;
+      int y = gp.col + p.y;
 
       if (this.validCoords(x, y) && 
           gp.getDirFromKeypress(LightEmAll.DIRS.get(i)) &&
@@ -428,14 +428,15 @@ class ExamplesLightEmAll {
     t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(135, 245)), this.g19);
   }
   
-//  void testGetDiameter(Tester t) {
-//    init();
-//    t.checkExpect(this.lea.getDiameter(), 15);
-//  }
+  void testGetDiameter(Tester t) {
+    init();
+    t.checkExpect(this.lea.getDiameter(), 15);
+  }
   
   void testBFS(Tester t) {
     LightEmAll l = new LightEmAll(2,2);
     t.checkExpect(l.bfs(l.board.get(0).get(0)), l.board.get(1).get(0));
+    t.checkExpect(lea.bfs(lea.board.get(0).get(0)), this.g3);
   }
 
   void testBigBang(Tester t) {
