@@ -37,7 +37,7 @@ class LightEmAll extends World {
   // EFFECT: generates a fractal board layout recursively
   ArrayList<ArrayList<GamePiece>> generateFractalBoardHelp(int colLow, int rowLow, int colHigh,
                                      int rowHigh) {
-    int colDiff = colHigh - colLow;
+     int colDiff = colHigh - colLow;
     int rowDiff = rowHigh - rowLow;
     if (colDiff == 1 && rowDiff == 1) {
       // Base case
@@ -91,11 +91,11 @@ class LightEmAll extends World {
     bl.get(bl.size() - 1).get(bl.get(0).size() - 1).right = true;
     
     //Bottom Right ArrayList may be 1 x 1
-    if (br.size() == 1 && br.get(0).size() == 1) {
-      br.get(0).get(0).left = true;
-    } else {
-      br.get(0).get(bl.size() - 1).left = true;
-    }
+//    if (br.size() == 1 && br.get(0).size() == 1) {
+//      br.get(0).get(0).left = true;
+//    } else {
+      br.get(0).get(br.get(0).size() - 1).left = true;
+//    }
 
     ArrayList<ArrayList<GamePiece>> left = mergeVert(tl, bl);
     ArrayList<ArrayList<GamePiece>> right = mergeVert(tr, br);
@@ -222,7 +222,7 @@ class ExamplesLightEmAll {
     init();
 //    this.lea.generateFractalBoard();
 //    this.lea.bigBang(250, 250);
-    LightEmAll l = new LightEmAll(3, 3);
+    LightEmAll l = new LightEmAll(6, 7);
     l.bigBang(16 * 50, 16 * 50);
   }
 }
