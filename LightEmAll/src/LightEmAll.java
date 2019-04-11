@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import tester.*;
 import javalib.impworld.*;
@@ -64,6 +65,13 @@ class LightEmAll extends World {
     } else if (colDiff == 0 && rowDiff == 0) {
       return new ArrayList<>(Arrays.asList(new ArrayList<>(
               Arrays.asList(new GamePiece(rowLow, colLow, false, false, false, false, false)))));
+    } else if (colDiff == 2 && rowDiff == 1) {
+      ArrayList<ArrayList<GamePiece>> rect = mergeHoriz(
+              generateFractalBoardHelp(colLow, rowLow, colLow + 1, rowHigh),
+              generateFractalBoardHelp(colHigh, rowLow, colHigh, rowHigh));
+      rect.get(1).get(1).right = true;
+      rect.get(2).get(1).left = true;
+      return rect;
     } else {
       int colAvg = (colHigh + colLow) / 2;
       int rowAvg = (rowHigh + rowLow) / 2;
@@ -89,13 +97,7 @@ class LightEmAll extends World {
     br.get(tr.size() - 1).get(0).top = true;
     // Connect bottom left with bottom right
     bl.get(bl.size() - 1).get(bl.get(0).size() - 1).right = true;
-    
-    //Bottom Right ArrayList may be 1 x 1
-//    if (br.size() == 1 && br.get(0).size() == 1) {
-//      br.get(0).get(0).left = true;
-//    } else {
-      br.get(0).get(br.get(0).size() - 1).left = true;
-//    }
+    br.get(0).get(br.get(0).size() - 1).left = true;
 
     ArrayList<ArrayList<GamePiece>> left = mergeVert(tl, bl);
     ArrayList<ArrayList<GamePiece>> right = mergeVert(tr, br);
@@ -214,6 +216,27 @@ class LightEmAll extends World {
 }
 
 class ExamplesLightEmAll {
+  GamePiece g1;
+  GamePiece g2;
+  GamePiece g3;
+  GamePiece g4;
+  GamePiece g5;
+  GamePiece g6;
+  GamePiece g7;
+  GamePiece g8;
+  GamePiece g9;
+  GamePiece g10;
+  GamePiece g11;
+  GamePiece g12;
+  GamePiece g13;
+  GamePiece g14;
+  GamePiece g15;
+  GamePiece g16;
+  GamePiece g17;
+  GamePiece g18;
+  GamePiece g19;
+  GamePiece g20;
+
   void init() {
 
   }
@@ -222,7 +245,7 @@ class ExamplesLightEmAll {
     init();
 //    this.lea.generateFractalBoard();
 //    this.lea.bigBang(250, 250);
-    LightEmAll l = new LightEmAll(6, 7);
-    l.bigBang(16 * 50, 16 * 50);
+    LightEmAll lea = new LightEmAll(6, 7);
+    lea.bigBang(400, 400);
   }
 }
