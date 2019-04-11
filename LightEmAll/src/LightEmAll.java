@@ -32,7 +32,12 @@ class LightEmAll extends World {
 
   // EFFECT: generates a fractal board layout
   void generateFractalBoard() {
-    this.board = generateFractalBoardHelp(0, 0, this.width - 1, this.height - 1);
+    ArrayList<ArrayList<GamePiece>> temp = generateFractalBoardHelp(0, 0, this.width - 1,
+            this.height - 1);
+    temp.get(temp.size() / 2).get(0).powerStation = true;
+    this.board = temp;
+    this.powerCol = temp.size() / 2;
+    this.powerRow = 0;
   }
 
   // EFFECT: generates a fractal board layout recursively
@@ -187,29 +192,23 @@ class LightEmAll extends World {
 
   // Moves the power station if the piece is connected in that direction
   public void onKeyEvent(String key) {
-
-    for (int i = 0; i < this.width; i++) {
-      for (int j = 0; j < this.height; j++) {
-        GamePiece current = this.board.get(i).get(j);
-        if (current.powerStation) {
-          if (key.equals("right") && (i++ < this.width) && current.right) {
-            this.board.get(i).get(j).powerStation = true;
-            current.powerStation = false;
-          }
-          if (key.equals("left") && (i - 1 >= 0) && current.left) {
-            this.board.get(i - 1).get(j).powerStation = true;
-            current.powerStation = false;
-          }
-          if (key.equals("up") && (j - 1 >= 0) && current.top) {
-            this.board.get(i).get(j - 1).powerStation = true;
-            current.powerStation = false;
-          }
-          if (key.equals("down") && (j++ < this.height) && current.bottom) {
-            this.board.get(i).get(j).powerStation = true;
-            current.powerStation = false;
-          }
-        }
-      }
+    GamePiece powerStation = this.gamePieceAt(this.powerCol, this.powerRow);
+    if (key.equals("right") && this.powerCol + 1 < this.width && powerStation.right) {
+      this.gamePieceAt(this.powerCol, this.powerRow).powerStation = false;
+      this.powerCol++;
+      this.gamePieceAt(this.powerCol, this.powerRow).powerStation = true;
+    } else if (key.equals("left") && this.powerCol - 1 >= 0 && powerStation.left) {
+      this.gamePieceAt(this.powerCol, this.powerRow).powerStation = false;
+      this.powerCol--;
+      this.gamePieceAt(this.powerCol, this.powerRow).powerStation = true;
+    } else if (key.equals("up") && this.powerRow - 1 >= 0 && powerStation.top) {
+      this.gamePieceAt(this.powerCol, this.powerRow).powerStation = false;
+      this.powerRow--;
+      this.gamePieceAt(this.powerCol, this.powerRow).powerStation = true;
+    } else if (key.equals("down") && this.powerRow + 1 < this.height && powerStation.bottom) {
+      this.gamePieceAt(this.powerCol, this.powerRow).powerStation = false;
+      this.powerRow++;
+      this.gamePieceAt(this.powerCol, this.powerRow).powerStation = true;
     }
   }
 
@@ -237,15 +236,90 @@ class ExamplesLightEmAll {
   GamePiece g19;
   GamePiece g20;
 
-  void init() {
+  ArrayList<ArrayList<GamePiece>> b1;
+  LightEmAll lea;
 
+  void init() {
+    this.g1 = new GamePiece(0, 0, false, false, false, true, false);
+    this.g2 = new GamePiece(0, 1, false, false, false, true, false);
+    this.g3 = new GamePiece(0, 2, false, false, false, true, true);
+    this.g4 = new GamePiece(0, 3, false, false, false, true, false);
+    this.g5 = new GamePiece(1, 0, false, false, true, true, false);
+    this.g6 = new GamePiece(1, 1, false, false, true, true, false);
+    this.g7 = new GamePiece(1, 2, false, false, true, true, false);
+    this.g8 = new GamePiece(1, 3, false, false, true, true, false);
+    this.g9 = new GamePiece(2, 0, false, true, true, true, false);
+    this.g10 = new GamePiece(2, 1, true, false, true, false, false);
+    this.g11 = new GamePiece(2, 2, false, true, true, false, false);
+    this.g12 = new GamePiece(2, 3, true, false, true, true, false);
+    this.g13 = new GamePiece(3, 0, false, false, true, true, false);
+    this.g14 = new GamePiece(3, 1, false, false, false, true, false);
+    this.g15 = new GamePiece(3, 2, false, false, false, true, false);
+    this.g16 = new GamePiece(3, 3, false, false, true, true, false);
+    this.g17 = new GamePiece(4, 0, false, true, true, false, false);
+    this.g18 = new GamePiece(4, 1, true, true, true, false, false);
+    this.g19 = new GamePiece(4, 2, true, true, true, false, false);
+    this.g20 = new GamePiece(4, 3, true, false, true, false, false);
+
+    this.b1 = new ArrayList<>(Arrays.asList(
+            new ArrayList<>(Arrays.asList(this.g1, this.g5, this.g9, this.g13, this.g17)),
+            new ArrayList<>(Arrays.asList(this.g2, this.g6, this.g10, this.g14, this.g18)),
+            new ArrayList<>(Arrays.asList(this.g3, this.g7, this.g11, this.g15, this.g19)),
+            new ArrayList<>(Arrays.asList(this.g4, this.g8, this.g12, this.g16, this.g20))));
+
+    this.lea = new LightEmAll(4, 5);
+  }
+
+  void testOnKeyEvent(Tester t) {
+    init();
+    t.checkExpect(this.lea.gamePieceAt(2, 0).powerStation, true);
+    this.lea.onKeyEvent("down");
+    t.checkExpect(this.lea.gamePieceAt(2, 1).powerStation, true);
+    this.lea.onKeyEvent("down");
+    t.checkExpect(this.lea.gamePieceAt(2, 2).powerStation, true);
+    this.lea.onKeyEvent("right");
+    t.checkExpect(this.lea.gamePieceAt(3, 2).powerStation, true);
+    this.lea.onKeyEvent("left");
+    t.checkExpect(this.lea.gamePieceAt(2, 2).powerStation, true);
+    this.lea.onKeyEvent("left");
+    t.checkExpect(this.lea.gamePieceAt(2, 1).powerStation, false);
+    this.lea.onKeyEvent("a");
+    t.checkExpect(this.lea.gamePieceAt(2, 2).powerStation, true);
+  }
+
+  void testValidCoords(Tester t) {
+    init();
+    t.checkExpect(this.lea.validCoords(2, 1), true);
+    t.checkExpect(this.lea.validCoords(-1, 0), false);
+    t.checkExpect(this.lea.validCoords(2, 4), true);
+    t.checkExpect(this.lea.validCoords(5, 2), false);
+  }
+
+  void testValidDrawnCoords(Tester t) {
+    init();
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(20, 53)), true);
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(0, 250)), true);
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(-5, 120)), false);
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(380, 70)), false);
+  }
+
+  void testGamePieceAt(Tester t) {
+    init();
+    t.checkExpect(this.lea.gamePieceAt(0, 0), this.g1);
+    t.checkExpect(this.lea.gamePieceAt(2, 3), this.g15);
+  }
+
+  void testGamePieceAtDrawnPosn(Tester t) {
+    init();
+    t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(63, 18)), this.g2);
+    t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(140, 223)), this.g19);
   }
 
   void testBigBang(Tester t) {
     init();
 //    this.lea.generateFractalBoard();
 //    this.lea.bigBang(250, 250);
-    LightEmAll lea = new LightEmAll(6, 7);
+    LightEmAll lea = new LightEmAll(4, 5);
     lea.bigBang(400, 400);
   }
 }
