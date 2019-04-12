@@ -69,24 +69,24 @@ class LightEmAll extends World {
     int rowDiff = rowHigh - rowLow;
     if (colDiff == 1 && rowDiff == 1) {
       // Handles the 2 x 2 BaseCase
-      GamePiece tl = new GamePiece(0, 0, false, false, false, true, false);
-      GamePiece bl = new GamePiece(0, 0, false, true, true, false, false);
-      GamePiece tr = new GamePiece(0, 0, false, false, false, true, false);
-      GamePiece br = new GamePiece(0, 0, true, false, true, false, false);
+      GamePiece tl = new GamePiece(0, 0, false, false, false, true, false, false);
+      GamePiece bl = new GamePiece(0, 0, false, true, true, false, false, false);
+      GamePiece tr = new GamePiece(0, 0, false, false, false, true, false, false);
+      GamePiece br = new GamePiece(0, 0, true, false, true, false, false, false);
 
       return new ArrayList<>(Arrays.asList(
               new ArrayList<>(Arrays.asList(tl, bl)),
               new ArrayList<>(Arrays.asList(tr, br))));
       //Handles a 2 x 1
     } else if (colDiff == 0 && rowDiff == 1) {
-      GamePiece top = new GamePiece(0, 0, false, false, false, true, false);
-      GamePiece bottom = new GamePiece(0, 0, false, false, true, false, false);
+      GamePiece top = new GamePiece(0, 0, false, false, false, true, false, false);
+      GamePiece bottom = new GamePiece(0, 0, false, false, true, false, false, false);
 
       return new ArrayList<>(Arrays.asList(new ArrayList<>(Arrays.asList(top, bottom))));
       //Handles a 1 x 2
     } else if (colDiff == 1 && rowDiff == 0) {
-      GamePiece left = new GamePiece(0, 0, false, true, false, false, false);
-      GamePiece right = new GamePiece(0, 0, true, false, false, false, false);
+      GamePiece left = new GamePiece(0, 0, false, true, false, false, false, false);
+      GamePiece right = new GamePiece(0, 0, true, false, false, false, false, false);
 
       return new ArrayList<>(Arrays.asList(
               new ArrayList<>(Arrays.asList(left)), new ArrayList<>(Arrays.asList(right))
@@ -94,7 +94,7 @@ class LightEmAll extends World {
       // Handles a 1 x 1
     } else if (colDiff == 0 && rowDiff == 0) {
       return new ArrayList<>(Arrays.asList(new ArrayList<>(
-              Arrays.asList(new GamePiece(0, 0, false, false, false, false, false)))));
+              Arrays.asList(new GamePiece(0, 0, false, false, false, false, false, false)))));
       // Handles a 3 x 2 or 3 x 1
     } else if ((colDiff == 0 ||colDiff == 1) && rowDiff == 2) {
       ArrayList<ArrayList<GamePiece>> col = mergeVert(
@@ -261,9 +261,10 @@ class LightEmAll extends World {
     ArrayList<GamePiece> neighbors = this.getConnectedNeighbors(start, visited);
     int farthestDepth = 0;
     for (GamePiece gp : neighbors) {
-      farthestDepth = Math.max(farthestDepth, this.depthBetween(gp, end, visited));
+      farthestDepth = Math.max(farthestDepth,  1 + this.depthBetween(gp, end, visited));
     }
-    return 1 + farthestDepth;
+    return farthestDepth;
+    
   }
 
   // Performs a breadth-first search on this LightemAll's nodes, returns the deepest node
@@ -297,9 +298,26 @@ class LightEmAll extends World {
         neighbors.add(this.gamePieceAt(x, y));
       }
     }
-
     return neighbors;
   }
+  
+  //Updates the world every tick
+  public void onTick() {
+    this.lightGamePieces();
+  }
+
+ void lightGamePieces() {
+    for (int i = 0; i < this.width; i++) {
+      for (int j = 0; j < this.height; j++) {
+        GamePiece current = this.board.get(i).get(j);
+        GamePiece ps = this.board.get(powerRow).get(powerCol);
+        int distanceToPS = this.depthBetween(current, ps, new ArrayList<GamePiece>());
+        if (0 < distanceToPS && distanceToPS < this.radius) {
+          current.lit = true;
+        }
+      }
+    } 
+  }  
 }
 
 class ExamplesLightEmAll {
@@ -328,26 +346,26 @@ class ExamplesLightEmAll {
   LightEmAll lea;
 
   void init() {
-    this.g1 = new GamePiece(0, 0, false, false, false, true, false);
-    this.g2 = new GamePiece(1, 0, false, false, false, true, false);
-    this.g3 = new GamePiece(2, 0, false, false, false, true, true);
-    this.g4 = new GamePiece(3, 0, false, false, false, true, false);
-    this.g5 = new GamePiece(0, 1, false, true, true, false, false);
-    this.g6 = new GamePiece(1, 1, true, false, true, true, false);
-    this.g7 = new GamePiece(2, 1, false, true, true, false, false);
-    this.g8 = new GamePiece(3, 1, true, false, true, true, false);
-    this.g9 = new GamePiece(0, 2, false, true, false, true, false);
-    this.g10 = new GamePiece(1, 2, true, false, true, false, false);
-    this.g11 = new GamePiece(2, 2, false, true, false, false, false);
-    this.g12 = new GamePiece(3, 2, true, false, true, true, false);
-    this.g13 = new GamePiece(0, 3, false, false, true, true, false);
-    this.g14 = new GamePiece(1, 3, false, false, false, true, false);
-    this.g15 = new GamePiece(2, 3, false, false, false, true, false);
-    this.g16 = new GamePiece(3, 3, false, false, true, true, false);
-    this.g17 = new GamePiece(0, 4, false, true, true, false, false);
-    this.g18 = new GamePiece(1, 4, true, true, true, false, false);
-    this.g19 = new GamePiece(2, 4, true, true, true, false, false);
-    this.g20 = new GamePiece(3, 4, true, false, true, false, false);
+    this.g1 = new GamePiece(0, 0, false, false, false, true, false, false);
+    this.g2 = new GamePiece(1, 0, false, false, false, true, false, false);
+    this.g3 = new GamePiece(2, 0, false, false, false, true, true, false);
+    this.g4 = new GamePiece(3, 0, false, false, false, true, false, false);
+    this.g5 = new GamePiece(0, 1, false, true, true, false, false, false);
+    this.g6 = new GamePiece(1, 1, true, false, true, true, false, false);
+    this.g7 = new GamePiece(2, 1, false, true, true, false, false, false);
+    this.g8 = new GamePiece(3, 1, true, false, true, true, false, false);
+    this.g9 = new GamePiece(0, 2, false, true, false, true, false, false);
+    this.g10 = new GamePiece(1, 2, true, false, true, false, false, false);
+    this.g11 = new GamePiece(2, 2, false, true, false, false, false, false);
+    this.g12 = new GamePiece(3, 2, true, false, true, true, false, false);
+    this.g13 = new GamePiece(0, 3, false, false, true, true, false, false);
+    this.g14 = new GamePiece(1, 3, false, false, false, true, false, false);
+    this.g15 = new GamePiece(2, 3, false, false, false, true, false, false);
+    this.g16 = new GamePiece(3, 3, false, false, true, true, false, false);
+    this.g17 = new GamePiece(0, 4, false, true, true, false, false, false);
+    this.g18 = new GamePiece(1, 4, true, true, true, false, false, false);
+    this.g19 = new GamePiece(2, 4, true, true, true, false, false, false);
+    this.g20 = new GamePiece(3, 4, true, false, true, false, false, false);
 
     this.b1 = new ArrayList<>(Arrays.asList(
             new ArrayList<>(Arrays.asList(this.g1, this.g5, this.g9, this.g13, this.g17)),

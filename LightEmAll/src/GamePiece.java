@@ -18,10 +18,12 @@ class GamePiece {
   boolean bottom;
   // whether the power station is on this piece
   boolean powerStation;
+  boolean lit;
 
   static int SIZE = 50;
   static Color BG = Color.darkGray;
   static Color WIRE_COLOR = Color.lightGray;
+  static Color LIT_WIRE = Color.yellow;
   static int WIRE_WIDTH = GamePiece.SIZE / 15;
   static int WIRE_LENGTH = GamePiece.SIZE / 2;
   static OutlineMode OUTLINE_MODE = OutlineMode.SOLID;
@@ -29,7 +31,7 @@ class GamePiece {
           Color.BLUE);
 
   GamePiece(int row, int col, boolean left, boolean right, boolean top, boolean bottom,
-      boolean powerStation) {
+      boolean powerStation, boolean lit) {
     this.row = row;
     this.col = col;
     this.left = left;
@@ -37,6 +39,7 @@ class GamePiece {
     this.top = top;
     this.bottom = bottom;
     this.powerStation = powerStation;
+    this.lit = lit;
   }
 
   // Gives an ArrayList<Integer> representing this GamePiece's position
@@ -56,7 +59,8 @@ class GamePiece {
 
   // Returns an identical GamePiece to this, but with a different row and column
   GamePiece clone(int row, int col) {
-    return new GamePiece(row, col, this.left, this.right, this.top, this.bottom, this.powerStation);
+    return new GamePiece(row, col, this.left, this.right, this.top, this.bottom, 
+        this.powerStation, this.lit);
   }
 
   // Draws this GamePiece
@@ -128,15 +132,15 @@ class ExamplesGamePiece {
   GamePiece g3;
 
   void init() {
-    this.g1 = new GamePiece(0, 0, true, true, false, true, false);
-    this.g2 = new GamePiece(3, 4, false, true, true, false, true);
-    this.g3 = new GamePiece(1, 0, true, false, false, false, false);
+    this.g1 = new GamePiece(0, 0, true, true, false, true, false, false);
+    this.g2 = new GamePiece(3, 4, false, true, true, false, true, false);
+    this.g3 = new GamePiece(1, 0, true, false, false, false, false, false);
   }
 
   void testClone(Tester t) {
     init();
-    t.checkExpect(this.g1.clone(2, 1), new GamePiece(2, 1, true, true, false, true, false));
-    t.checkExpect(this.g2.clone(4, 4), new GamePiece(4, 4, false, true, true, false, true));
+    t.checkExpect(this.g1.clone(2, 1), new GamePiece(2, 1, true, true, false, true, false, false));
+    t.checkExpect(this.g2.clone(4, 4), new GamePiece(4, 4, false, true, true, false, true, false));
   }
 
   void testPosition(Tester t) {
@@ -184,9 +188,9 @@ class ExamplesGamePiece {
   void testRotate(Tester t) {
     init();
     this.g1.rotate();
-    t.checkExpect(this.g1, new GamePiece(0, 0, true, false, true, true, false));
+    t.checkExpect(this.g1, new GamePiece(0, 0, true, false, true, true, false, false));
     this.g1.rotate();
-    t.checkExpect(this.g1, new GamePiece(0, 0, true, true, true, false, false));
+    t.checkExpect(this.g1, new GamePiece(0, 0, true, true, true, false, false, false));
   }
 
   void testGetDirFromKeypress(Tester t) {
