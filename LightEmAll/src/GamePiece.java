@@ -23,7 +23,7 @@ class GamePiece {
   static int SIZE = 50;
   static Color BG = Color.darkGray;
   static Color WIRE_COLOR = Color.lightGray;
-  static Color LIT_WIRE = Color.yellow;
+  static Color LIT_COLOR = Color.yellow;
   static int WIRE_WIDTH = GamePiece.SIZE / 15;
   static int WIRE_LENGTH = GamePiece.SIZE / 2;
   static OutlineMode OUTLINE_MODE = OutlineMode.SOLID;
@@ -64,16 +64,16 @@ class GamePiece {
   }
 
   // Draws this GamePiece
-  public WorldImage drawPiece() {
+  public WorldImage drawPiece(Color wireColor) {
     WorldImage base = new FrameImage(
             new RectangleImage(GamePiece.SIZE, GamePiece.SIZE, GamePiece.OUTLINE_MODE,
                     GamePiece.BG), Color.BLACK);
     WorldImage wireVert =
             new RectangleImage(GamePiece.WIRE_WIDTH, GamePiece.WIRE_LENGTH, GamePiece.OUTLINE_MODE,
-                    GamePiece.WIRE_COLOR);
+                    wireColor);
     WorldImage wireHoriz =
             new RectangleImage(GamePiece.WIRE_LENGTH, GamePiece.WIRE_WIDTH, GamePiece.OUTLINE_MODE,
-                    GamePiece.WIRE_COLOR);
+                    wireColor);
 
     ArrayList<Boolean> sides = new ArrayList<>(Arrays.asList(
             this.left, this.right, this.top, this.bottom));
@@ -172,17 +172,22 @@ class ExamplesGamePiece {
         OutlineMode.SOLID, GamePiece.WIRE_COLOR);
     WorldImage wireHoz = new RectangleImage(GamePiece.WIRE_LENGTH, GamePiece.WIRE_WIDTH,
         OutlineMode.SOLID, GamePiece.WIRE_COLOR);
+    WorldImage wireVertLit = new RectangleImage(GamePiece.WIRE_WIDTH, GamePiece.WIRE_LENGTH,
+            OutlineMode.SOLID, GamePiece.LIT_COLOR);
+    WorldImage wireHozLit = new RectangleImage(GamePiece.WIRE_LENGTH, GamePiece.WIRE_WIDTH,
+            OutlineMode.SOLID, GamePiece.LIT_COLOR);
 
     init();
-    t.checkExpect(this.g1.drawPiece(),
+    t.checkExpect(this.g1.drawPiece(GamePiece.WIRE_COLOR),
         new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.BOTTOM, wireVert, 0, 0,
             new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.MIDDLE, wireHoz, 0, 0,
                 new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.MIDDLE, wireHoz, 0, 0, base))));
 
-    t.checkExpect(this.g2.drawPiece(),
+    t.checkExpect(this.g2.drawPiece(GamePiece.LIT_COLOR),
         new OverlayImage(GamePiece.POWER_STATION, 
-            new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.TOP, wireVert, 0,
-            0, new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.MIDDLE, wireHoz, 0, 0, base))));
+            new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.TOP, wireVertLit, 0,
+            0, new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.MIDDLE, wireHozLit, 0, 0,
+                    base))));
   }
 
   void testRotate(Tester t) {

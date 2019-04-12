@@ -35,7 +35,6 @@ class LightEmAll extends World {
     this.height = height;
 
     this.generateFractalBoard();
-    this.setCoordinates();
     this.nodes = Utils.flatten(this.board);
     this.radius = this.getDiameter();
   }
@@ -50,17 +49,6 @@ class LightEmAll extends World {
     this.powerCol = temp.size() / 2;
     this.powerRow = 0;
   }
-  
-  // EFFECT: changes the coordinates of each tile
-  void setCoordinates() {
-    for (int i = 0; i < this.width; i++) {
-      for (int j = 0; j < this.height; j++) {
-        GamePiece current = this.board.get(i).get(j);
-        current.row = i;
-        current.col = j;
-      }
-    }
-  }
 
   // EFFECT: generates a fractal board layout recursively
   ArrayList<ArrayList<GamePiece>> generateFractalBoardHelp(int colLow, int rowLow, int colHigh,
@@ -69,24 +57,24 @@ class LightEmAll extends World {
     int rowDiff = rowHigh - rowLow;
     if (colDiff == 1 && rowDiff == 1) {
       // Handles the 2 x 2 BaseCase
-      GamePiece tl = new GamePiece(0, 0, false, false, false, true, false, false);
-      GamePiece bl = new GamePiece(0, 0, false, true, true, false, false, false);
-      GamePiece tr = new GamePiece(0, 0, false, false, false, true, false, false);
-      GamePiece br = new GamePiece(0, 0, true, false, true, false, false, false);
+      GamePiece tl = new GamePiece(rowLow, colLow, false, false, false, true, false, false);
+      GamePiece bl = new GamePiece(rowHigh, colLow, false, true, true, false, false, false);
+      GamePiece tr = new GamePiece(rowLow, colHigh, false, false, false, true, false, false);
+      GamePiece br = new GamePiece(rowHigh, colHigh, true, false, true, false, false, false);
 
       return new ArrayList<>(Arrays.asList(
               new ArrayList<>(Arrays.asList(tl, bl)),
               new ArrayList<>(Arrays.asList(tr, br))));
       //Handles a 2 x 1
     } else if (colDiff == 0 && rowDiff == 1) {
-      GamePiece top = new GamePiece(0, 0, false, false, false, true, false, false);
-      GamePiece bottom = new GamePiece(0, 0, false, false, true, false, false, false);
+      GamePiece top = new GamePiece(rowLow, colLow, false, false, false, true, false, false);
+      GamePiece bottom = new GamePiece(rowHigh, colLow, false, false, true, false, false, false);
 
       return new ArrayList<>(Arrays.asList(new ArrayList<>(Arrays.asList(top, bottom))));
       //Handles a 1 x 2
     } else if (colDiff == 1 && rowDiff == 0) {
-      GamePiece left = new GamePiece(0, 0, false, true, false, false, false, false);
-      GamePiece right = new GamePiece(0, 0, true, false, false, false, false, false);
+      GamePiece left = new GamePiece(rowLow, colLow, false, true, false, false, false, false);
+      GamePiece right = new GamePiece(rowLow, colHigh, true, false, false, false, false, false);
 
       return new ArrayList<>(Arrays.asList(
               new ArrayList<>(Arrays.asList(left)), new ArrayList<>(Arrays.asList(right))
@@ -94,16 +82,17 @@ class LightEmAll extends World {
       // Handles a 1 x 1
     } else if (colDiff == 0 && rowDiff == 0) {
       return new ArrayList<>(Arrays.asList(new ArrayList<>(
-              Arrays.asList(new GamePiece(0, 0, false, false, false, false, false, false)))));
-      // Handles a 3 x 2 or 3 x 1
-    } else if ((colDiff == 0 ||colDiff == 1) && rowDiff == 2) {
+              Arrays.asList(new GamePiece(rowLow, colLow, false, false, false, false, false,
+                      false)))));
+      // Handles a 2x3 or 1x3
+    } else if ((colDiff == 0 || colDiff == 1) && rowDiff == 2) {
       ArrayList<ArrayList<GamePiece>> col = mergeVert(
           generateFractalBoardHelp(colLow, rowLow, colHigh, rowLow + 1),
           generateFractalBoardHelp(colLow, rowHigh, colHigh, rowHigh));
       col.get(colDiff).get(1).bottom = true;
       col.get(colDiff).get(2).top = true;
       return col;
-     // Handles a 2 x 3 or 1 x 3 case 
+     // Handles a 3x2 or 3x1 case
     } else if (colDiff == 2 && (rowDiff == 1 || rowDiff == 0)) {
       ArrayList<ArrayList<GamePiece>> rect = mergeHoriz(
               generateFractalBoardHelp(colLow, rowLow, colLow + 1, rowHigh),
@@ -218,7 +207,8 @@ class LightEmAll extends World {
       for (int j = 0; j < this.height; j++) {
         int posX = (GamePiece.SIZE / 2) + i * GamePiece.SIZE;
         int posY = (GamePiece.SIZE / 2) + j * GamePiece.SIZE;
-        WorldImage gamePiece = this.gamePieceAt(i, j).drawPiece();
+        GamePiece gp = this.gamePieceAt(i, j);
+        WorldImage gamePiece = gp.drawPiece(gp.lit ? GamePiece.LIT_COLOR : GamePiece.WIRE_COLOR);
         base.placeImageXY(gamePiece, posX, posY);
       }
     }
@@ -254,7 +244,7 @@ class LightEmAll extends World {
     return diameter / 2 + 1;
   }
 
-  // Performs a breadth-first search on this LightemAll's nodes, returns depth of the
+  // Performs a breadth-first search on this LightEmAll's nodes, returns depth of the
   // matching node
   int depthBetween(GamePiece start, GamePiece end, ArrayList<GamePiece> visited) {
     visited.add(start);
@@ -273,12 +263,11 @@ class LightEmAll extends World {
     ArrayList<GamePiece> visited = new ArrayList<>();
     GamePiece current = start;
     
-    while(queue.size() > 0) {
+    while (queue.size() > 0) {
       current = queue.pop();
       visited.add(current);
       queue.pushAll(this.getConnectedNeighbors(current, visited));
     }
-
     return current;
   }
 
@@ -288,13 +277,12 @@ class LightEmAll extends World {
 
     for (int i = 0; i < LightEmAll.VECTORS.size(); i++) {
       Posn p = LightEmAll.VECTORS.get(i);
-      int x = gp.row + p.x;
-      int y = gp.col + p.y;
+      int x = gp.col + p.x;
+      int y = gp.row + p.y;
 
-      if (this.validCoords(x, y) && 
-          gp.getDirFromKeypress(LightEmAll.DIRS.get(i)) &&
-              this.gamePieceAt(x, y).getDirFromKeypress(LightEmAll.OPPODIRS.get(i)) &&
-              !visited.contains(this.gamePieceAt(x, y))) {
+      if (this.validCoords(x, y) && gp.getDirFromKeypress(LightEmAll.DIRS.get(i))
+              && this.gamePieceAt(x, y).getDirFromKeypress(LightEmAll.OPPODIRS.get(i))
+              && !visited.contains(this.gamePieceAt(x, y))) {
         neighbors.add(this.gamePieceAt(x, y));
       }
     }
@@ -347,25 +335,28 @@ class ExamplesLightEmAll {
 
   void init() {
     this.g1 = new GamePiece(0, 0, false, false, false, true, false, false);
-    this.g2 = new GamePiece(1, 0, false, false, false, true, false, false);
-    this.g3 = new GamePiece(2, 0, false, false, false, true, true, false);
-    this.g4 = new GamePiece(3, 0, false, false, false, true, false, false);
-    this.g5 = new GamePiece(0, 1, false, true, true, false, false, false);
+    this.g5 = new GamePiece(1, 0, false, true, true, false, false, false);
+    this.g9 = new GamePiece(2, 0, false, true, false, true, false, false);
+    this.g13 = new GamePiece(3, 0, false, false, true, true, false, false);
+    this.g17 = new GamePiece(4, 0, false, true, true, false, false, false);
+
+    this.g2 = new GamePiece(0, 1, false, false, false, true, false, false);
     this.g6 = new GamePiece(1, 1, true, false, true, true, false, false);
-    this.g7 = new GamePiece(2, 1, false, true, true, false, false, false);
-    this.g8 = new GamePiece(3, 1, true, false, true, true, false, false);
-    this.g9 = new GamePiece(0, 2, false, true, false, true, false, false);
-    this.g10 = new GamePiece(1, 2, true, false, true, false, false, false);
+    this.g10 = new GamePiece(2, 1, true, false, true, false, false, false);
+    this.g14 = new GamePiece(3, 1, false, false, false, true, false, false);
+    this.g18 = new GamePiece(4, 1, true, true, true, false, false, false);
+
+    this.g3 = new GamePiece(0, 2, false, false, false, true, true, false);
+    this.g7 = new GamePiece(1, 2, false, true, true, false, false, false);
     this.g11 = new GamePiece(2, 2, false, true, false, false, false, false);
-    this.g12 = new GamePiece(3, 2, true, false, true, true, false, false);
-    this.g13 = new GamePiece(0, 3, false, false, true, true, false, false);
-    this.g14 = new GamePiece(1, 3, false, false, false, true, false, false);
-    this.g15 = new GamePiece(2, 3, false, false, false, true, false, false);
+    this.g15 = new GamePiece(3, 2, false, false, false, true, false, false);
+    this.g19 = new GamePiece(4, 2, true, true, true, false, false, false);
+
+    this.g4 = new GamePiece(0, 3, false, false, false, true, false, false);
+    this.g8 = new GamePiece(1, 3, true, false, true, true, false, false);
+    this.g12 = new GamePiece(2, 3, true, false, true, true, false, false);
     this.g16 = new GamePiece(3, 3, false, false, true, true, false, false);
-    this.g17 = new GamePiece(0, 4, false, true, true, false, false, false);
-    this.g18 = new GamePiece(1, 4, true, true, true, false, false, false);
-    this.g19 = new GamePiece(2, 4, true, true, true, false, false, false);
-    this.g20 = new GamePiece(3, 4, true, false, true, false, false, false);
+    this.g20 = new GamePiece(4, 3, true, false, true, false, false, false);
 
     this.b1 = new ArrayList<>(Arrays.asList(
             new ArrayList<>(Arrays.asList(this.g1, this.g5, this.g9, this.g13, this.g17)),
@@ -378,7 +369,7 @@ class ExamplesLightEmAll {
   
   void testMakeFractals(Tester t) {
     init();
-    t.checkExpect(this.b1, this.lea.board);
+    t.checkExpect(this.lea.board, this.b1);
   }
 
   void testOnKeyEvent(Tester t) {
@@ -450,10 +441,11 @@ class ExamplesLightEmAll {
   void testBFS(Tester t) {
     init();
     t.checkExpect(this.lea.bfs(this.g1), this.g3);
+    t.checkExpect(this.lea.bfs(this.g18), this.g3);
   }
 
   void testBigBang(Tester t) {
     init();
-   this.lea.bigBang(200, 250);
+    this.lea.bigBang(200, 250);
   }
 }
