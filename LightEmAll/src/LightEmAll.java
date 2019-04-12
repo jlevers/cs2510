@@ -253,6 +253,9 @@ class LightEmAll extends World {
     for (GamePiece gp : neighbors) {
       farthestDepth = Math.max(farthestDepth,  1 + this.depthBetween(gp, end, visited));
     }
+    if (!visited.contains(end)) {
+      farthestDepth = -1;
+    }
     return farthestDepth;
     
   }
@@ -298,10 +301,12 @@ class LightEmAll extends World {
     for (int i = 0; i < this.width; i++) {
       for (int j = 0; j < this.height; j++) {
         GamePiece current = this.board.get(i).get(j);
-        GamePiece ps = this.board.get(powerRow).get(powerCol);
+        GamePiece ps = this.board.get(powerCol).get(powerRow);
         int distanceToPS = this.depthBetween(current, ps, new ArrayList<GamePiece>());
-        if (0 < distanceToPS && distanceToPS < this.radius) {
+        if (distanceToPS <= this.radius && distanceToPS != -1) {
           current.lit = true;
+        } else {
+          current.lit = false;
         }
       }
     } 
@@ -446,6 +451,6 @@ class ExamplesLightEmAll {
 
   void testBigBang(Tester t) {
     init();
-    this.lea.bigBang(200, 250);
+    this.lea.bigBang(200, 250, (1.0 / 28.0));
   }
 }
