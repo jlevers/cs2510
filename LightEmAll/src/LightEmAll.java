@@ -1,10 +1,8 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import tester.*;
 import javalib.impworld.*;
 import java.util.Arrays;
-import java.util.HashMap;
-
+import java.util.Stack;
 import javalib.worldimages.*;
 
 class LightEmAll extends World {
@@ -57,24 +55,24 @@ class LightEmAll extends World {
     int rowDiff = rowHigh - rowLow;
     if (colDiff == 1 && rowDiff == 1) {
       // Handles the 2 x 2 BaseCase
-      GamePiece tl = new GamePiece(rowLow, colLow, false, false, false, true, false, false);
-      GamePiece bl = new GamePiece(rowHigh, colLow, false, true, true, false, false, false);
-      GamePiece tr = new GamePiece(rowLow, colHigh, false, false, false, true, false, false);
-      GamePiece br = new GamePiece(rowHigh, colHigh, true, false, true, false, false, false);
+      GamePiece tl = new GamePiece(rowLow, colLow, false, false, false, true, false);
+      GamePiece bl = new GamePiece(rowHigh, colLow, false, true, true, false, false);
+      GamePiece tr = new GamePiece(rowLow, colHigh, false, false, false, true, false);
+      GamePiece br = new GamePiece(rowHigh, colHigh, true, false, true, false, false);
 
       return new ArrayList<>(Arrays.asList(
               new ArrayList<>(Arrays.asList(tl, bl)),
               new ArrayList<>(Arrays.asList(tr, br))));
       //Handles a 2 x 1
     } else if (colDiff == 0 && rowDiff == 1) {
-      GamePiece top = new GamePiece(rowLow, colLow, false, false, false, true, false, false);
-      GamePiece bottom = new GamePiece(rowHigh, colLow, false, false, true, false, false, false);
+      GamePiece top = new GamePiece(rowLow, colLow, false, false, false, true, false);
+      GamePiece bottom = new GamePiece(rowHigh, colLow, false, false, true, false, false);
 
       return new ArrayList<>(Arrays.asList(new ArrayList<>(Arrays.asList(top, bottom))));
       //Handles a 1 x 2
     } else if (colDiff == 1 && rowDiff == 0) {
-      GamePiece left = new GamePiece(rowLow, colLow, false, true, false, false, false, false);
-      GamePiece right = new GamePiece(rowLow, colHigh, true, false, false, false, false, false);
+      GamePiece left = new GamePiece(rowLow, colLow, false, true, false, false, false);
+      GamePiece right = new GamePiece(rowLow, colHigh, true, false, false, false, false);
 
       return new ArrayList<>(Arrays.asList(
               new ArrayList<>(Arrays.asList(left)), new ArrayList<>(Arrays.asList(right))
@@ -82,8 +80,7 @@ class LightEmAll extends World {
       // Handles a 1 x 1
     } else if (colDiff == 0 && rowDiff == 0) {
       return new ArrayList<>(Arrays.asList(new ArrayList<>(
-              Arrays.asList(new GamePiece(rowLow, colLow, false, false, false, false, false,
-                      false)))));
+              Arrays.asList(new GamePiece(rowLow, colLow, false, false, false, false, false)))));
       // Handles a 2x3 or 1x3
     } else if ((colDiff == 0 || colDiff == 1) && rowDiff == 2) {
       ArrayList<ArrayList<GamePiece>> col = mergeVert(
@@ -203,12 +200,15 @@ class LightEmAll extends World {
   // Draws the current GameBoard
   public WorldScene makeScene() {
     WorldScene base = new WorldScene(GamePiece.SIZE * this.width, GamePiece.SIZE * this.height);
+    GamePiece powerStation = this.gamePieceAt(powerCol, powerRow);
     for (int i = 0; i < this.width; i++) {
       for (int j = 0; j < this.height; j++) {
         int posX = (GamePiece.SIZE / 2) + i * GamePiece.SIZE;
         int posY = (GamePiece.SIZE / 2) + j * GamePiece.SIZE;
         GamePiece gp = this.gamePieceAt(i, j);
-        WorldImage gamePiece = gp.drawPiece(gp.lit ? GamePiece.LIT_COLOR : GamePiece.WIRE_COLOR);
+        int distance = this.depthBetween(powerStation, gp, new ArrayList<>());
+        WorldImage gamePiece = gp.drawPiece((distance > -1 && distance <= radius) ?
+                GamePiece.LIT_COLOR : GamePiece.WIRE_COLOR);
         base.placeImageXY(gamePiece, posX, posY);
       }
     }
@@ -240,27 +240,38 @@ class LightEmAll extends World {
   // Gets the diameter of the graph
   int getDiameter() {
     GamePiece first = this.bfs(this.gamePieceAt(0, 0));
-    int diameter = this.depthBetween(first, this.bfs(first), new ArrayList<GamePiece>());
+    int diameter = this.depthBetween(first, this.bfs(first), new ArrayList<>());
     return diameter / 2 + 1;
   }
 
   // Performs a breadth-first search on this LightEmAll's nodes, returns depth of the
   // matching node
   int depthBetween(GamePiece start, GamePiece end, ArrayList<GamePiece> visited) {
-    visited.add(start);
-    ArrayList<GamePiece> neighbors = this.getConnectedNeighbors(start, visited);
-    int farthestDepth = 0;
+
+    GamePiece current = start;
+    ArrayList<GamePiece> neighbors = this.getConnectedNeighbors(current, visited);
+    visited.add(current);
+
+    if (start.equals(end)) {
+      return 0;
+    } else if (neighbors.size() == 0) {
+      return Integer.MIN_VALUE;
+    }
+
+    ArrayList<Integer> depths = new ArrayList<>();
     for (GamePiece gp : neighbors) {
-      farthestDepth = Math.max(farthestDepth,  1 + this.depthBetween(gp, end, visited));
+      if (gp.equals(end)) {
+        return 1;
+      }
+
+      depths.add(1 + depthBetween(gp, end, visited));
     }
-    if (!visited.contains(end)) {
-      farthestDepth = -1;
-    }
-    return farthestDepth;
-    
+
+    return Utils.maxALInt(depths);
   }
 
-  // Performs a breadth-first search on this LightemAll's nodes, returns the deepest node
+
+  // Performs a breadth-first search on this LightEmAll's nodes, returns the deepest node
   GamePiece bfs(GamePiece start) {
     Queue<GamePiece> queue = new Queue<>(new ArrayList<>(Arrays.asList(start)));
     ArrayList<GamePiece> visited = new ArrayList<>();
@@ -291,26 +302,6 @@ class LightEmAll extends World {
     }
     return neighbors;
   }
-  
-  //Updates the world every tick
-  public void onTick() {
-    this.lightGamePieces();
-  }
-
- void lightGamePieces() {
-    for (int i = 0; i < this.width; i++) {
-      for (int j = 0; j < this.height; j++) {
-        GamePiece current = this.board.get(i).get(j);
-        GamePiece ps = this.board.get(powerCol).get(powerRow);
-        int distanceToPS = this.depthBetween(current, ps, new ArrayList<GamePiece>());
-        if (distanceToPS <= this.radius && distanceToPS != -1) {
-          current.lit = true;
-        } else {
-          current.lit = false;
-        }
-      }
-    } 
-  }  
 }
 
 class ExamplesLightEmAll {
@@ -339,29 +330,29 @@ class ExamplesLightEmAll {
   LightEmAll lea;
 
   void init() {
-    this.g1 = new GamePiece(0, 0, false, false, false, true, false, false);
-    this.g5 = new GamePiece(1, 0, false, true, true, false, false, false);
-    this.g9 = new GamePiece(2, 0, false, true, false, true, false, false);
-    this.g13 = new GamePiece(3, 0, false, false, true, true, false, false);
-    this.g17 = new GamePiece(4, 0, false, true, true, false, false, false);
+    this.g1 = new GamePiece(0, 0, false, false, false, true, false);
+    this.g5 = new GamePiece(1, 0, false, true, true, false, false);
+    this.g9 = new GamePiece(2, 0, false, true, false, true, false);
+    this.g13 = new GamePiece(3, 0, false, false, true, true, false);
+    this.g17 = new GamePiece(4, 0, false, true, true, false, false);
 
-    this.g2 = new GamePiece(0, 1, false, false, false, true, false, false);
-    this.g6 = new GamePiece(1, 1, true, false, true, true, false, false);
-    this.g10 = new GamePiece(2, 1, true, false, true, false, false, false);
-    this.g14 = new GamePiece(3, 1, false, false, false, true, false, false);
-    this.g18 = new GamePiece(4, 1, true, true, true, false, false, false);
+    this.g2 = new GamePiece(0, 1, false, false, false, true, false);
+    this.g6 = new GamePiece(1, 1, true, false, true, true, false);
+    this.g10 = new GamePiece(2, 1, true, false, true, false, false);
+    this.g14 = new GamePiece(3, 1, false, false, false, true, false);
+    this.g18 = new GamePiece(4, 1, true, true, true, false, false);
 
-    this.g3 = new GamePiece(0, 2, false, false, false, true, true, false);
-    this.g7 = new GamePiece(1, 2, false, true, true, false, false, false);
-    this.g11 = new GamePiece(2, 2, false, true, false, false, false, false);
-    this.g15 = new GamePiece(3, 2, false, false, false, true, false, false);
-    this.g19 = new GamePiece(4, 2, true, true, true, false, false, false);
+    this.g3 = new GamePiece(0, 2, false, false, false, true, true);
+    this.g7 = new GamePiece(1, 2, false, true, true, false, false);
+    this.g11 = new GamePiece(2, 2, false, true, false, false, false);
+    this.g15 = new GamePiece(3, 2, false, false, false, true, false);
+    this.g19 = new GamePiece(4, 2, true, true, true, false, false);
 
-    this.g4 = new GamePiece(0, 3, false, false, false, true, false, false);
-    this.g8 = new GamePiece(1, 3, true, false, true, true, false, false);
-    this.g12 = new GamePiece(2, 3, true, false, true, true, false, false);
-    this.g16 = new GamePiece(3, 3, false, false, true, true, false, false);
-    this.g20 = new GamePiece(4, 3, true, false, true, false, false, false);
+    this.g4 = new GamePiece(0, 3, false, false, false, true, false);
+    this.g8 = new GamePiece(1, 3, true, false, true, true, false);
+    this.g12 = new GamePiece(2, 3, true, false, true, true, false);
+    this.g16 = new GamePiece(3, 3, false, false, true, true, false);
+    this.g20 = new GamePiece(4, 3, true, false, true, false, false);
 
     this.b1 = new ArrayList<>(Arrays.asList(
             new ArrayList<>(Arrays.asList(this.g1, this.g5, this.g9, this.g13, this.g17)),
@@ -371,7 +362,7 @@ class ExamplesLightEmAll {
 
     this.lea = new LightEmAll(4, 5);
   }
-  
+
   void testMakeFractals(Tester t) {
     init();
     t.checkExpect(this.lea.board, this.b1);
@@ -437,16 +428,22 @@ class ExamplesLightEmAll {
     t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(63, 18)), this.g2);
     t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(135, 245)), this.g19);
   }
-  
+
   void testGetDiameter(Tester t) {
     init();
     t.checkExpect(this.lea.getDiameter(), 8);
   }
-  
+
   void testBFS(Tester t) {
     init();
     t.checkExpect(this.lea.bfs(this.g1), this.g3);
     t.checkExpect(this.lea.bfs(this.g18), this.g3);
+  }
+
+  void testDepthBetween(Tester t) {
+    init();
+    t.checkExpect(this.lea.depthBetween(this.g1, this.g6, new ArrayList<>()), 2);
+    t.checkExpect(this.lea.depthBetween(this.g1, this.g12, new ArrayList<>()), 11);
   }
 
   void testBigBang(Tester t) {
