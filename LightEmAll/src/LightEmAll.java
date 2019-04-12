@@ -249,8 +249,9 @@ class LightEmAll extends World {
 
   // Gets the diameter of the graph
   int getDiameter() {
-    GamePiece first = this.bfs(this.nodes.get(0));
-    return this.depthBetween(first, this.bfs(first)) / 2 + 1;
+    GamePiece first = this.bfs(this.gamePieceAt(0, 0));
+    int diameter = this.depthBetween(first, this.bfs(first));
+    return diameter / 2 + 1;
   }
 
   // Performs a breadth-first search on this LightemAll's nodes, returns depth of the
@@ -263,10 +264,9 @@ class LightEmAll extends World {
     while(!current.equals(end) && queue.size() > 0) {
       current = queue.pop();
       visited.add(current);
-      queue.pushAll(this.getConnectedNeighbors(current, visited));
-      depth++;
-    }
-
+      queue.pushAll(this.getConnectedNeighbors(current, visited, queue.queue));
+        depth++;
+      }
     return depth;
   }
 
@@ -279,14 +279,15 @@ class LightEmAll extends World {
     while(queue.size() > 0) {
       current = queue.pop();
       visited.add(current);
-      queue.pushAll(this.getConnectedNeighbors(current, visited));
+      queue.pushAll(this.getConnectedNeighbors(current, visited, queue.queue));
     }
 
     return current;
   }
 
   // Gets an ArrayList of connected neighbors of the given GamePiece
-  ArrayList<GamePiece> getConnectedNeighbors(GamePiece gp, ArrayList<GamePiece> visited) {
+  ArrayList<GamePiece> getConnectedNeighbors(GamePiece gp, 
+      ArrayList<GamePiece> visited, ArrayList<GamePiece> queue) {
     ArrayList<GamePiece> neighbors = new ArrayList<>();
 
     for (int i = 0; i < LightEmAll.VECTORS.size(); i++) {
@@ -297,7 +298,8 @@ class LightEmAll extends World {
       if (this.validCoords(x, y) && 
           gp.getDirFromKeypress(LightEmAll.DIRS.get(i)) &&
               this.gamePieceAt(x, y).getDirFromKeypress(LightEmAll.OPPODIRS.get(i)) &&
-              !visited.contains(this.gamePieceAt(x, y))) {
+              !visited.contains(this.gamePieceAt(x, y)) &&
+              !queue.contains(this.gamePieceAt(x, y))) {
         neighbors.add(this.gamePieceAt(x, y));
       }
     }
@@ -430,13 +432,12 @@ class ExamplesLightEmAll {
   
   void testGetDiameter(Tester t) {
     init();
-    t.checkExpect(this.lea.getDiameter(), 15);
+    t.checkExpect(this.lea.getDiameter(), 8);
   }
   
   void testBFS(Tester t) {
-    LightEmAll l = new LightEmAll(2,2);
-    t.checkExpect(l.bfs(l.board.get(0).get(0)), l.board.get(1).get(0));
-    t.checkExpect(lea.bfs(lea.board.get(0).get(0)), this.g3);
+    init();
+    t.checkExpect(this.lea.bfs(this.g3), this.g1);
   }
 
   void testBigBang(Tester t) {
