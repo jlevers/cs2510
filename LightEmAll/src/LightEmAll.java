@@ -250,24 +250,20 @@ class LightEmAll extends World {
   // Gets the diameter of the graph
   int getDiameter() {
     GamePiece first = this.bfs(this.gamePieceAt(0, 0));
-    int diameter = this.depthBetween(first, this.bfs(first));
+    int diameter = this.depthBetween(first, this.bfs(first), new ArrayList<GamePiece>());
     return diameter / 2 + 1;
   }
 
   // Performs a breadth-first search on this LightemAll's nodes, returns depth of the
   // matching node
-  int depthBetween(GamePiece start, GamePiece end) {
-    Queue<GamePiece> queue = new Queue<>(new ArrayList<>(Arrays.asList(start)));
-    ArrayList<GamePiece> visited = new ArrayList<>();
-    GamePiece current = start;
-    int depth = 0;
-    while(!current.equals(end) && queue.size() > 0) {
-      current = queue.pop();
-      visited.add(current);
-      queue.pushAll(this.getConnectedNeighbors(current, visited, queue.queue));
-        depth++;
-      }
-    return depth;
+  int depthBetween(GamePiece start, GamePiece end, ArrayList<GamePiece> visited) {
+    visited.add(start);
+    ArrayList<GamePiece> neighbors = this.getConnectedNeighbors(start, visited);
+    int farthestDepth = 0;
+    for (GamePiece gp : neighbors) {
+      farthestDepth = Math.max(farthestDepth, this.depthBetween(gp, end, visited));
+    }
+    return 1 + farthestDepth;
   }
 
   // Performs a breadth-first search on this LightemAll's nodes, returns the deepest node
@@ -279,15 +275,14 @@ class LightEmAll extends World {
     while(queue.size() > 0) {
       current = queue.pop();
       visited.add(current);
-      queue.pushAll(this.getConnectedNeighbors(current, visited, queue.queue));
+      queue.pushAll(this.getConnectedNeighbors(current, visited));
     }
 
     return current;
   }
 
   // Gets an ArrayList of connected neighbors of the given GamePiece
-  ArrayList<GamePiece> getConnectedNeighbors(GamePiece gp, 
-      ArrayList<GamePiece> visited, ArrayList<GamePiece> queue) {
+  ArrayList<GamePiece> getConnectedNeighbors(GamePiece gp, ArrayList<GamePiece> visited) {
     ArrayList<GamePiece> neighbors = new ArrayList<>();
 
     for (int i = 0; i < LightEmAll.VECTORS.size(); i++) {
@@ -298,8 +293,7 @@ class LightEmAll extends World {
       if (this.validCoords(x, y) && 
           gp.getDirFromKeypress(LightEmAll.DIRS.get(i)) &&
               this.gamePieceAt(x, y).getDirFromKeypress(LightEmAll.OPPODIRS.get(i)) &&
-              !visited.contains(this.gamePieceAt(x, y)) &&
-              !queue.contains(this.gamePieceAt(x, y))) {
+              !visited.contains(this.gamePieceAt(x, y))) {
         neighbors.add(this.gamePieceAt(x, y));
       }
     }
@@ -437,7 +431,7 @@ class ExamplesLightEmAll {
   
   void testBFS(Tester t) {
     init();
-    t.checkExpect(this.lea.bfs(this.g3), this.g1);
+    t.checkExpect(this.lea.bfs(this.g1), this.g3);
   }
 
   void testBigBang(Tester t) {
