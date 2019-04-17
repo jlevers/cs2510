@@ -123,10 +123,10 @@ class GamePiece {
   }
 
   // Checks if that GamePiece is the same as this GamePiece
-  boolean equals(GamePiece that) {
-    return this == that || (that.row == this.row && that.col == this.col && that.left == this.left
-      && that.right == this.right && that.top == this.top && that.bottom == that.bottom
-      && that.powerStation == this.powerStation);
+  boolean sameGamePiece(GamePiece that) {
+    return that.row == this.row && that.col == this.col && that.left == this.left
+              && that.right == this.right && that.top == this.top && that.bottom == that.bottom
+              && that.powerStation == this.powerStation;
   }
   
 }
@@ -212,10 +212,10 @@ class ExamplesGamePiece {
     t.checkExpect(this.g1.getDirFromKeypress("a"), false);
   }
 
-  void testEquals(Tester t) {
+  void testSameGamePiece(Tester t) {
     init();
-    t.checkExpect(this.g1.equals(this.g1), true);
-    t.checkExpect(this.g1.equals(this.g2), false);
-    t.checkExpect(this.g1.equals(new GamePiece(0, 0, true, false, true, true, false)), true);
+    t.checkExpect(this.g1.sameGamePiece(this.g1), true);
+    t.checkExpect(this.g1.sameGamePiece(this.g2), false);
+    t.checkExpect(this.g1.sameGamePiece(new GamePiece(0, 0, true, false, true, true, false)), true);
   }
 }

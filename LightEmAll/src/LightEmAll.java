@@ -2,7 +2,6 @@ import java.util.ArrayList;
 import tester.*;
 import javalib.impworld.*;
 import java.util.Arrays;
-import java.util.Stack;
 import javalib.worldimages.*;
 
 class LightEmAll extends World {
@@ -89,13 +88,13 @@ class LightEmAll extends World {
       col.get(colDiff).get(1).bottom = true;
       col.get(colDiff).get(2).top = true;
       return col;
-     // Handles a 3x2 or 3x1 case
+      // Handles a 3x2 or 3x1 case
     } else if (colDiff == 2 && (rowDiff == 1 || rowDiff == 0)) {
       ArrayList<ArrayList<GamePiece>> rect = mergeHoriz(
               generateFractalBoardHelp(colLow, rowLow, colLow + 1, rowHigh),
               generateFractalBoardHelp(colHigh, rowLow, colHigh, rowHigh));
-        rect.get(1).get(rowDiff).right = true;
-        rect.get(2).get(rowDiff).left = true;
+      rect.get(1).get(rowDiff).right = true;
+      rect.get(2).get(rowDiff).left = true;
 
       return rect;
     } else {
@@ -252,7 +251,7 @@ class LightEmAll extends World {
     ArrayList<GamePiece> neighbors = this.getConnectedNeighbors(current, visited);
     visited.add(current);
 
-    if (start.equals(end)) {
+    if (start.sameGamePiece(end)) {
       return 0;
     } else if (neighbors.size() == 0) {
       return Integer.MIN_VALUE;
@@ -260,7 +259,7 @@ class LightEmAll extends World {
 
     ArrayList<Integer> depths = new ArrayList<>();
     for (GamePiece gp : neighbors) {
-      if (gp.equals(end)) {
+      if (gp.sameGamePiece(end)) {
         return 1;
       }
 
@@ -449,5 +448,6 @@ class ExamplesLightEmAll {
   void testBigBang(Tester t) {
     init();
     this.lea.bigBang(200, 250, (1.0 / 28.0));
+    new LightEmAll(10, 10).bigBang(2000, 2000);
   }
 }
