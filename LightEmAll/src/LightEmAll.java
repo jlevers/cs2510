@@ -462,29 +462,29 @@ class ExamplesLightEmAll {
   Random rand;
 
   void init() {
-    this.g1 = new GamePiece(0, 0, false, false, false, true, false);
+    this.g1 = new GamePiece(0, 0, false, false, false, true, true);
     this.g5 = new GamePiece(1, 0, false, true, true, false, false);
     this.g9 = new GamePiece(2, 0, false, true, false, true, false);
-    this.g13 = new GamePiece(3, 0, false, false, true, true, false);
-    this.g17 = new GamePiece(4, 0, false, true, true, false, false);
+    this.g13 = new GamePiece(3, 0, true, true, false, true, false);
+    this.g17 = new GamePiece(4, 0, false, true, false, false, false);
 
-    this.g2 = new GamePiece(0, 1, false, false, false, true, false);
-    this.g6 = new GamePiece(1, 1, true, false, true, true, false);
+    this.g2 = new GamePiece(0, 1, false, false, true, false, false);
+    this.g6 = new GamePiece(1, 1, true, true, true, true, false);
     this.g10 = new GamePiece(2, 1, true, false, true, false, false);
-    this.g14 = new GamePiece(3, 1, false, false, false, true, false);
-    this.g18 = new GamePiece(4, 1, true, true, true, false, false);
+    this.g14 = new GamePiece(3, 1, true, false, false, false, false);
+    this.g18 = new GamePiece(4, 1, true, false, false, false, false);
 
-    this.g3 = new GamePiece(0, 2, false, false, false, true, true);
-    this.g7 = new GamePiece(1, 2, false, true, true, false, false);
-    this.g11 = new GamePiece(2, 2, false, true, false, false, false);
-    this.g15 = new GamePiece(3, 2, false, false, false, true, false);
-    this.g19 = new GamePiece(4, 2, true, true, true, false, false);
+    this.g3 = new GamePiece(0, 2, true, false, false, true, false);
+    this.g7 = new GamePiece(1, 2, true, true, true, false, false);
+    this.g11 = new GamePiece(2, 2, false, false, true, true, false);
+    this.g15 = new GamePiece(3, 2, false, false, true, true, false);
+    this.g19 = new GamePiece(4, 2, true, true, false, true, false);
 
-    this.g4 = new GamePiece(0, 3, false, false, false, true, false);
-    this.g8 = new GamePiece(1, 3, true, false, true, true, false);
-    this.g12 = new GamePiece(2, 3, true, false, true, true, false);
-    this.g16 = new GamePiece(3, 3, false, false, true, true, false);
-    this.g20 = new GamePiece(4, 3, true, false, true, false, false);
+    this.g4 = new GamePiece(0, 3, true, false, true, false, false);
+    this.g8 = new GamePiece(1, 3, false, false, true, true, false);
+    this.g12 = new GamePiece(2, 3, false, false, false, true, false);
+    this.g16 = new GamePiece(3, 3, false, false, true, false, false);
+    this.g20 = new GamePiece(4, 3, false, true, true, false, false);
 
     this.b1 = new ArrayList<>(Arrays.asList(
             new ArrayList<>(Arrays.asList(this.g1, this.g5, this.g9, this.g13, this.g17)),
@@ -496,77 +496,81 @@ class ExamplesLightEmAll {
 
     this.lea = new LightEmAll(4, 5, this.rand);
   }
-//
-//  void testMakeFractals(Tester t) {
-//    init();
-//    t.checkExpect(this.lea.board, this.b1);
-//  }
-//
-//  void testOnKeyEvent(Tester t) {
-//    init();
-//    t.checkExpect(this.lea.gamePieceAt(2, 0).powerStation, true);
-//    this.lea.onKeyEvent("down");
-//    t.checkExpect(this.lea.gamePieceAt(2, 1).powerStation, true);
-//    this.lea.onKeyEvent("right");
-//    t.checkExpect(this.lea.gamePieceAt(3, 1).powerStation, true);
-//    this.lea.onKeyEvent("left");
-//    t.checkExpect(this.lea.gamePieceAt(2, 1).powerStation, true);
-//    this.lea.onKeyEvent("left");
-//    t.checkExpect(this.lea.gamePieceAt(1, 1).powerStation, false);
-//    this.lea.onKeyEvent("a");
-//    t.checkExpect(this.lea.gamePieceAt(2, 1).powerStation, true);
-//  }
-//
-//  void testValidCoords(Tester t) {
-//    init();
-//    t.checkExpect(this.lea.validCoords(2, 1), true);
-//    t.checkExpect(this.lea.validCoords(-1, 0), false);
-//    t.checkExpect(this.lea.validCoords(2, 4), true);
-//    t.checkExpect(this.lea.validCoords(5, 2), false);
-//  }
-//
-//  void testValidDrawnCoords(Tester t) {
-//    init();
-//    t.checkExpect(this.lea.validDrawnCoords(new Posn(20, 53)), true);
-//    t.checkExpect(this.lea.validDrawnCoords(new Posn(0, 250)), true);
-//    t.checkExpect(this.lea.validDrawnCoords(new Posn(-5, 120)), false);
-//    t.checkExpect(this.lea.validDrawnCoords(new Posn(380, 70)), false);
-//  }
-//
-//  void testGamePieceAt(Tester t) {
-//    init();
-//    t.checkExpect(this.lea.gamePieceAt(0, 0), this.g1);
-//    t.checkExpect(this.lea.gamePieceAt(1, 0), this.g2);
-//    t.checkExpect(this.lea.gamePieceAt(2, 0), this.g3);
-//    t.checkExpect(this.lea.gamePieceAt(3, 0), this.g4);
-//    t.checkExpect(this.lea.gamePieceAt(0, 1), this.g5);
-//    t.checkExpect(this.lea.gamePieceAt(1, 1), this.g6);
-//    t.checkExpect(this.lea.gamePieceAt(2, 1), this.g7);
-//    t.checkExpect(this.lea.gamePieceAt(3, 1), this.g8);
-//    t.checkExpect(this.lea.gamePieceAt(0, 2), this.g9);
-//    t.checkExpect(this.lea.gamePieceAt(1, 2), this.g10);
-//    t.checkExpect(this.lea.gamePieceAt(2, 2), this.g11);
-//    t.checkExpect(this.lea.gamePieceAt(3, 2), this.g12);
-//    t.checkExpect(this.lea.gamePieceAt(0, 3), this.g13);
-//    t.checkExpect(this.lea.gamePieceAt(1, 3), this.g14);
-//    t.checkExpect(this.lea.gamePieceAt(2, 3), this.g15);
-//    t.checkExpect(this.lea.gamePieceAt(3, 3), this.g16);
-//    t.checkExpect(this.lea.gamePieceAt(0, 4), this.g17);
-//    t.checkExpect(this.lea.gamePieceAt(1, 4), this.g18);
-//    t.checkExpect(this.lea.gamePieceAt(2, 4), this.g19);
-//    t.checkExpect(this.lea.gamePieceAt(3, 4), this.g20);
-//  }
-//
-//  void testGamePieceAtDrawnPosn(Tester t) {
-//    init();
-//    t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(63, 18)), this.g2);
-//    t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(135, 245)), this.g19);
-//  }
-//
-//  void testGetDiameter(Tester t) {
-//    init();
-//    t.checkExpect(this.lea.getDiameter(), 8);
-//  }
+
+  void testMakeFractals(Tester t) {
+    init();
+    t.checkExpect(this.lea.board, this.b1);
+  }
+
+  void testOnKeyEvent(Tester t) {
+    init();
+    t.checkExpect(this.lea.gamePieceAt(0, 0).powerStation, true);
+    this.lea.onKeyEvent("down");
+    t.checkExpect(this.lea.gamePieceAt(0, 1).powerStation, true);
+    this.lea.onKeyEvent("right");
+    t.checkExpect(this.lea.gamePieceAt(1, 1).powerStation, true);
+    this.lea.onKeyEvent("left");
+    t.checkExpect(this.lea.gamePieceAt(0, 1).powerStation, true);
+    this.lea.onKeyEvent("up");
+    t.checkExpect(this.lea.gamePieceAt(0, 0).powerStation, true);
+    this.lea.onKeyEvent("right");
+    t.checkExpect(this.lea.gamePieceAt(0, 0).powerStation, true);
+    t.checkExpect(this.lea.gamePieceAt(1, 0).powerStation, false);
+    this.lea.onKeyEvent("a");
+    t.checkExpect(this.lea.gamePieceAt(0, 0).powerStation, true);
+  }
+
+  void testValidCoords(Tester t) {
+    init();
+    t.checkExpect(this.lea.validCoords(2, 1), true);
+    t.checkExpect(this.lea.validCoords(-1, 0), false);
+    t.checkExpect(this.lea.validCoords(2, 4), true);
+    t.checkExpect(this.lea.validCoords(5, 2), false);
+  }
+
+  void testValidDrawnCoords(Tester t) {
+    init();
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(20, 53)), true);
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(0, 250)), true);
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(-5, 120)), false);
+    t.checkExpect(this.lea.validDrawnCoords(new Posn(380, 70)), false);
+  }
+
+  void testGamePieceAt(Tester t) {
+    init();
+    t.checkExpect(this.lea.gamePieceAt(0, 0), this.g1);
+    t.checkExpect(this.lea.gamePieceAt(1, 0), this.g2);
+    t.checkExpect(this.lea.gamePieceAt(2, 0), this.g3);
+    t.checkExpect(this.lea.gamePieceAt(3, 0), this.g4);
+    t.checkExpect(this.lea.gamePieceAt(0, 1), this.g5);
+    t.checkExpect(this.lea.gamePieceAt(1, 1), this.g6);
+    t.checkExpect(this.lea.gamePieceAt(2, 1), this.g7);
+    t.checkExpect(this.lea.gamePieceAt(3, 1), this.g8);
+    t.checkExpect(this.lea.gamePieceAt(0, 2), this.g9);
+    t.checkExpect(this.lea.gamePieceAt(1, 2), this.g10);
+    t.checkExpect(this.lea.gamePieceAt(2, 2), this.g11);
+    t.checkExpect(this.lea.gamePieceAt(3, 2), this.g12);
+    t.checkExpect(this.lea.gamePieceAt(0, 3), this.g13);
+    t.checkExpect(this.lea.gamePieceAt(1, 3), this.g14);
+    t.checkExpect(this.lea.gamePieceAt(2, 3), this.g15);
+    t.checkExpect(this.lea.gamePieceAt(3, 3), this.g16);
+    t.checkExpect(this.lea.gamePieceAt(0, 4), this.g17);
+    t.checkExpect(this.lea.gamePieceAt(1, 4), this.g18);
+    t.checkExpect(this.lea.gamePieceAt(2, 4), this.g19);
+    t.checkExpect(this.lea.gamePieceAt(3, 4), this.g20);
+  }
+
+  void testGamePieceAtDrawnPosn(Tester t) {
+    init();
+    t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(63, 18)), this.g2);
+    t.checkExpect(this.lea.gamePieceAtDrawnPosn(new Posn(135, 245)), this.g19);
+  }
+  
+  //Tests the radius directly, as getDiameter() is called while all pieces are connected
+  void testGetDiameter(Tester t) {
+    init();
+    t.checkExpect(this.lea.radius, 6);
+  }
 //
 //  void testBFS(Tester t) {
 //    init();
@@ -583,6 +587,5 @@ class ExamplesLightEmAll {
   void testBigBang(Tester t) {
     init();
     this.lea.bigBang(200, 250, (1.0 / 28.0));
-//    new LightEmAll(7, 7).bigBang(500, 500, 1.0/28);
   }
 }
