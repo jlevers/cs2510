@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import javalib.worldimages.*;
 
+// Represents a tile in a LightEmAll game
 class GamePiece {
   // in logical coordinates, with the origin
   // at the top-left corner of the screen
@@ -18,6 +19,7 @@ class GamePiece {
   boolean bottom;
   // whether the power station is on this piece
   boolean powerStation;
+  boolean lit;
 
   static int SIZE = 50;
   static Color BG = Color.darkGray;
@@ -38,6 +40,7 @@ class GamePiece {
     this.top = top;
     this.bottom = bottom;
     this.powerStation = powerStation;
+    this.lit = false;
   }
 
   // Gives an ArrayList<Integer> representing this GamePiece's position
@@ -128,7 +131,28 @@ class GamePiece {
               && that.right == this.right && that.top == this.top && that.bottom == that.bottom
               && that.powerStation == this.powerStation;
   }
-  
+
+  // EFFECT: connects this GamePiece to the given GamePiece
+  void connectTo(GamePiece to) {
+    int rowDiff = this.row - to.row;
+    int colDiff = this.col - to.col;
+
+    if (rowDiff <= 1 && rowDiff >= -1 && colDiff <= 1 && colDiff >= -1) {
+      if (rowDiff == 1) {
+        this.top = true;
+        to.bottom = true;
+      } else if (rowDiff == -1) {
+        this.bottom = true;
+        to.top = true;
+      } else if (colDiff == 1) {
+        this.left = true;
+        to.right = true;
+      } else if (colDiff == -1) {
+        this.right = true;
+        to.left = true;
+      }
+    }
+  }
 }
 
 class ExamplesGamePiece {
