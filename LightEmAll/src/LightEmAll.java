@@ -81,12 +81,22 @@ class LightEmAll extends World {
 
       if (!this.topRep(reps.get(to), reps).sameGamePiece(this.topRep(reps.get(from), reps))) {
         treeEdges.add(current);
-        reps.put(from, this.topRep(to, reps));
-        from.connectTo(to);
+//        reps.put(to, this.topRep(from, reps));
+        this.union(to, from , reps);
+        to.connectTo(from);
       }
     }
 
     this.mst = treeEdges;
+  }
+  
+  //EFFECT: Sets the top representatives for each node
+  void union(GamePiece to, GamePiece from, HashMap<GamePiece,GamePiece> reps) {
+    if (to.sameGamePiece(reps.get(to))) {
+      reps.put(to, from);
+    } else {
+      this.union(reps.get(to), from, reps);
+    }
   }
 
   // Finds the top level representative for the given GamePiece in the MST
@@ -261,8 +271,6 @@ class LightEmAll extends World {
   public WorldEnd worldEnds() {
     WorldImage endText = new TextImage("Success!", 16, Color.RED);WorldScene endScene =
             this.makeScene();
-    GamePiece powerStation = this.gamePieceAt(this.powerCol, this.powerRow);
-    GamePiece farthest = this.bfs(powerStation);
     boolean allLit = false;
     for (GamePiece gp : this.nodes) {
       allLit = gp.lit;
@@ -573,6 +581,6 @@ class ExamplesLightEmAll {
   void testBigBang(Tester t) {
 //    init();
 //    this.lea.bigBang(200, 250, (1.0 / 28.0));
-    new LightEmAll(4, 4).bigBang(200, 200, 1.0/28);
+    new LightEmAll(7, 7).bigBang(500, 500, 1.0/28);
   }
 }

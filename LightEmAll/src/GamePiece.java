@@ -240,6 +240,6 @@ class ExamplesGamePiece {
     init();
     t.checkExpect(this.g1.sameGamePiece(this.g1), true);
     t.checkExpect(this.g1.sameGamePiece(this.g2), false);
-    t.checkExpect(this.g1.sameGamePiece(new GamePiece(0, 0, true, false, true, true, false)), true);
+    t.checkExpect(this.g1.sameGamePiece(new GamePiece(0, 0, true, true, false, true, false)), true);
   }
 }
