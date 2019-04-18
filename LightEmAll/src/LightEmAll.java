@@ -29,15 +29,14 @@ class LightEmAll extends World {
   static ArrayList<String> DIRS = new ArrayList<>(Arrays.asList("left", "up", "down", "right"));
   static ArrayList<String> OPPODIRS = new ArrayList<>(Arrays.asList("right", "down", "up", "left"));
 
-  LightEmAll(int width, int height, int seed) {
-    this(width, height);
-    this.rand = new Random(seed);
+  LightEmAll(int width, int height) {
+    this(width, height, new Random());
   }
 
-  LightEmAll(int width, int height) {
+  LightEmAll(int width, int height, Random rand) {
     this.width = width;
     this.height = height;
-    this.rand = new Random();
+    this.rand = rand;
 
     this.blankBoard();
     this.powerCol = 0;
@@ -460,40 +459,43 @@ class ExamplesLightEmAll {
 
   ArrayList<ArrayList<GamePiece>> b1;
   LightEmAll lea;
+  Random rand;
 
-//  void init() {
-//    this.g1 = new GamePiece(0, 0, false, false, false, true, false);
-//    this.g5 = new GamePiece(1, 0, false, true, true, false, false);
-//    this.g9 = new GamePiece(2, 0, false, true, false, true, false);
-//    this.g13 = new GamePiece(3, 0, false, false, true, true, false);
-//    this.g17 = new GamePiece(4, 0, false, true, true, false, false);
-//
-//    this.g2 = new GamePiece(0, 1, false, false, false, true, false);
-//    this.g6 = new GamePiece(1, 1, true, false, true, true, false);
-//    this.g10 = new GamePiece(2, 1, true, false, true, false, false);
-//    this.g14 = new GamePiece(3, 1, false, false, false, true, false);
-//    this.g18 = new GamePiece(4, 1, true, true, true, false, false);
-//
-//    this.g3 = new GamePiece(0, 2, false, false, false, true, true);
-//    this.g7 = new GamePiece(1, 2, false, true, true, false, false);
-//    this.g11 = new GamePiece(2, 2, false, true, false, false, false);
-//    this.g15 = new GamePiece(3, 2, false, false, false, true, false);
-//    this.g19 = new GamePiece(4, 2, true, true, true, false, false);
-//
-//    this.g4 = new GamePiece(0, 3, false, false, false, true, false);
-//    this.g8 = new GamePiece(1, 3, true, false, true, true, false);
-//    this.g12 = new GamePiece(2, 3, true, false, true, true, false);
-//    this.g16 = new GamePiece(3, 3, false, false, true, true, false);
-//    this.g20 = new GamePiece(4, 3, true, false, true, false, false);
-//
-//    this.b1 = new ArrayList<>(Arrays.asList(
-//            new ArrayList<>(Arrays.asList(this.g1, this.g5, this.g9, this.g13, this.g17)),
-//            new ArrayList<>(Arrays.asList(this.g2, this.g6, this.g10, this.g14, this.g18)),
-//            new ArrayList<>(Arrays.asList(this.g3, this.g7, this.g11, this.g15, this.g19)),
-//            new ArrayList<>(Arrays.asList(this.g4, this.g8, this.g12, this.g16, this.g20))));
-//
-//    this.lea = new LightEmAll(4, 5, 1);
-//  }
+  void init() {
+    this.g1 = new GamePiece(0, 0, false, false, false, true, false);
+    this.g5 = new GamePiece(1, 0, false, true, true, false, false);
+    this.g9 = new GamePiece(2, 0, false, true, false, true, false);
+    this.g13 = new GamePiece(3, 0, false, false, true, true, false);
+    this.g17 = new GamePiece(4, 0, false, true, true, false, false);
+
+    this.g2 = new GamePiece(0, 1, false, false, false, true, false);
+    this.g6 = new GamePiece(1, 1, true, false, true, true, false);
+    this.g10 = new GamePiece(2, 1, true, false, true, false, false);
+    this.g14 = new GamePiece(3, 1, false, false, false, true, false);
+    this.g18 = new GamePiece(4, 1, true, true, true, false, false);
+
+    this.g3 = new GamePiece(0, 2, false, false, false, true, true);
+    this.g7 = new GamePiece(1, 2, false, true, true, false, false);
+    this.g11 = new GamePiece(2, 2, false, true, false, false, false);
+    this.g15 = new GamePiece(3, 2, false, false, false, true, false);
+    this.g19 = new GamePiece(4, 2, true, true, true, false, false);
+
+    this.g4 = new GamePiece(0, 3, false, false, false, true, false);
+    this.g8 = new GamePiece(1, 3, true, false, true, true, false);
+    this.g12 = new GamePiece(2, 3, true, false, true, true, false);
+    this.g16 = new GamePiece(3, 3, false, false, true, true, false);
+    this.g20 = new GamePiece(4, 3, true, false, true, false, false);
+
+    this.b1 = new ArrayList<>(Arrays.asList(
+            new ArrayList<>(Arrays.asList(this.g1, this.g5, this.g9, this.g13, this.g17)),
+            new ArrayList<>(Arrays.asList(this.g2, this.g6, this.g10, this.g14, this.g18)),
+            new ArrayList<>(Arrays.asList(this.g3, this.g7, this.g11, this.g15, this.g19)),
+            new ArrayList<>(Arrays.asList(this.g4, this.g8, this.g12, this.g16, this.g20))));
+    
+    this.rand = new Random(1);
+
+    this.lea = new LightEmAll(4, 5, this.rand);
+  }
 //
 //  void testMakeFractals(Tester t) {
 //    init();
@@ -579,8 +581,8 @@ class ExamplesLightEmAll {
 //  }
 
   void testBigBang(Tester t) {
-//    init();
-//    this.lea.bigBang(200, 250, (1.0 / 28.0));
-    new LightEmAll(7, 7).bigBang(500, 500, 1.0/28);
+    init();
+    this.lea.bigBang(200, 250, (1.0 / 28.0));
+//    new LightEmAll(7, 7).bigBang(500, 500, 1.0/28);
   }
 }
