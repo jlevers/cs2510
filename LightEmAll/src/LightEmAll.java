@@ -12,9 +12,7 @@ class LightEmAll extends World {
   ArrayList<ArrayList<GamePiece>> board;
   // a list of all nodes
   ArrayList<GamePiece> nodes;
-  // a list of edges of the minimum spanning tree
-  ArrayList<Edge> mst;
-  // the width and height of the board
+    // the width and height of the board
   int width;
   int height;
   // the current location of the power station,
@@ -64,7 +62,7 @@ class LightEmAll extends World {
     this.gamePieceAt(0, 0).powerStation = true;
   }
 
-  // EFFECT: finds the minimum spanning tree for a board of this size, and sets this.mst to that
+  // EFFECT: finds the minimum spanning tree for a board of this size
   void findMST() {
     HashMap<GamePiece, GamePiece> reps = new HashMap<>();
     for (GamePiece gp : this.nodes) {
@@ -80,16 +78,13 @@ class LightEmAll extends World {
 
       if (!this.topRep(reps.get(to), reps).sameGamePiece(this.topRep(reps.get(from), reps))) {
         treeEdges.add(current);
-//        reps.put(to, this.topRep(from, reps));
         this.union(to, from , reps);
         to.connectTo(from);
       }
     }
-
-    this.mst = treeEdges;
   }
   
-  //EFFECT: Sets the top representatives for each node
+  // EFFECT: Sets the top representatives for each node
   void union(GamePiece to, GamePiece from, HashMap<GamePiece,GamePiece> reps) {
     if (to.sameGamePiece(reps.get(to))) {
       reps.put(to, from);
@@ -129,17 +124,6 @@ class LightEmAll extends World {
     return edges;
   }
 
-  // EFFECT: generates a fractal board layout
-  void generateFractalBoard() {
-    ArrayList<ArrayList<GamePiece>> temp = generateFractalBoardHelp(0, 0, this.width - 1,
-            this.height - 1);
-    
-    temp.get(temp.size() / 2).get(0).powerStation = true;
-    this.board = temp;
-    this.powerCol = temp.size() / 2;
-    this.powerRow = 0;
-  }
-
   // EFFECT: randomly rotates all GamePieces on the board
   void randomize() {
     for (GamePiece gp : this.nodes) {
@@ -147,123 +131,6 @@ class LightEmAll extends World {
         gp.rotate();
       }
     }
-  }
-
-  // EFFECT: generates a fractal board layout recursively
-  ArrayList<ArrayList<GamePiece>> generateFractalBoardHelp(int colLow, int rowLow, int colHigh,
-                                     int rowHigh) {
-    int colDiff = colHigh - colLow;
-    int rowDiff = rowHigh - rowLow;
-    if (colDiff == 1 && rowDiff == 1) {
-      // Handles the 2 x 2 BaseCase
-      GamePiece tl = new GamePiece(rowLow, colLow, false, false, false, true, false);
-      GamePiece bl = new GamePiece(rowHigh, colLow, false, true, true, false, false);
-      GamePiece tr = new GamePiece(rowLow, colHigh, false, false, false, true, false);
-      GamePiece br = new GamePiece(rowHigh, colHigh, true, false, true, false, false);
-
-      return new ArrayList<>(Arrays.asList(
-              new ArrayList<>(Arrays.asList(tl, bl)),
-              new ArrayList<>(Arrays.asList(tr, br))));
-      //Handles a 2 x 1
-    } else if (colDiff == 0 && rowDiff == 1) {
-      GamePiece top = new GamePiece(rowLow, colLow, false, false, false, true, false);
-      GamePiece bottom = new GamePiece(rowHigh, colLow, false, false, true, false, false);
-
-      return new ArrayList<>(Arrays.asList(new ArrayList<>(Arrays.asList(top, bottom))));
-      //Handles a 1 x 2
-    } else if (colDiff == 1 && rowDiff == 0) {
-      GamePiece left = new GamePiece(rowLow, colLow, false, true, false, false, false);
-      GamePiece right = new GamePiece(rowLow, colHigh, true, false, false, false, false);
-
-      return new ArrayList<>(Arrays.asList(
-              new ArrayList<>(Arrays.asList(left)), new ArrayList<>(Arrays.asList(right))
-      ));
-      // Handles a 1 x 1
-    } else if (colDiff == 0 && rowDiff == 0) {
-      return new ArrayList<>(Arrays.asList(new ArrayList<>(
-              Arrays.asList(new GamePiece(rowLow, colLow, false, false, false, false, false)))));
-      // Handles a 2x3 or 1x3
-    } else if ((colDiff == 0 || colDiff == 1) && rowDiff == 2) {
-      ArrayList<ArrayList<GamePiece>> col = mergeVert(
-          generateFractalBoardHelp(colLow, rowLow, colHigh, rowLow + 1),
-          generateFractalBoardHelp(colLow, rowHigh, colHigh, rowHigh));
-      col.get(colDiff).get(1).bottom = true;
-      col.get(colDiff).get(2).top = true;
-      return col;
-      // Handles a 3x2 or 3x1 case
-    } else if (colDiff == 2 && (rowDiff == 1 || rowDiff == 0)) {
-      ArrayList<ArrayList<GamePiece>> rect = mergeHoriz(
-              generateFractalBoardHelp(colLow, rowLow, colLow + 1, rowHigh),
-              generateFractalBoardHelp(colHigh, rowLow, colHigh, rowHigh));
-      rect.get(1).get(rowDiff).right = true;
-      rect.get(2).get(rowDiff).left = true;
-
-      return rect;
-    } else {
-      int colAvg = (colHigh + colLow) / 2;
-      int rowAvg = (rowHigh + rowLow) / 2;
-      return mergeFractals(
-              generateFractalBoardHelp(colLow, rowLow, colAvg, rowAvg),
-              generateFractalBoardHelp(colLow, rowAvg + 1, colAvg, rowHigh),
-              generateFractalBoardHelp(colAvg + 1, rowLow, colHigh, rowAvg),
-              generateFractalBoardHelp(colAvg + 1, rowAvg + 1, colHigh, rowHigh));
-    }
-
-  }
-
-  // Merges together two fractal boards
-  ArrayList<ArrayList<GamePiece>> mergeFractals(ArrayList<ArrayList<GamePiece>> tl,
-                                                ArrayList<ArrayList<GamePiece>> bl,
-                                                ArrayList<ArrayList<GamePiece>> tr,
-                                                ArrayList<ArrayList<GamePiece>> br) {
-    // Connect top left with bottom left
-    tl.get(0).get(tl.get(0).size() - 1).bottom = true;
-    bl.get(0).get(0).top = true;
-    // Connect top right with bottom right
-    tr.get(tr.size() - 1).get(tr.get(0).size() - 1).bottom = true;
-    br.get(tr.size() - 1).get(0).top = true;
-    // Connect bottom left with bottom right
-    bl.get(bl.size() - 1).get(bl.get(0).size() - 1).right = true;
-    br.get(0).get(br.get(0).size() - 1).left = true;
-
-    ArrayList<ArrayList<GamePiece>> left = mergeVert(tl, bl);
-    ArrayList<ArrayList<GamePiece>> right = mergeVert(tr, br);
-    return mergeHoriz(left, right);
-  }
-
-  // Merges two boards horizontally
-  ArrayList<ArrayList<GamePiece>> mergeHoriz(ArrayList<ArrayList<GamePiece>> left,
-                                             ArrayList<ArrayList<GamePiece>> right) {
-    // Initialize rows
-    ArrayList<ArrayList<GamePiece>> joined = new ArrayList<>();
-    for (int i = 0; i < left.size() + right.size(); i++) {
-      joined.add(new ArrayList<>());
-    }
-
-    for (int i = 0; i < left.get(0).size(); i++) {
-      for (int j = 0; j < left.size(); j++) {
-        joined.get(j).add(left.get(j).get(i));
-      }
-      for (int j = left.size(); j < left.size() + right.size(); j++) {
-        joined.get(j).add(right.get(j - left.size()).get(i));
-      }
-    }
-
-    return joined;
-  }
-
-  // Merges two boards vertically
-  ArrayList<ArrayList<GamePiece>> mergeVert(ArrayList<ArrayList<GamePiece>> top,
-                                             ArrayList<ArrayList<GamePiece>> bottom) {
-    ArrayList<ArrayList<GamePiece>> joined = new ArrayList<>();
-    for (int i = 0; i < Math.min(top.size(), bottom.size()); i++) {
-      ArrayList<GamePiece> temp = new ArrayList<>();
-      temp.addAll(top.get(i));
-      temp.addAll(bottom.get(i));
-      joined.add(temp);
-    }
-
-    return joined;
   }
 
   // Checks if every GamePiece has been lit, and if so, ends the game
@@ -407,7 +274,7 @@ class LightEmAll extends World {
     Queue<GamePiece> queue = new Queue<>(new ArrayList<>(Arrays.asList(start)));
     ArrayList<GamePiece> visited = new ArrayList<>();
     GamePiece current = start;
-    
+
     while (queue.size() > 0) {
       current = queue.pop();
       visited.add(current);
@@ -456,8 +323,11 @@ class ExamplesLightEmAll {
   GamePiece g18;
   GamePiece g19;
   GamePiece g20;
+  GamePiece allFalse;
 
   ArrayList<ArrayList<GamePiece>> b1;
+  ArrayList<ArrayList<GamePiece>> blank;
+  HashMap<GamePiece, GamePiece> hm;
   LightEmAll lea;
   Random rand;
 
@@ -486,20 +356,32 @@ class ExamplesLightEmAll {
     this.g16 = new GamePiece(3, 3, false, false, true, false, false);
     this.g20 = new GamePiece(4, 3, false, true, true, false, false);
 
+    this.allFalse = new GamePiece(0, 0, false, false, false, false, false);
+
     this.b1 = new ArrayList<>(Arrays.asList(
             new ArrayList<>(Arrays.asList(this.g1, this.g5, this.g9, this.g13, this.g17)),
             new ArrayList<>(Arrays.asList(this.g2, this.g6, this.g10, this.g14, this.g18)),
             new ArrayList<>(Arrays.asList(this.g3, this.g7, this.g11, this.g15, this.g19)),
             new ArrayList<>(Arrays.asList(this.g4, this.g8, this.g12, this.g16, this.g20))));
+
+    this.blank = new ArrayList<>(Arrays.asList(
+            new ArrayList<>(Arrays.asList(
+                    this.allFalse, this.allFalse.clone(1, 0), this.allFalse.clone(2, 0))),
+            new ArrayList<>(Arrays.asList(
+                    this.allFalse.clone(0, 1), this.allFalse.clone(1, 1),
+                    this.allFalse.clone(2, 1))),
+            new ArrayList<>(Arrays.asList(
+                    this.allFalse.clone(0, 2), this.allFalse.clone(1, 2),
+                    this.allFalse.clone(2, 2)))));
+    this.blank.get(0).get(0).powerStation = true;
     
     this.rand = new Random(1);
 
     this.lea = new LightEmAll(4, 5, this.rand);
-  }
-
-  void testMakeFractals(Tester t) {
-    init();
-    t.checkExpect(this.lea.board, this.b1);
+    this.hm = new HashMap<>();
+    for (GamePiece gp : this.lea.nodes) {
+      this.hm.put(gp, gp);
+    }
   }
 
   void testOnKeyEvent(Tester t) {
@@ -571,18 +453,63 @@ class ExamplesLightEmAll {
     init();
     t.checkExpect(this.lea.radius, 6);
   }
-//
-//  void testBFS(Tester t) {
-//    init();
-//    t.checkExpect(this.lea.bfs(this.g1), this.g3);
-//    t.checkExpect(this.lea.bfs(this.g18), this.g3);
-//  }
-//
-//  void testDepthBetween(Tester t) {
-//    init();
-//    t.checkExpect(this.lea.depthBetween(this.g1, this.g6, new ArrayList<>()), 2);
-//    t.checkExpect(this.lea.depthBetween(this.g1, this.g12, new ArrayList<>()), 11);
-//  }
+
+  void testGenEdges(Tester t) {
+    LightEmAll forGen = new LightEmAll(2, 2, new Random(1));
+    forGen.blankBoard();
+    GamePiece g1 = forGen.gamePieceAt(0, 0);
+    GamePiece g2 = forGen.gamePieceAt(0, 1);
+    GamePiece g3 = forGen.gamePieceAt(1, 0);
+    GamePiece g4 = forGen.gamePieceAt(1, 1);
+    ArrayList<Edge> edges = new ArrayList<>(Arrays.asList(
+            new Edge(g2, g4, 12), new Edge(g2, g1, 16), new Edge(g3, g4, 19), new Edge(g1, g3, 29),
+            new Edge(g3, g1, 30), new Edge(g4, g2, 34), new Edge(g1, g2, 36), new Edge(g4, g3,
+                    39)));
+    t.checkExpect(forGen.genEdges(), edges);
+  }
+
+  void testTopRep(Tester t) {
+    init();
+    this.hm.put(this.lea.gamePieceAt(0, 0), this.lea.gamePieceAt(0, 1));
+    this.hm.put(this.lea.gamePieceAt(3, 2), this.lea.gamePieceAt(0, 0));
+    t.checkExpect(this.lea.topRep(this.lea.gamePieceAt(0, 0), this.hm), this.lea.gamePieceAt(0, 1));
+    t.checkExpect(this.lea.topRep(this.lea.gamePieceAt(3, 2), this.hm), this.lea.gamePieceAt(0, 1));
+  }
+
+  void testBlankBoard(Tester t) {
+    init();
+    LightEmAll smaller = new LightEmAll(3, 3);
+    smaller.blankBoard();
+    t.checkExpect(smaller.board, this.blank);
+  }
+
+  void testBFS(Tester t) {
+    init();
+    this.lea.blankBoard();
+    this.lea.powerCol = 0;
+    this.lea.powerRow = 0;
+    this.lea.nodes = Utils.flatten(this.lea.board);
+    this.lea.findMST();
+    t.checkExpect(this.lea.bfs(this.lea.gamePieceAt(1, 4)), this.lea.gamePieceAt(2, 0));
+  }
+
+  void testFindMST(Tester t) {
+    init();
+    this.lea.rand = new Random(1);
+    this.lea.blankBoard();
+    this.lea.powerCol = 0;
+    this.lea.powerRow = 0;
+    this.lea.nodes = Utils.flatten(this.lea.board);
+    this.lea.findMST();
+    this.lea.randomize();
+    t.checkExpect(this.lea.board, this.b1);
+  }
+
+  void testDepthBetween(Tester t) {
+    init();
+    t.checkExpect(this.lea.depthBetween(this.g1, this.g3, new ArrayList<>()), 4);
+    t.checkExpect(this.lea.depthBetween(this.g1, this.g7, new ArrayList<>()), 3);
+  }
 
   void testBigBang(Tester t) {
     init();
